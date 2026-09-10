@@ -1,0 +1,72 @@
+{% load static vite %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <meta name="theme-color" content="#FF6A3A">
+    <title inertia>{{ app_name }}</title>
+
+    {% comment %}
+    PWA. Adresse nommee plutot qu'un chemin ecrit en dur : servie sous
+    /campagnes/, l'adresse absolue tombait sur la coquille du hub, qui
+    repondait du HTML a la place du manifeste.
+
+    Le bloc comment plutot que la forme courte a diese : celle-ci tient sur
+    une seule ligne. Etalee sur trois, Django ne la reconnait plus et l'ecrit
+    dans la page — le commentaire s'affichait en haut de l'ecran.
+    {% endcomment %}
+    <link rel="manifest" href="{% url 'pwa.manifest' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="{{ app_name }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="{{ app_name }}">
+    <meta name="msapplication-TileColor" content="#FF6A3A">
+    <meta name="msapplication-TileImage" content="{% static 'logo/iconesgda.png' %}">
+    <meta name="msapplication-config" content="none">
+
+    {# Favicon + icônes d'installation #}
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'logo/iconesgda.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'logo/iconesgda.png' %}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'logo/iconesgda.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'logo/iconesgda.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'logo/iconesgda.png' %}">
+
+    {# Table de routes consommée par le helper route() du frontend #}
+    <script>window.Ziggy = {{ ziggy_json }};</script>
+
+    {# Prefixe des fichiers statiques, lu par lib/statique.js du frontend #}
+    <script>window.CampagnesStatique = "{% get_static_prefix %}";</script>
+
+    {# Nom du cookie CSRF, lu par bootstrap.js : il change sous la passerelle #}
+    <script>window.CampagnesCookieCsrf = "{{ csrf_cookie_name }}";</script>
+
+    {% vite_react_refresh %}
+    {% vite_assets %}
+</head>
+<body class="font-sans antialiased text-gray-900">
+    {% block inertia %}{% endblock %}
+
+    {% comment %}
+    Le service worker est servi a la racine de l'application, pas sous
+    /static/ : sa portee ne peut pas depasser son propre dossier. L'ancienne
+    forme demandait la portee « / » depuis « /campagnes/static/ », le
+    navigateur refusait, et le catch avalait l'erreur — la PWA n'existait pas.
+
+    Le prefixe des fichiers statiques voyage en parametre : le worker en a
+    besoin pour savoir quoi mettre en cache, et lui seul ne peut pas le
+    deviner depuis sa propre adresse.
+    {% endcomment %}
+    <script>
+    (function () {
+        if (!('serviceWorker' in navigator)) return;
+        var worker = '{% url "pwa.sw" %}?statique={% get_static_prefix %}';
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register(worker, { scope: '{% url "racine" %}' })
+                .catch(function (erreur) { console.warn('Service worker non enregistre :', erreur); });
+        });
+    })();
+    </script>
+</body>
+</html>

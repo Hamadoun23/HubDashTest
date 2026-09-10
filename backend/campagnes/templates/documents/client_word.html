@@ -1,0 +1,73 @@
+{% comment %}
+Fiche client au format Word — portage de resources/views/exports/client-word.blade.php.
+Comme Laravel, on produit du HTML que Microsoft Word sait ouvrir : pas besoin
+de générer un vrai .docx pour ce document essentiellement tabulaire.
+
+Bloc comment et non la forme courte a diese : celle-ci ne vaut que sur une
+seule ligne, et le commentaire partait en tete du document exporte.
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #222; }
+        h1 { font-size: 16pt; }
+        h2 { font-size: 13pt; margin-top: 18pt; }
+        .muted { color: #666; font-size: 9pt; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10pt; }
+        td { padding: 4px 8px; border: 1px solid #ccc; vertical-align: top; }
+        td.k { width: 32%; font-weight: bold; background: #f5f5f5; }
+        .page-break { page-break-after: always; }
+        .id-img { max-width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>Fiche client</h1>
+    <p class="muted">Généré le {{ genere_le }} — ID #{{ client.id }}</p>
+
+    <table>
+        <tr><td class="k">Prénom</td><td>{{ client.prenom }}</td></tr>
+        <tr><td class="k">Nom</td><td>{{ client.nom }}</td></tr>
+        <tr><td class="k">Téléphone</td><td>{{ client.telephone|default:"—" }}</td></tr>
+        <tr><td class="k">Ville</td><td>{{ client.ville|default:"—" }}</td></tr>
+        <tr><td class="k">Quartier</td><td>{{ client.quartier|default:"—" }}</td></tr>
+        <tr><td class="k">Type de carte</td><td>{{ type_carte|default:"—" }}</td></tr>
+        <tr><td class="k">Statut carte</td><td>{{ client.statut_carte }}</td></tr>
+        <tr><td class="k">Commercial</td><td>{{ commercial|default:"—" }}</td></tr>
+        <tr><td class="k">Agence</td><td>{{ agence|default:"—" }}</td></tr>
+        <tr><td class="k">Créé le</td><td>{{ cree_le }}</td></tr>
+        {% if identite.has_file %}
+        <tr><td class="k">Pièce d’identité</td><td>Voir page 2</td></tr>
+        {% endif %}
+    </table>
+
+    <h2>Ventes</h2>
+    {% for v in ventes %}
+        <p>{{ v.date }} — {{ v.type_carte }} — {{ v.commercial }} ({{ v.agence }}) — {{ v.statut }}</p>
+    {% empty %}
+        <p class="muted">Aucune vente.</p>
+    {% endfor %}
+
+    {% if identite.has_file %}
+    <div class="page-break"></div>
+    <h2>Pièce d’identité</h2>
+    {% if not identite.stored %}
+    <p class="muted">Fichier référencé mais absent du stockage.</p>
+    {% elif identite.image_src %}
+    <p class="muted">{{ identite.label }}</p>
+    <p><img src="{{ identite.image_src }}" alt="Pièce d'identité" class="id-img"></p>
+    {% if identite.download_url %}
+    <p><a href="{{ identite.download_url }}">Télécharger le fichier</a></p>
+    {% endif %}
+    {% elif identite.is_pdf %}
+    <p>Document PDF : ouvrez le lien suivant pour télécharger la pièce d’identité.</p>
+    {% if identite.download_url %}
+    <p><a href="{{ identite.download_url }}">Télécharger la pièce d’identité (PDF)</a></p>
+    {% endif %}
+    {% elif identite.download_url %}
+    <p><a href="{{ identite.download_url }}">Télécharger la pièce d’identité</a></p>
+    {% endif %}
+    {% endif %}
+</body>
+</html>

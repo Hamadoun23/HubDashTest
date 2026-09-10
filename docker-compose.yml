@@ -1,0 +1,311 @@
+# GDA Hub - la pile complete.
+#
+#   docker compose up -d --build     demarrage
+#   docker compose logs -f frontend  journaux de l'interface
+#   docker compose down              arret (les donnees restent)
+#
+# **Un front, plusieurs backends.** L'interface est unique : toutes les vues
+# des applications y vivent, sous une seule session et une seule barre de
+# navigation. Les backends, eux, restent separes - un service, une base - et
+# aucun ne depend du demarrage d'un autre.
+#
+# C'est ce decoupage qui fait l'ERP : l'utilisateur voit un systeme, les
+# equipes gardent des applications independantes.
+#
+# Ports publies sur 127.0.0.1 uniquement.
+
+name: gdahub
+
+x-postgres: &postgres
+  image: postgres:17-alpine
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+
+x-django: &django
+  restart: unless-stopped
+  environment: &env-django
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-developpement-local-non-secret}
+    DJANGO_DEBUG: "True"
+    DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0,gateway,identity,financerh,jusorange,campagnes,chantiers,planning
+    DJANGO_TIME_ZONE: Africa/Bamako
+    GDAHUB_JWKS_URL: http://identity:8000/.well-known/jwks.json
+    GDAHUB_JETON_EMETTEUR: gdahub-identity
+    GDAHUB_JETON_AUDIENCE: gdahub
+
+services:
+  # --- Les bases : une par application ------------------------------------
+  db-identity:
+    <<: *postgres
+    container_name: gdahub-db-identity
+    environment:
+      POSTGRES_USER: gdahub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: identity
+    ports: ["127.0.0.1:5441:5432"]
+    volumes: ["donnees-identity:/var/lib/postgresql/data"]
+
+  db-financerh:
+    <<: *postgres
+    container_name: gdahub-db-financerh
+    environment:
+      POSTGRES_USER: financerh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: financerh
+    ports: ["127.0.0.1:5442:5432"]
+    volumes: ["donnees-financerh:/var/lib/postgresql/data"]
+
+  db-jusorange:
+    <<: *postgres
+    # 16, comme en production : c'est la version qui a produit les
+    # sauvegardes, et restaurer dans la meme evite les surprises.
+    image: postgres:16-alpine
+    container_name: gdahub-db-jusorange
+    environment:
+      POSTGRES_USER: jusorange
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: jusorange
+    ports: ["127.0.0.1:5443:5432"]
+    volumes: ["donnees-jusorange:/var/lib/postgresql/data"]
+
+  db-chantiers:
+    <<: *postgres
+    container_name: gdahub-db-chantiers
+    environment:
+      POSTGRES_USER: chantiers
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: chantiers
+    ports: ["127.0.0.1:5444:5432"]
+    volumes: ["donnees-chantiers:/var/lib/postgresql/data"]
+
+  db-planning:
+    <<: *postgres
+    container_name: gdahub-db-planning
+    environment:
+      POSTGRES_USER: planning
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: planning
+    ports: ["127.0.0.1:5445:5432"]
+    volumes: ["donnees-planning:/var/lib/postgresql/data"]
+
+  db-campagnes:
+    image: mysql:8.0
+    container_name: gdahub-db-campagnes
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      MYSQL_DATABASE: campagnes
+    ports: ["127.0.0.1:3306:3306"]
+    volumes: ["donnees-campagnes-mysql:/var/lib/mysql"]
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+  # --- Identity : le compte unique ----------------------------------------
+  # Le seul service qui connait les mots de passe et qui signe les jetons.
+  identity:
+    <<: *django
+    build:
+      context: .
+      dockerfile: backend/identity/Dockerfile
+      target: developpement
+    container_name: gdahub-identity
+    depends_on:
+      db-identity: {condition: service_healthy}
+    environment:
+      <<: *env-django
+      GDAHUB_APPLICATION: hub
+      DATABASE_URL: postgres://gdahub:${POSTGRES_PASSWORD:-gdahub-local}@db-identity:5432/identity
+      CSRF_TRUSTED_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
+      # Les photos de profil sont servies en adresse absolue : sans ce
+      # prefixe, elles pointeraient hors du perimetre de l'application.
+      MEDIA_URL: /media/hub/
+    volumes:
+      - ./backend/identity:/app
+      - ./libs/gdahub_common:/libs/gdahub_common
+      - media-identity:/app/media
+      # Les cles de signature des jetons. Elles doivent survivre a une
+      # reconstruction : les perdre invaliderait toutes les sessions ouvertes.
+      - cles:/cles
+      # L'organigramme reel, lu au demarrage pour amorcer l'annuaire.
+      - ./infra/effectif:/effectif:ro
+    ports: ["127.0.0.1:8101:8000"]
+
+  # --- Les applications rassemblees ---------------------------------------
+  financerh:
+    <<: *django
+    build:
+      context: ./backend/financerh
+      target: developpement
+    container_name: gdahub-financerh
+    depends_on:
+      db-financerh: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://financerh:${POSTGRES_PASSWORD:-gdahub-local}@db-financerh:5432/financerh
+      # Les pieces jointes sont servies en adresse absolue : sans ce prefixe,
+      # elles pointeraient hors du perimetre de l'application.
+      MEDIA_URL: /media/rh/
+    volumes:
+      - ./backend/financerh:/app
+      - /app/.venv
+      - media-financerh:/app/media
+    ports: ["127.0.0.1:8110:8000"]
+
+  jusorange:
+    <<: *django
+    build:
+      context: ./backend/jusorange
+      target: developpement
+    container_name: gdahub-jusorange
+    depends_on:
+      db-jusorange: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://jusorange:${POSTGRES_PASSWORD:-gdahub-local}@db-jusorange:5432/jusorange
+      MEDIA_URL: /media/jus/
+    volumes:
+      - ./backend/jusorange:/app
+      - media-jusorange:/app/media
+    ports: ["127.0.0.1:8120:8000"]
+
+  chantiers:
+    <<: *django
+    build:
+      context: ./backend/chantiers
+      target: developpement
+    container_name: gdahub-chantiers
+    depends_on:
+      db-chantiers: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://chantiers:${POSTGRES_PASSWORD:-gdahub-local}@db-chantiers:5432/chantiers
+      MEDIA_URL: /media/chantiers/
+    volumes:
+      - ./backend/chantiers:/app
+      - media-chantiers:/app/media
+    ports: ["127.0.0.1:8140:8000"]
+
+  planning:
+    <<: *django
+    build:
+      context: ./backend/planning
+      target: developpement
+    container_name: gdahub-planning
+    depends_on:
+      db-planning: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://planning:${POSTGRES_PASSWORD:-gdahub-local}@db-planning:5432/planning
+      MEDIA_URL: /media/planning/
+    volumes:
+      - ./backend/planning:/app
+      - media-planning:/app/media
+    ports: ["127.0.0.1:8150:8000"]
+
+  # BDM (la banque) n'est qu'un des clients servis par cette application de
+  # gestion de campagnes — le service porte donc le nom de l'application,
+  # pas celui de son premier client.
+  campagnes:
+    <<: *django
+    build:
+      # La racine du depot : l'image a besoin du backend et du front de
+      # Campagnes, qui vivent dans deux dossiers differents.
+      context: .
+      dockerfile: backend/campagnes/Dockerfile
+      target: developpement
+    container_name: gdahub-campagnes
+    depends_on:
+      db-campagnes: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DB_HOST: db-campagnes
+      DB_PORT: "3306"
+      DB_NAME: campagnes
+      DB_USER: root
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      CHEMIN_BASE: /campagnes
+      # L'image embarque le front deja compile (npm run build). Sans ce
+      # drapeau, VITE_DEV suit DJANGO_DEBUG et la page va chercher son
+      # JavaScript sur http://localhost:5173 — un serveur de developpement
+      # qui ne tourne pas ici. Le navigateur repondait « connexion refusee ».
+      VITE_DEV: "False"
+      # Sous une origine unique, deux Django qui posent « sessionid » se
+      # deconnecteraient mutuellement a chaque navigation.
+      SESSION_COOKIE_NAME: campagnes_sessionid
+      CSRF_COOKIE_NAME: campagnes_csrftoken
+    volumes:
+      - ./backend/campagnes:/app
+      - media-campagnes-app:/app/media
+      - statiques-campagnes:/app/staticfiles
+    ports: ["127.0.0.1:8130:8000"]
+
+  # --- L'interface, unique -------------------------------------------------
+  # React + Vite (virtus-dashboard). Le contexte est la racine du depot :
+  # c'est ici meme que vit le frontend, plus besoin d'un dossier ./frontend
+  # separe. VITE_API_BASE_URL et VITE_CAMPAGNES_BASE_URL valent deja "/api"
+  # et "/campagnes" par defaut (src/lib/api/client.ts, campagnesClient.ts) —
+  # explicites ici pour que ce fichier reste la reference.
+  frontend:
+    build:
+      context: .
+      target: developpement
+    container_name: gdahub-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: /api
+      VITE_CAMPAGNES_BASE_URL: /campagnes
+    volumes:
+      - .:/app
+      - /app/node_modules
+    # 3010 et non 3000 : d'autres piles de developpement occupent
+    # deja ce port sur la machine.
+    ports: ["127.0.0.1:3010:3000"]
+
+  # --- La passerelle : une seule origine ----------------------------------
+  gateway:
+    image: nginx:1.29-alpine
+    container_name: gdahub-gateway
+    restart: unless-stopped
+    depends_on: [identity, financerh, jusorange, chantiers, planning, campagnes, frontend]
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./gateway/entetes-proxy.conf:/etc/nginx/entetes-proxy.conf:ro
+      # En lecture seule : la passerelle distribue les fichiers, elle n'en
+      # ecrit aucun.
+      - media-financerh:/var/media/rh:ro
+      - media-jusorange:/var/media/jus:ro
+      - media-chantiers:/var/media/chantiers:ro
+      - media-planning:/var/media/planning:ro
+      - media-campagnes-app:/var/media/campagnes:ro
+      - statiques-campagnes:/var/statiques/campagnes:ro
+      - media-identity:/var/media/identity:ro
+    ports: ["127.0.0.1:8080:80"]
+
+volumes:
+  cles:
+  donnees-identity:
+  donnees-financerh:
+  donnees-jusorange:
+  donnees-chantiers:
+  donnees-planning:
+  donnees-campagnes-mysql:
+  media-identity:
+  media-financerh:
+  media-jusorange:
+  media-chantiers:
+  media-planning:
+  media-campagnes-app:
+  statiques-campagnes:

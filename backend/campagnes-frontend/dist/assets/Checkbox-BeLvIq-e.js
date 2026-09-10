@@ -1,0 +1,1 @@
+import{j as r}from"./app-CNCDVRgm.js";function x({label:t,checked:s,onChange:o,id:e}){return r.jsxs("label",{htmlFor:e,className:"flex cursor-pointer items-center gap-2 text-sm text-ardoise-700",children:[r.jsx("input",{id:e,type:"checkbox",checked:s,onChange:o,className:"h-4 w-4 rounded border-ardoise-300 text-marque-600 focus:ring-marque-500/40"}),t]})}export{x as C};

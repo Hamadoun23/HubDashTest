@@ -1,0 +1,1653 @@
+[
+{
+  "model": "core.compteurdocument",
+  "pk": 6,
+  "fields": {
+    "prefixe": "ABS",
+    "annee": 2026,
+    "valeur": 3
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$pXxZ7GjWqsfqY1YUD7LqXl$aVuSju5cK2eOxEdmPq66uvvOKMj466Rfg3kyuLaTGgQ=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "yhdiallo",
+    "first_name": "Y. H.",
+    "last_name": "Diallo",
+    "email": "yhdiallo@gdamali.net",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:29.900Z",
+    "cree_le": "2026-08-17T09:54:29.901Z",
+    "modifie_le": "2026-08-17T10:02:09.799Z",
+    "matricule": "GDA0001",
+    "role": "DIRECTION",
+    "departement": 1,
+    "manager": null,
+    "poste": "Directeur General",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$iKB3Lg57ROkOWPRnXWBe0A$w8v8VjpYzMrx3OzgEytmqnKUuXLHsnU8+/CBAgRCXUQ=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "ysacko",
+    "first_name": "Y.",
+    "last_name": "Sacko",
+    "email": "ysacko@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:32.404Z",
+    "cree_le": "2026-08-17T09:54:32.405Z",
+    "modifie_le": "2026-08-17T10:02:09.802Z",
+    "matricule": "GDA0002",
+    "role": "DIRECTION",
+    "departement": 1,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Directeur des Operations",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$gPZBKQyV9UUxDxBQM2Ndf0$54ENE3AD36CzfCDyFk71BqMCkDP0fAFG1zkkFlDl7+w=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "sira.diallo",
+    "first_name": "Sira",
+    "last_name": "Diallo",
+    "email": "sira.diallo@decheznousmali.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:34.499Z",
+    "cree_le": "2026-08-17T09:54:34.500Z",
+    "modifie_le": "2026-08-17T10:02:09.805Z",
+    "matricule": "GDA0003",
+    "role": "DIRECTION",
+    "departement": 1,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Direction",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$JCcFBlhbqZSqbV96p5P4O0$V4M2eKoYgiF261IWBgr7aRYpuIzQnhgWpBLCjvQ/dPY=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "askoita",
+    "first_name": "A. S.",
+    "last_name": "Koita",
+    "email": "askoita@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:36.175Z",
+    "cree_le": "2026-08-17T09:54:36.175Z",
+    "modifie_le": "2026-08-17T10:02:09.807Z",
+    "matricule": "GDA0004",
+    "role": "RH",
+    "departement": 2,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Ressources Humaines",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$n0ixzaM8f4vdeEtsRah8dq$NBpGVpvE3z80tssXBv2vm2Kf/KUkGF2J8VKmDNOObNw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "thsylla",
+    "first_name": "T. H.",
+    "last_name": "Sylla",
+    "email": "thsylla@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:37.528Z",
+    "cree_le": "2026-08-17T09:54:37.529Z",
+    "modifie_le": "2026-08-17T10:02:09.810Z",
+    "matricule": "GDA0005",
+    "role": "FINANCE",
+    "departement": 3,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Responsable financier",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$HxSrmMuS1ZOJqsVHRSnxPU$VJC3raX7tufaMdVMnqa++UnQhT2h3fCBq9mvKC/DYOc=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "sfofana",
+    "first_name": "S.",
+    "last_name": "Fofana",
+    "email": "sfofana@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:38.874Z",
+    "cree_le": "2026-08-17T09:54:38.874Z",
+    "modifie_le": "2026-08-17T10:02:09.812Z",
+    "matricule": "GDA0006",
+    "role": "FINANCE",
+    "departement": 3,
+    "manager": [
+      "thsylla"
+    ],
+    "poste": "Assistant financier",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$nhy67Abcq7jAx9gSmS2s8J$DpAlpzarHT2vX8FdJUspQ6oxt3RnRQeRo617NJQflBg=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "modi.kone",
+    "first_name": "Modi",
+    "last_name": "Kone",
+    "email": "modi.kone@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:40.551Z",
+    "cree_le": "2026-08-17T09:54:40.551Z",
+    "modifie_le": "2026-08-17T10:02:09.815Z",
+    "matricule": "GDA0007",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "ysacko"
+    ],
+    "poste": "Graphiste et Responsable Communication",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$PSYRn063KF7hQewZPBhdjV$Up/qvqF7050AbwT4X4ha8jtyYu1e8ZG9pEiSE/cos7E=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "aminata.dante",
+    "first_name": "Aminata",
+    "last_name": "Dante",
+    "email": "aminata.dante@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:41.980Z",
+    "cree_le": "2026-08-17T09:54:41.980Z",
+    "modifie_le": "2026-08-17T10:02:09.818Z",
+    "matricule": "GDA0008",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "modi.kone"
+    ],
+    "poste": "Community manager",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$GB5Zl0Uq047xrPEURdWcWe$uUOOAwK5eM5XnrmdrysWZqurBd5QGWFWmj/TfqQ9UQw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "hballo",
+    "first_name": "H.",
+    "last_name": "Ballo",
+    "email": "hballo@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:43.490Z",
+    "cree_le": "2026-08-17T09:54:43.490Z",
+    "modifie_le": "2026-08-17T10:02:09.821Z",
+    "matricule": "GDA0009",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "modi.kone"
+    ],
+    "poste": "Graphiste",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$qwl4whNFboF4Q4Czk9RFw1$BAP/UW37dipSi44mdFfOmS2+0ZnwZ3uyOc7rh8CdN6Q=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "tsamake",
+    "first_name": "T.",
+    "last_name": "Samake",
+    "email": "tsamake@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:44.994Z",
+    "cree_le": "2026-08-17T09:54:44.994Z",
+    "modifie_le": "2026-08-17T10:02:09.823Z",
+    "matricule": "GDA0010",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "modi.kone"
+    ],
+    "poste": "Graphiste",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$BwwLVFLD33QEUdQ8a27LVC$adD1FNCMNwNg9a0GCDKPbXEBZe33WmULwk2FX1rxP4A=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "ntraore",
+    "first_name": "N.",
+    "last_name": "Traore",
+    "email": "ntraore@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:46.726Z",
+    "cree_le": "2026-08-17T09:54:46.727Z",
+    "modifie_le": "2026-08-17T10:02:09.825Z",
+    "matricule": "GDA0011",
+    "role": "SALARIE",
+    "departement": 7,
+    "manager": [
+      "ysacko"
+    ],
+    "poste": "Responsable production",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$7ZSpgV6bHFiyMxDGVo9UXn$UmhtPh9BhjILwAbWZzCFGOKa0Qz+CG/TKoxV8+GcyE4=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "hcisse",
+    "first_name": "H.",
+    "last_name": "Cisse",
+    "email": "hcisse@gdamali.net",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:48.687Z",
+    "cree_le": "2026-08-17T09:54:48.687Z",
+    "modifie_le": "2026-08-17T10:02:09.828Z",
+    "matricule": "GDA0012",
+    "role": "SALARIE",
+    "departement": 8,
+    "manager": [
+      "ysacko"
+    ],
+    "poste": "Responsable IT et Developpement",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 11,
+  "fields": {
+    "cree_le": "2026-08-17T11:53:21.491Z",
+    "modifie_le": "2026-08-17T11:53:21.491Z",
+    "code": "CONGESANTE",
+    "libelle": "congé santé",
+    "categorie": "CONGE",
+    "decompte_solde": false,
+    "duree_max_jours": null,
+    "justificatif_requis": false,
+    "actif": true
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 14,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.064Z",
+    "modifie_le": "2026-08-17T09:54:50.064Z",
+    "agent": [
+      "yhdiallo"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 15,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.066Z",
+    "modifie_le": "2026-08-17T09:54:50.066Z",
+    "agent": [
+      "ysacko"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 16,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.068Z",
+    "modifie_le": "2026-08-17T09:54:50.068Z",
+    "agent": [
+      "sira.diallo"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 17,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.070Z",
+    "modifie_le": "2026-08-17T09:54:50.070Z",
+    "agent": [
+      "askoita"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 18,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.072Z",
+    "modifie_le": "2026-08-17T09:54:50.072Z",
+    "agent": [
+      "thsylla"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 19,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.074Z",
+    "modifie_le": "2026-08-17T09:54:50.074Z",
+    "agent": [
+      "sfofana"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 20,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.077Z",
+    "modifie_le": "2026-08-17T09:54:50.077Z",
+    "agent": [
+      "modi.kone"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 21,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.079Z",
+    "modifie_le": "2026-08-17T09:54:50.079Z",
+    "agent": [
+      "aminata.dante"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 22,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.081Z",
+    "modifie_le": "2026-08-17T09:54:50.081Z",
+    "agent": [
+      "hballo"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 23,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.083Z",
+    "modifie_le": "2026-08-17T09:54:50.083Z",
+    "agent": [
+      "tsamake"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 24,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.084Z",
+    "modifie_le": "2026-08-17T09:54:50.084Z",
+    "agent": [
+      "ntraore"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 25,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.086Z",
+    "modifie_le": "2026-08-17T09:54:50.086Z",
+    "agent": [
+      "hcisse"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.demandeabsence",
+  "pk": 8,
+  "fields": {
+    "cree_le": "2026-08-17T11:53:21.511Z",
+    "modifie_le": "2026-08-17T12:10:23.609Z",
+    "numero": "ABS-2026-0001",
+    "demandeur": [
+      "hcisse"
+    ],
+    "statut": "EN_VALIDATION",
+    "date_soumission": "2026-08-17T12:10:23.608Z",
+    "motif_rejet": "",
+    "type_absence": 11,
+    "date_debut": "2026-08-19",
+    "date_fin": "2026-08-24",
+    "demi_journee": false,
+    "heure_debut": null,
+    "heure_fin": null,
+    "nb_jours": "6.0",
+    "motif": "besoin de repos",
+    "justificatif": "",
+    "remplacant": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 527,
+  "fields": {
+    "cree_le": "2026-08-17T11:08:57.253Z",
+    "modifie_le": "2026-08-17T11:08:57.262Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-08-17",
+    "heure_arrivee": "11:08:57.249",
+    "heure_depart": null,
+    "statut": "RETARD",
+    "retard_minutes": 188,
+    "commentaire": "",
+    "saisi_par": [
+      "hcisse"
+    ]
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 528,
+  "fields": {
+    "cree_le": "2026-08-17T11:22:54.261Z",
+    "modifie_le": "2026-08-17T11:22:54.261Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-08-25",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "Test circuit (ABS-2026-0003)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 529,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:07.938Z",
+    "modifie_le": "2026-08-17T11:27:07.939Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-01",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 530,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:07.951Z",
+    "modifie_le": "2026-08-17T11:27:07.951Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-02",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 531,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:07.962Z",
+    "modifie_le": "2026-08-17T11:27:07.962Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-03",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 532,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:07.972Z",
+    "modifie_le": "2026-08-17T11:27:07.972Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-04",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 533,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:07.983Z",
+    "modifie_le": "2026-08-17T11:27:07.983Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-05",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 534,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:07.994Z",
+    "modifie_le": "2026-08-17T11:27:07.994Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-06",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 535,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.007Z",
+    "modifie_le": "2026-08-17T11:42:47.796Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-07",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0002)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 536,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.018Z",
+    "modifie_le": "2026-08-17T11:42:47.813Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-08",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0002)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 537,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.030Z",
+    "modifie_le": "2026-08-17T11:42:47.829Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-09",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0002)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 538,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.041Z",
+    "modifie_le": "2026-08-17T11:42:47.843Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-10",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0002)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 539,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.051Z",
+    "modifie_le": "2026-08-17T11:42:47.860Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-11",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0002)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 540,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.063Z",
+    "modifie_le": "2026-08-17T11:27:08.063Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-12",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 541,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.075Z",
+    "modifie_le": "2026-08-17T11:27:08.075Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-13",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 542,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.087Z",
+    "modifie_le": "2026-08-17T11:27:08.087Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-14",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 543,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.099Z",
+    "modifie_le": "2026-08-17T11:27:08.099Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-15",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 544,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.112Z",
+    "modifie_le": "2026-08-17T11:27:08.112Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-16",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 545,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.120Z",
+    "modifie_le": "2026-08-17T11:27:08.120Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-17",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 546,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.131Z",
+    "modifie_le": "2026-08-17T11:27:08.131Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-18",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 547,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.139Z",
+    "modifie_le": "2026-08-17T11:27:08.139Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-19",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 548,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.148Z",
+    "modifie_le": "2026-08-17T11:27:08.148Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-20",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 549,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.158Z",
+    "modifie_le": "2026-08-17T11:27:08.158Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-21",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 550,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.167Z",
+    "modifie_le": "2026-08-17T11:27:08.167Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-22",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 551,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.176Z",
+    "modifie_le": "2026-08-17T11:27:08.176Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-23",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 552,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.185Z",
+    "modifie_le": "2026-08-17T11:27:08.185Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-24",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 553,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.195Z",
+    "modifie_le": "2026-08-17T11:27:08.195Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-25",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 554,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.202Z",
+    "modifie_le": "2026-08-17T11:27:08.202Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-26",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 555,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.212Z",
+    "modifie_le": "2026-08-17T11:27:08.212Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-27",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 556,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.219Z",
+    "modifie_le": "2026-08-17T11:27:08.219Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-28",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 557,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.230Z",
+    "modifie_le": "2026-08-17T11:27:08.230Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-29",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 558,
+  "fields": {
+    "cree_le": "2026-08-17T11:27:08.238Z",
+    "modifie_le": "2026-08-17T11:27:08.238Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-09-30",
+    "heure_arrivee": null,
+    "heure_depart": null,
+    "statut": "CONGE",
+    "retard_minutes": 0,
+    "commentaire": "conge annuel (ABS-2026-0001)",
+    "saisi_par": null
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.007Z",
+    "modifie_le": "2026-08-17T10:02:09.776Z",
+    "code": "DG",
+    "nom": "Direction Generale",
+    "responsable": [
+      "yhdiallo"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.010Z",
+    "modifie_le": "2026-08-17T10:02:09.785Z",
+    "code": "RH",
+    "nom": "Ressources Humaines",
+    "responsable": [
+      "askoita"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.011Z",
+    "modifie_le": "2026-08-17T10:02:09.787Z",
+    "code": "FIN",
+    "nom": "Finance et Comptabilite",
+    "responsable": [
+      "thsylla"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.012Z",
+    "modifie_le": "2026-08-17T10:02:09.788Z",
+    "code": "COM",
+    "nom": "Communication et Creation",
+    "responsable": [
+      "modi.kone"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 7,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:29.891Z",
+    "modifie_le": "2026-08-17T10:02:09.790Z",
+    "code": "PROD",
+    "nom": "Production",
+    "responsable": [
+      "ntraore"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 8,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:29.893Z",
+    "modifie_le": "2026-08-17T10:02:09.792Z",
+    "code": "IT",
+    "nom": "Informatique et Developpement",
+    "responsable": [
+      "hcisse"
+    ]
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 19,
+  "fields": {
+    "cree_le": "2026-08-17T12:10:23.604Z",
+    "modifie_le": "2026-08-17T12:10:23.604Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 8,
+    "ordre": 1,
+    "libelle": "Avis du responsable de departement",
+    "role_valideur": "DIRECTION",
+    "valideur_attendu": [
+      "ysacko"
+    ],
+    "nature": "DECISION",
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 20,
+  "fields": {
+    "cree_le": "2026-08-17T12:10:23.604Z",
+    "modifie_le": "2026-08-17T12:10:23.604Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 8,
+    "ordre": 2,
+    "libelle": "Avis des Ressources Humaines",
+    "role_valideur": "RH",
+    "valideur_attendu": null,
+    "nature": "DECISION",
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 21,
+  "fields": {
+    "cree_le": "2026-08-17T12:10:23.604Z",
+    "modifie_le": "2026-08-17T12:10:23.604Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 8,
+    "ordre": 3,
+    "libelle": "Decision du Directeur General",
+    "role_valideur": "DIRECTION",
+    "valideur_attendu": [
+      "yhdiallo"
+    ],
+    "nature": "DECISION",
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 21,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.603Z",
+    "modifie_le": "2026-08-17T11:41:46.603Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "REQUISITION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 22,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.605Z",
+    "modifie_le": "2026-08-17T11:41:46.605Z",
+    "libelle": "Controle Finance",
+    "type_document": "REQUISITION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 23,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.607Z",
+    "modifie_le": "2026-08-17T11:41:46.607Z",
+    "libelle": "Accord Direction",
+    "type_document": "REQUISITION",
+    "montant_min": "500000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 24,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.609Z",
+    "modifie_le": "2026-08-17T11:41:46.609Z",
+    "libelle": "Controle caisse",
+    "type_document": "SORTIE_CAISSE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 1,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 25,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.611Z",
+    "modifie_le": "2026-08-17T11:41:46.611Z",
+    "libelle": "Accord Direction",
+    "type_document": "SORTIE_CAISSE",
+    "montant_min": "250000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 26,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.613Z",
+    "modifie_le": "2026-08-17T11:41:46.613Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "DEPENSE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 27,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.615Z",
+    "modifie_le": "2026-08-17T11:41:46.615Z",
+    "libelle": "Controle Finance",
+    "type_document": "DEPENSE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 28,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.617Z",
+    "modifie_le": "2026-08-17T11:41:46.617Z",
+    "libelle": "Accord Direction",
+    "type_document": "DEPENSE",
+    "montant_min": "1000000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 29,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.619Z",
+    "modifie_le": "2026-08-17T11:41:46.619Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "MISSION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 30,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.621Z",
+    "modifie_le": "2026-08-17T11:41:46.621Z",
+    "libelle": "Controle Finance",
+    "type_document": "MISSION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 31,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.623Z",
+    "modifie_le": "2026-08-17T11:41:46.623Z",
+    "libelle": "Accord Direction",
+    "type_document": "MISSION",
+    "montant_min": "750000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 32,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.625Z",
+    "modifie_le": "2026-08-17T11:41:46.625Z",
+    "libelle": "Controle Finance",
+    "type_document": "BON_COMMANDE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 1,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 33,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.626Z",
+    "modifie_le": "2026-08-17T11:41:46.626Z",
+    "libelle": "Accord Direction",
+    "type_document": "BON_COMMANDE",
+    "montant_min": "1000000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 34,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.628Z",
+    "modifie_le": "2026-08-17T11:41:46.628Z",
+    "libelle": "Controle Finance",
+    "type_document": "PRESTATION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 1,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 35,
+  "fields": {
+    "cree_le": "2026-08-17T11:41:46.630Z",
+    "modifie_le": "2026-08-17T11:41:46.630Z",
+    "libelle": "Accord Direction",
+    "type_document": "PRESTATION",
+    "montant_min": "1500000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 36,
+  "fields": {
+    "cree_le": "2026-08-17T12:04:48.064Z",
+    "modifie_le": "2026-08-17T12:04:48.064Z",
+    "libelle": "Avis du responsable de departement",
+    "type_document": "ABSENCE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 37,
+  "fields": {
+    "cree_le": "2026-08-17T12:04:48.066Z",
+    "modifie_le": "2026-08-17T12:04:48.066Z",
+    "libelle": "Avis des Ressources Humaines",
+    "type_document": "ABSENCE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "RH",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "valideur_designe": null,
+    "nature": "DECISION",
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 38,
+  "fields": {
+    "cree_le": "2026-08-17T12:04:48.073Z",
+    "modifie_le": "2026-08-17T12:04:48.073Z",
+    "libelle": "Decision du Directeur General",
+    "type_document": "ABSENCE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "valideur_designe": [
+      "yhdiallo"
+    ],
+    "nature": "DECISION",
+    "actif": true
+  }
+}
+]

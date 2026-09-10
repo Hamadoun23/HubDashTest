@@ -1,0 +1,170 @@
+{
+  "organisation": "GDA",
+  "prefixe_matricule": "GDA",
+  "postes_cles": {
+    "directeur_general": "yhdiallo",
+    "directeur_operations": "ysacko"
+  },
+  "departements": [
+    {
+      "code": "DG",
+      "nom": "Direction Generale"
+    },
+    {
+      "code": "RH",
+      "nom": "Ressources Humaines"
+    },
+    {
+      "code": "FIN",
+      "nom": "Finance et Comptabilite"
+    },
+    {
+      "code": "COM",
+      "nom": "Communication et Creation"
+    },
+    {
+      "code": "CIAL",
+      "nom": "Commerciaux"
+    },
+    {
+      "code": "PROD",
+      "nom": "Production"
+    },
+    {
+      "code": "IT",
+      "nom": "Informatique et Developpement"
+    }
+  ],
+  "responsables": {
+    "DG": "yhdiallo",
+    "RH": "askoita",
+    "FIN": "thsylla",
+    "COM": "modi.kone",
+    "PROD": "ntraore",
+    "IT": "hcisse"
+  },
+  "agents": [
+    {
+      "username": "yhdiallo",
+      "prenom": "Y. H.",
+      "nom": "Diallo",
+      "email": "yhdiallo@gdamali.net",
+      "role": "DIRECTION",
+      "departement": "DG",
+      "poste": "Directeur General",
+      "manager": null,
+      "administrateur": true
+    },
+    {
+      "username": "ysacko",
+      "prenom": "Y.",
+      "nom": "Sacko",
+      "email": "ysacko@gdamali.net",
+      "role": "DIRECTION",
+      "departement": "DG",
+      "poste": "Directeur des Operations",
+      "manager": "yhdiallo"
+    },
+    {
+      "username": "sira.diallo",
+      "prenom": "Sira",
+      "nom": "Diallo",
+      "email": "sira.diallo@decheznousmali.com",
+      "role": "DIRECTION",
+      "departement": "DG",
+      "poste": "Direction",
+      "manager": "yhdiallo"
+    },
+    {
+      "username": "askoita",
+      "prenom": "A. S.",
+      "nom": "Koita",
+      "email": "askoita@gdamali.net",
+      "role": "RH",
+      "departement": "RH",
+      "poste": "Ressources Humaines",
+      "manager": "yhdiallo"
+    },
+    {
+      "username": "thsylla",
+      "prenom": "T. H.",
+      "nom": "Sylla",
+      "email": "thsylla@gdamali.net",
+      "role": "FINANCE",
+      "departement": "FIN",
+      "poste": "Responsable financier",
+      "manager": "yhdiallo"
+    },
+    {
+      "username": "sfofana",
+      "prenom": "S.",
+      "nom": "Fofana",
+      "email": "sfofana@gdamali.net",
+      "role": "FINANCE",
+      "departement": "FIN",
+      "poste": "Assistant financier",
+      "manager": "thsylla"
+    },
+    {
+      "username": "modi.kone",
+      "prenom": "Modi",
+      "nom": "Kone",
+      "email": "modi.kone@gdamali.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Graphiste et Responsable Communication",
+      "manager": "ysacko"
+    },
+    {
+      "username": "aminata.dante",
+      "prenom": "Aminata",
+      "nom": "Dante",
+      "email": "aminata.dante@gdamali.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Community manager",
+      "manager": "modi.kone"
+    },
+    {
+      "username": "hballo",
+      "prenom": "H.",
+      "nom": "Ballo",
+      "email": "hballo@gdamali.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Graphiste",
+      "manager": "modi.kone"
+    },
+    {
+      "username": "tsamake",
+      "prenom": "T.",
+      "nom": "Samake",
+      "email": "tsamake@gdamali.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Graphiste",
+      "manager": "modi.kone"
+    },
+    {
+      "username": "ntraore",
+      "prenom": "N.",
+      "nom": "Traore",
+      "email": "ntraore@gdamali.net",
+      "role": "SALARIE",
+      "departement": "PROD",
+      "poste": "Responsable production",
+      "manager": "ysacko"
+    },
+    {
+      "username": "hcisse",
+      "prenom": "H.",
+      "nom": "Cisse",
+      "email": "hcisse@gdamali.net",
+      "role": "SALARIE",
+      "departement": "IT",
+      "poste": "Responsable IT et Developpement",
+      "manager": "ysacko",
+      "administrateur": true
+    }
+  ]
+}

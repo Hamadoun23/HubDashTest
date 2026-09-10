@@ -1,0 +1,50 @@
+# dependencies
+node_modules/
+
+# build output — ancré à la racine : backend/campagnes-frontend/dist est
+# volontairement suivi (bundle pré-compilé attendu par le Dockerfile campagnes).
+/dist/
+/dist-ssr/
+
+# local env files
+.env
+.env*.local
+
+# editor
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+*.pem
+.idea/
+.vscode/
+
+# typescript
+*.tsbuildinfo
+
+# --- Backend Django (backend/, libs/) -------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+staticfiles/
+media/
+*.sqlite3
+
+# L'organigramme reel — noms, adresses, rattachements — est une donnee, pas
+# du code. Seul l'exemple anonyme est publie.
+infra/effectif/personnel.json
+
+# Les sauvegardes de production portent les noms, adresses et empreintes de
+# mots de passe de tout le personnel : elles n'ont rien a faire dans un depot.
+infra/reprise/*.sql
+infra/reprise/*.sql.gz

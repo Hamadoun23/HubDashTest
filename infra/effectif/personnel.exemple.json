@@ -1,0 +1,150 @@
+{
+  "organisation": "Exemple",
+  "prefixe_matricule": "AG",
+  "postes_cles": {
+    "directeur_general": "d.general",
+    "directeur_operations": "d.operations"
+  },
+  "departements": [
+    {
+      "code": "DG",
+      "nom": "Direction Generale"
+    },
+    {
+      "code": "RH",
+      "nom": "Ressources Humaines"
+    },
+    {
+      "code": "FIN",
+      "nom": "Finance et Comptabilite"
+    },
+    {
+      "code": "COM",
+      "nom": "Communication et Creation"
+    },
+    {
+      "code": "CIAL",
+      "nom": "Commerciaux"
+    },
+    {
+      "code": "PROD",
+      "nom": "Production"
+    },
+    {
+      "code": "IT",
+      "nom": "Informatique et Developpement"
+    }
+  ],
+  "responsables": {
+    "DG": "d.general",
+    "RH": "r.humaines",
+    "FIN": "r.financier",
+    "COM": "r.communication",
+    "PROD": "r.production",
+    "IT": "r.informatique"
+  },
+  "agents": [
+    {
+      "username": "d.general",
+      "prenom": "Awa",
+      "nom": "Exemple",
+      "email": "d.general@exemple.net",
+      "role": "DIRECTION",
+      "departement": "DG",
+      "poste": "Directeur General",
+      "manager": null,
+      "administrateur": true
+    },
+    {
+      "username": "d.operations",
+      "prenom": "Bakary",
+      "nom": "Exemple",
+      "email": "d.operations@exemple.net",
+      "role": "DIRECTION",
+      "departement": "DG",
+      "poste": "Directeur des Operations",
+      "manager": "d.general"
+    },
+    {
+      "username": "r.humaines",
+      "prenom": "Coumba",
+      "nom": "Exemple",
+      "email": "r.humaines@exemple.net",
+      "role": "RH",
+      "departement": "RH",
+      "poste": "Ressources Humaines",
+      "manager": "d.general"
+    },
+    {
+      "username": "r.financier",
+      "prenom": "Drissa",
+      "nom": "Exemple",
+      "email": "r.financier@exemple.net",
+      "role": "FINANCE",
+      "departement": "FIN",
+      "poste": "Responsable financier",
+      "manager": "d.general"
+    },
+    {
+      "username": "a.financier",
+      "prenom": "Estelle",
+      "nom": "Exemple",
+      "email": "a.financier@exemple.net",
+      "role": "FINANCE",
+      "departement": "FIN",
+      "poste": "Assistant financier",
+      "manager": "r.financier"
+    },
+    {
+      "username": "r.communication",
+      "prenom": "Fanta",
+      "nom": "Exemple",
+      "email": "r.communication@exemple.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Responsable Communication",
+      "manager": "d.operations"
+    },
+    {
+      "username": "c.manager",
+      "prenom": "Gaoussou",
+      "nom": "Exemple",
+      "email": "c.manager@exemple.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Community manager",
+      "manager": "r.communication"
+    },
+    {
+      "username": "g.raphiste",
+      "prenom": "Hawa",
+      "nom": "Exemple",
+      "email": "g.raphiste@exemple.net",
+      "role": "SALARIE",
+      "departement": "COM",
+      "poste": "Graphiste",
+      "manager": "r.communication"
+    },
+    {
+      "username": "r.production",
+      "prenom": "Issa",
+      "nom": "Exemple",
+      "email": "r.production@exemple.net",
+      "role": "SALARIE",
+      "departement": "PROD",
+      "poste": "Responsable production",
+      "manager": "d.operations"
+    },
+    {
+      "username": "r.informatique",
+      "prenom": "Jeanne",
+      "nom": "Exemple",
+      "email": "r.informatique@exemple.net",
+      "role": "SALARIE",
+      "departement": "IT",
+      "poste": "Responsable IT et Developpement",
+      "manager": "d.operations",
+      "administrateur": true
+    }
+  ]
+}

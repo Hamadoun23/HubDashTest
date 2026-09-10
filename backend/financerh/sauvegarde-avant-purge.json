@@ -1,0 +1,1799 @@
+[
+{
+  "model": "core.compteurdocument",
+  "pk": 1,
+  "fields": {
+    "prefixe": "DP",
+    "annee": 2026,
+    "valeur": 1
+  }
+},
+{
+  "model": "core.compteurdocument",
+  "pk": 2,
+  "fields": {
+    "prefixe": "ABS",
+    "annee": 2026,
+    "valeur": 2
+  }
+},
+{
+  "model": "core.compteurdocument",
+  "pk": 3,
+  "fields": {
+    "prefixe": "DEP",
+    "annee": 2026,
+    "valeur": 1
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.011Z",
+    "modifie_le": "2026-08-10T15:31:55.011Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "ABSENCE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.012Z",
+    "modifie_le": "2026-08-10T15:31:55.012Z",
+    "libelle": "Controle RH",
+    "type_document": "ABSENCE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "RH",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.014Z",
+    "modifie_le": "2026-08-10T15:31:55.014Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "REQUISITION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.015Z",
+    "modifie_le": "2026-08-10T15:31:55.015Z",
+    "libelle": "Controle Finance",
+    "type_document": "REQUISITION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.017Z",
+    "modifie_le": "2026-08-10T15:31:55.018Z",
+    "libelle": "Accord Direction",
+    "type_document": "REQUISITION",
+    "montant_min": "500000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 6,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.020Z",
+    "modifie_le": "2026-08-10T15:31:55.020Z",
+    "libelle": "Controle caisse",
+    "type_document": "SORTIE_CAISSE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 1,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 7,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.023Z",
+    "modifie_le": "2026-08-10T15:31:55.023Z",
+    "libelle": "Accord Direction",
+    "type_document": "SORTIE_CAISSE",
+    "montant_min": "250000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 8,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.025Z",
+    "modifie_le": "2026-08-10T15:31:55.025Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "DEPENSE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 9,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.026Z",
+    "modifie_le": "2026-08-10T15:31:55.026Z",
+    "libelle": "Controle Finance",
+    "type_document": "DEPENSE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 10,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.027Z",
+    "modifie_le": "2026-08-10T15:31:55.028Z",
+    "libelle": "Accord Direction",
+    "type_document": "DEPENSE",
+    "montant_min": "1000000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 11,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.029Z",
+    "modifie_le": "2026-08-10T15:31:55.029Z",
+    "libelle": "Validation hierarchique",
+    "type_document": "MISSION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 1,
+    "valideur_hierarchique": true,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 12,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.030Z",
+    "modifie_le": "2026-08-10T15:31:55.030Z",
+    "libelle": "Controle Finance",
+    "type_document": "MISSION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 13,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.032Z",
+    "modifie_le": "2026-08-10T15:31:55.032Z",
+    "libelle": "Accord Direction",
+    "type_document": "MISSION",
+    "montant_min": "750000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 3,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 14,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.033Z",
+    "modifie_le": "2026-08-10T15:31:55.033Z",
+    "libelle": "Controle Finance",
+    "type_document": "BON_COMMANDE",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 1,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 15,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.036Z",
+    "modifie_le": "2026-08-10T15:31:55.036Z",
+    "libelle": "Accord Direction",
+    "type_document": "BON_COMMANDE",
+    "montant_min": "1000000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 16,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.038Z",
+    "modifie_le": "2026-08-10T15:31:55.038Z",
+    "libelle": "Controle Finance",
+    "type_document": "PRESTATION",
+    "montant_min": "0.00",
+    "montant_max": null,
+    "role_valideur": "FINANCE",
+    "ordre": 1,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "core.seuilvalidation",
+  "pk": 17,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.040Z",
+    "modifie_le": "2026-08-10T15:31:55.040Z",
+    "libelle": "Accord Direction",
+    "type_document": "PRESTATION",
+    "montant_min": "1500000.00",
+    "montant_max": null,
+    "role_valideur": "DIRECTION",
+    "ordre": 2,
+    "valideur_hierarchique": false,
+    "actif": true
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$pXxZ7GjWqsfqY1YUD7LqXl$aVuSju5cK2eOxEdmPq66uvvOKMj466Rfg3kyuLaTGgQ=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "yhdiallo",
+    "first_name": "Y. H.",
+    "last_name": "Diallo",
+    "email": "yhdiallo@gdamali.net",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:29.900Z",
+    "cree_le": "2026-08-17T09:54:29.901Z",
+    "modifie_le": "2026-08-17T10:02:09.799Z",
+    "matricule": "GDA0001",
+    "role": "DIRECTION",
+    "departement": 1,
+    "manager": null,
+    "poste": "Directeur General",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$iKB3Lg57ROkOWPRnXWBe0A$w8v8VjpYzMrx3OzgEytmqnKUuXLHsnU8+/CBAgRCXUQ=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "ysacko",
+    "first_name": "Y.",
+    "last_name": "Sacko",
+    "email": "ysacko@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:32.404Z",
+    "cree_le": "2026-08-17T09:54:32.405Z",
+    "modifie_le": "2026-08-17T10:02:09.802Z",
+    "matricule": "GDA0002",
+    "role": "DIRECTION",
+    "departement": 1,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Directeur des Operations",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$gPZBKQyV9UUxDxBQM2Ndf0$54ENE3AD36CzfCDyFk71BqMCkDP0fAFG1zkkFlDl7+w=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "sira.diallo",
+    "first_name": "Sira",
+    "last_name": "Diallo",
+    "email": "sira.diallo@decheznousmali.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:34.499Z",
+    "cree_le": "2026-08-17T09:54:34.500Z",
+    "modifie_le": "2026-08-17T10:02:09.805Z",
+    "matricule": "GDA0003",
+    "role": "DIRECTION",
+    "departement": 1,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Direction",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$JCcFBlhbqZSqbV96p5P4O0$V4M2eKoYgiF261IWBgr7aRYpuIzQnhgWpBLCjvQ/dPY=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "askoita",
+    "first_name": "A. S.",
+    "last_name": "Koita",
+    "email": "askoita@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:36.175Z",
+    "cree_le": "2026-08-17T09:54:36.175Z",
+    "modifie_le": "2026-08-17T10:02:09.807Z",
+    "matricule": "GDA0004",
+    "role": "RH",
+    "departement": 2,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Ressources Humaines",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$n0ixzaM8f4vdeEtsRah8dq$NBpGVpvE3z80tssXBv2vm2Kf/KUkGF2J8VKmDNOObNw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "thsylla",
+    "first_name": "T. H.",
+    "last_name": "Sylla",
+    "email": "thsylla@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:37.528Z",
+    "cree_le": "2026-08-17T09:54:37.529Z",
+    "modifie_le": "2026-08-17T10:02:09.810Z",
+    "matricule": "GDA0005",
+    "role": "FINANCE",
+    "departement": 3,
+    "manager": [
+      "yhdiallo"
+    ],
+    "poste": "Responsable financier",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$HxSrmMuS1ZOJqsVHRSnxPU$VJC3raX7tufaMdVMnqa++UnQhT2h3fCBq9mvKC/DYOc=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "sfofana",
+    "first_name": "S.",
+    "last_name": "Fofana",
+    "email": "sfofana@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:38.874Z",
+    "cree_le": "2026-08-17T09:54:38.874Z",
+    "modifie_le": "2026-08-17T10:02:09.812Z",
+    "matricule": "GDA0006",
+    "role": "FINANCE",
+    "departement": 3,
+    "manager": [
+      "thsylla"
+    ],
+    "poste": "Assistant financier",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$nhy67Abcq7jAx9gSmS2s8J$DpAlpzarHT2vX8FdJUspQ6oxt3RnRQeRo617NJQflBg=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "modi.kone",
+    "first_name": "Modi",
+    "last_name": "Kone",
+    "email": "modi.kone@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:40.551Z",
+    "cree_le": "2026-08-17T09:54:40.551Z",
+    "modifie_le": "2026-08-17T10:02:09.815Z",
+    "matricule": "GDA0007",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "ysacko"
+    ],
+    "poste": "Graphiste et Responsable Communication",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$PSYRn063KF7hQewZPBhdjV$Up/qvqF7050AbwT4X4ha8jtyYu1e8ZG9pEiSE/cos7E=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "aminata.dante",
+    "first_name": "Aminata",
+    "last_name": "Dante",
+    "email": "aminata.dante@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:41.980Z",
+    "cree_le": "2026-08-17T09:54:41.980Z",
+    "modifie_le": "2026-08-17T10:02:09.818Z",
+    "matricule": "GDA0008",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "modi.kone"
+    ],
+    "poste": "Community manager",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$GB5Zl0Uq047xrPEURdWcWe$uUOOAwK5eM5XnrmdrysWZqurBd5QGWFWmj/TfqQ9UQw=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "hballo",
+    "first_name": "H.",
+    "last_name": "Ballo",
+    "email": "hballo@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:43.490Z",
+    "cree_le": "2026-08-17T09:54:43.490Z",
+    "modifie_le": "2026-08-17T10:02:09.821Z",
+    "matricule": "GDA0009",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "modi.kone"
+    ],
+    "poste": "Graphiste",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$qwl4whNFboF4Q4Czk9RFw1$BAP/UW37dipSi44mdFfOmS2+0ZnwZ3uyOc7rh8CdN6Q=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "tsamake",
+    "first_name": "T.",
+    "last_name": "Samake",
+    "email": "tsamake@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:44.994Z",
+    "cree_le": "2026-08-17T09:54:44.994Z",
+    "modifie_le": "2026-08-17T10:02:09.823Z",
+    "matricule": "GDA0010",
+    "role": "SALARIE",
+    "departement": 5,
+    "manager": [
+      "modi.kone"
+    ],
+    "poste": "Graphiste",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$BwwLVFLD33QEUdQ8a27LVC$adD1FNCMNwNg9a0GCDKPbXEBZe33WmULwk2FX1rxP4A=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "ntraore",
+    "first_name": "N.",
+    "last_name": "Traore",
+    "email": "ntraore@gdamali.net",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:46.726Z",
+    "cree_le": "2026-08-17T09:54:46.727Z",
+    "modifie_le": "2026-08-17T10:02:09.825Z",
+    "matricule": "GDA0011",
+    "role": "SALARIE",
+    "departement": 7,
+    "manager": [
+      "ysacko"
+    ],
+    "poste": "Responsable production",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.utilisateur",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$7ZSpgV6bHFiyMxDGVo9UXn$UmhtPh9BhjILwAbWZzCFGOKa0Qz+CG/TKoxV8+GcyE4=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "hcisse",
+    "first_name": "H.",
+    "last_name": "Cisse",
+    "email": "hcisse@gdamali.net",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-17T09:54:48.687Z",
+    "cree_le": "2026-08-17T09:54:48.687Z",
+    "modifie_le": "2026-08-17T10:02:09.828Z",
+    "matricule": "GDA0012",
+    "role": "SALARIE",
+    "departement": 8,
+    "manager": [
+      "ysacko"
+    ],
+    "poste": "Responsable IT et Developpement",
+    "telephone": "",
+    "type_contrat": "CDI",
+    "date_embauche": null,
+    "date_sortie": null,
+    "motif_sortie": "",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.042Z",
+    "modifie_le": "2026-08-10T15:31:55.042Z",
+    "code": "CA",
+    "libelle": "Conge annuel",
+    "categorie": "CONGE",
+    "decompte_solde": true,
+    "duree_max_jours": 30,
+    "justificatif_requis": false,
+    "actif": true
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.044Z",
+    "modifie_le": "2026-08-10T15:31:55.044Z",
+    "code": "CM",
+    "libelle": "Conge maladie",
+    "categorie": "CONGE",
+    "decompte_solde": false,
+    "duree_max_jours": 15,
+    "justificatif_requis": true,
+    "actif": true
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.045Z",
+    "modifie_le": "2026-08-10T15:31:55.045Z",
+    "code": "CMAT",
+    "libelle": "Conge maternite",
+    "categorie": "CONGE",
+    "decompte_solde": false,
+    "duree_max_jours": 98,
+    "justificatif_requis": true,
+    "actif": true
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.046Z",
+    "modifie_le": "2026-08-10T15:31:55.046Z",
+    "code": "CEXC",
+    "libelle": "Conge exceptionnel (evenement familial)",
+    "categorie": "CONGE",
+    "decompte_solde": false,
+    "duree_max_jours": 5,
+    "justificatif_requis": true,
+    "actif": true
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.047Z",
+    "modifie_le": "2026-08-10T15:31:55.047Z",
+    "code": "ABS",
+    "libelle": "Absence non planifiee",
+    "categorie": "ABSENCE",
+    "decompte_solde": false,
+    "duree_max_jours": 5,
+    "justificatif_requis": true,
+    "actif": true
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 6,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.049Z",
+    "modifie_le": "2026-08-10T15:31:55.049Z",
+    "code": "RET",
+    "libelle": "Retard",
+    "categorie": "RETARD",
+    "decompte_solde": false,
+    "duree_max_jours": 1,
+    "justificatif_requis": false,
+    "actif": true
+  }
+},
+{
+  "model": "rh.typeabsence",
+  "pk": 7,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.051Z",
+    "modifie_le": "2026-08-10T15:31:55.051Z",
+    "code": "PERM",
+    "libelle": "Permission d'absence",
+    "categorie": "PERMISSION",
+    "decompte_solde": false,
+    "duree_max_jours": 2,
+    "justificatif_requis": false,
+    "actif": true
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 14,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.064Z",
+    "modifie_le": "2026-08-17T09:54:50.064Z",
+    "agent": [
+      "yhdiallo"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 15,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.066Z",
+    "modifie_le": "2026-08-17T09:54:50.066Z",
+    "agent": [
+      "ysacko"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 16,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.068Z",
+    "modifie_le": "2026-08-17T09:54:50.068Z",
+    "agent": [
+      "sira.diallo"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 17,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.070Z",
+    "modifie_le": "2026-08-17T09:54:50.070Z",
+    "agent": [
+      "askoita"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 18,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.072Z",
+    "modifie_le": "2026-08-17T09:54:50.072Z",
+    "agent": [
+      "thsylla"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 19,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.074Z",
+    "modifie_le": "2026-08-17T09:54:50.074Z",
+    "agent": [
+      "sfofana"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 20,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.077Z",
+    "modifie_le": "2026-08-17T09:54:50.077Z",
+    "agent": [
+      "modi.kone"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 21,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.079Z",
+    "modifie_le": "2026-08-17T09:54:50.079Z",
+    "agent": [
+      "aminata.dante"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 22,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.081Z",
+    "modifie_le": "2026-08-17T09:54:50.081Z",
+    "agent": [
+      "hballo"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 23,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.083Z",
+    "modifie_le": "2026-08-17T09:54:50.083Z",
+    "agent": [
+      "tsamake"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 24,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.084Z",
+    "modifie_le": "2026-08-17T09:54:50.084Z",
+    "agent": [
+      "ntraore"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.soldeconge",
+  "pk": 25,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:50.086Z",
+    "modifie_le": "2026-08-17T09:54:50.086Z",
+    "agent": [
+      "hcisse"
+    ],
+    "annee": 2026,
+    "jours_acquis": "30.0",
+    "jours_reportes": "0.0",
+    "jours_pris": "0.0"
+  }
+},
+{
+  "model": "rh.demandeabsence",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-17T10:14:00.560Z",
+    "modifie_le": "2026-08-17T10:14:00.629Z",
+    "numero": "ABS-2026-0001",
+    "demandeur": [
+      "hcisse"
+    ],
+    "statut": "EN_VALIDATION",
+    "date_soumission": "2026-08-17T10:14:00.629Z",
+    "motif_rejet": "",
+    "type_absence": 2,
+    "date_debut": "2026-08-10",
+    "date_fin": "2026-08-21",
+    "demi_journee": false,
+    "heure_debut": null,
+    "heure_fin": null,
+    "nb_jours": "12.0",
+    "motif": "Choc à la moto",
+    "justificatif": "justificatifs/absences/KDB__Rodri.jpg",
+    "remplacant": null
+  }
+},
+{
+  "model": "rh.demandeabsence",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-17T10:17:40.351Z",
+    "modifie_le": "2026-08-17T10:17:40.405Z",
+    "numero": "ABS-2026-0002",
+    "demandeur": [
+      "hcisse"
+    ],
+    "statut": "EN_VALIDATION",
+    "date_soumission": "2026-08-17T10:17:40.405Z",
+    "motif_rejet": "",
+    "type_absence": 6,
+    "date_debut": "2026-08-17",
+    "date_fin": "2026-08-17",
+    "demi_journee": false,
+    "heure_debut": null,
+    "heure_fin": null,
+    "nb_jours": "1.0",
+    "motif": "moto en panne",
+    "justificatif": "",
+    "remplacant": null
+  }
+},
+{
+  "model": "rh.presence",
+  "pk": 526,
+  "fields": {
+    "cree_le": "2026-08-17T10:14:31.837Z",
+    "modifie_le": "2026-08-17T10:14:31.857Z",
+    "agent": [
+      "hcisse"
+    ],
+    "date": "2026-08-17",
+    "heure_arrivee": "10:14:31.834",
+    "heure_depart": null,
+    "statut": "RETARD",
+    "retard_minutes": 134,
+    "commentaire": "",
+    "saisi_par": [
+      "hcisse"
+    ]
+  }
+},
+{
+  "model": "rh.campagneevaluation",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.125Z",
+    "modifie_le": "2026-08-10T15:31:55.125Z",
+    "libelle": "Evaluation annuelle 2026",
+    "periode_debut": "2026-01-01",
+    "periode_fin": "2026-12-31",
+    "date_limite": "2026-12-15",
+    "statut": "OUVERTE",
+    "consignes": "Entretien individuel puis restitution au collaborateur."
+  }
+},
+{
+  "model": "rh.critereevaluation",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.126Z",
+    "modifie_le": "2026-08-10T15:31:55.126Z",
+    "campagne": 1,
+    "libelle": "Qualite du travail",
+    "description": "",
+    "poids": 3
+  }
+},
+{
+  "model": "rh.critereevaluation",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.127Z",
+    "modifie_le": "2026-08-10T15:31:55.127Z",
+    "campagne": 1,
+    "libelle": "Respect des delais",
+    "description": "",
+    "poids": 3
+  }
+},
+{
+  "model": "rh.critereevaluation",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.127Z",
+    "modifie_le": "2026-08-10T15:31:55.127Z",
+    "campagne": 1,
+    "libelle": "Esprit d'equipe",
+    "description": "",
+    "poids": 2
+  }
+},
+{
+  "model": "rh.critereevaluation",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.128Z",
+    "modifie_le": "2026-08-10T15:31:55.128Z",
+    "campagne": 1,
+    "libelle": "Autonomie et initiative",
+    "description": "",
+    "poids": 2
+  }
+},
+{
+  "model": "rh.critereevaluation",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.128Z",
+    "modifie_le": "2026-08-10T15:31:55.128Z",
+    "campagne": 1,
+    "libelle": "Respect des procedures",
+    "description": "",
+    "poids": 2
+  }
+},
+{
+  "model": "rh.formation",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.130Z",
+    "modifie_le": "2026-08-10T15:31:55.130Z",
+    "titre": "Securite au travail et gestes de premiers secours",
+    "categorie": "HSE",
+    "description": "",
+    "formateur": "Cabinet Sahel",
+    "organisme": "Direction des Ressources Humaines",
+    "lieu": "Centre IFCA",
+    "date_debut": "2026-08-25",
+    "date_fin": "2026-08-27",
+    "places": 25,
+    "obligatoire": true,
+    "statut": "PLANIFIEE",
+    "departements_cibles": []
+  }
+},
+{
+  "model": "rh.formation",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.133Z",
+    "modifie_le": "2026-08-10T15:31:55.133Z",
+    "titre": "Excel avance pour le reporting",
+    "categorie": "Bureautique",
+    "description": "",
+    "formateur": "Cabinet Sahel",
+    "organisme": "Direction des Ressources Humaines",
+    "lieu": "Centre IFCA",
+    "date_debut": "2026-09-24",
+    "date_fin": "2026-09-26",
+    "places": 25,
+    "obligatoire": false,
+    "statut": "PLANIFIEE",
+    "departements_cibles": [
+      3
+    ]
+  }
+},
+{
+  "model": "rh.formation",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.140Z",
+    "modifie_le": "2026-08-10T15:31:55.140Z",
+    "titre": "Prise en main de l'ERP GDA",
+    "categorie": "Digitalisation",
+    "description": "",
+    "formateur": "Cabinet Sahel",
+    "organisme": "Direction des Ressources Humaines",
+    "lieu": "Salle de conference",
+    "date_debut": "2026-08-17",
+    "date_fin": "2026-08-19",
+    "places": 15,
+    "obligatoire": true,
+    "statut": "PLANIFIEE",
+    "departements_cibles": []
+  }
+},
+{
+  "model": "rh.formation",
+  "pk": 6,
+  "fields": {
+    "cree_le": "2026-08-17T09:56:33.224Z",
+    "modifie_le": "2026-08-17T09:56:33.225Z",
+    "titre": "Creation graphique et identite de marque",
+    "categorie": "Creation",
+    "description": "",
+    "formateur": "Formateur interne",
+    "organisme": "Direction des Ressources Humaines",
+    "lieu": "En ligne",
+    "date_debut": "2026-09-16",
+    "date_fin": "2026-09-18",
+    "places": 25,
+    "obligatoire": false,
+    "statut": "PLANIFIEE",
+    "departements_cibles": [
+      5
+    ]
+  }
+},
+{
+  "model": "rh.formation",
+  "pk": 7,
+  "fields": {
+    "cree_le": "2026-08-17T09:56:33.229Z",
+    "modifie_le": "2026-08-17T09:56:33.229Z",
+    "titre": "Cybersecurite et sauvegarde des donnees",
+    "categorie": "Informatique",
+    "description": "",
+    "formateur": "Cabinet Sahel",
+    "organisme": "Direction des Ressources Humaines",
+    "lieu": "Salle de conference",
+    "date_debut": "2026-10-16",
+    "date_fin": "2026-10-18",
+    "places": 25,
+    "obligatoire": false,
+    "statut": "PLANIFIEE",
+    "departements_cibles": [
+      8
+    ]
+  }
+},
+{
+  "model": "finance.fournisseur",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.153Z",
+    "modifie_le": "2026-08-10T15:31:55.153Z",
+    "code": "F001",
+    "raison_sociale": "Sahel Bureautique SARL",
+    "categorie": "Fournitures",
+    "contact": "Service commercial",
+    "telephone": "+225 27 46 475639",
+    "email": "contact@f001.example",
+    "adresse": "",
+    "numero_fiscal": "",
+    "actif": true
+  }
+},
+{
+  "model": "finance.fournisseur",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.156Z",
+    "modifie_le": "2026-08-10T15:31:55.156Z",
+    "code": "F002",
+    "raison_sociale": "TechnoServ CI",
+    "categorie": "Informatique",
+    "contact": "Service commercial",
+    "telephone": "+225 27 71 197910",
+    "email": "contact@f002.example",
+    "adresse": "",
+    "numero_fiscal": "",
+    "actif": true
+  }
+},
+{
+  "model": "finance.fournisseur",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.158Z",
+    "modifie_le": "2026-08-10T15:31:55.158Z",
+    "code": "F003",
+    "raison_sociale": "Garage Central Auto",
+    "categorie": "Entretien vehicules",
+    "contact": "Service commercial",
+    "telephone": "+225 27 76 194198",
+    "email": "contact@f003.example",
+    "adresse": "",
+    "numero_fiscal": "",
+    "actif": true
+  }
+},
+{
+  "model": "finance.fournisseur",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.160Z",
+    "modifie_le": "2026-08-10T15:31:55.160Z",
+    "code": "F004",
+    "raison_sociale": "Hotel Le Baobab",
+    "categorie": "Hebergement",
+    "contact": "Service commercial",
+    "telephone": "+225 27 18 359791",
+    "email": "contact@f004.example",
+    "adresse": "",
+    "numero_fiscal": "",
+    "actif": true
+  }
+},
+{
+  "model": "finance.fournisseur",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.162Z",
+    "modifie_le": "2026-08-10T15:31:55.162Z",
+    "code": "F005",
+    "raison_sociale": "Cabinet Conseil Nyeleni",
+    "categorie": "Conseil et audit",
+    "contact": "Service commercial",
+    "telephone": "+225 27 95 814515",
+    "email": "contact@f005.example",
+    "adresse": "",
+    "numero_fiscal": "",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.143Z",
+    "modifie_le": "2026-08-10T15:31:55.143Z",
+    "code": "FOURN",
+    "libelle": "Fournitures de bureau",
+    "imputation": "606100",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.144Z",
+    "modifie_le": "2026-08-10T15:31:55.144Z",
+    "code": "CARB",
+    "libelle": "Carburant et lubrifiants",
+    "imputation": "606200",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.145Z",
+    "modifie_le": "2026-08-10T15:31:55.145Z",
+    "code": "ENTR",
+    "libelle": "Entretien et reparations",
+    "imputation": "615000",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.146Z",
+    "modifie_le": "2026-08-10T15:31:55.146Z",
+    "code": "MISS",
+    "libelle": "Frais de mission et deplacements",
+    "imputation": "625100",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.147Z",
+    "modifie_le": "2026-08-10T15:31:55.147Z",
+    "code": "TELE",
+    "libelle": "Telephone et internet",
+    "imputation": "626100",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 6,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.148Z",
+    "modifie_le": "2026-08-10T15:31:55.148Z",
+    "code": "PREST",
+    "libelle": "Prestations de services externes",
+    "imputation": "611000",
+    "actif": true
+  }
+},
+{
+  "model": "finance.categoriedepense",
+  "pk": 7,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.150Z",
+    "modifie_le": "2026-08-10T15:31:55.150Z",
+    "code": "REPR",
+    "libelle": "Frais de representation",
+    "imputation": "623000",
+    "actif": true
+  }
+},
+{
+  "model": "finance.demandeprix",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.183Z",
+    "modifie_le": "2026-08-10T15:31:55.183Z",
+    "numero": "DP-2026-0001",
+    "requisition": null,
+    "objet": "Fourniture de 15 ordinateurs portables",
+    "description": "Consultation restreinte aupres de trois fournisseurs agrees.",
+    "date_lancement": "2026-07-31",
+    "date_limite": "2026-08-14",
+    "critere_attribution": "Mieux-disant (prix et delai)",
+    "statut": "OUVERTE",
+    "acheteur": [
+      "sfofana"
+    ]
+  }
+},
+{
+  "model": "finance.offrefournisseur",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.185Z",
+    "modifie_le": "2026-08-10T15:31:55.185Z",
+    "demande_prix": 1,
+    "fournisseur": 2,
+    "montant": "8250000.00",
+    "devise": "XOF",
+    "delai_livraison_jours": 21,
+    "conditions_paiement": "30 % a la commande, solde a la livraison",
+    "note_technique": 16,
+    "retenue": false,
+    "commentaire": ""
+  }
+},
+{
+  "model": "finance.offrefournisseur",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.187Z",
+    "modifie_le": "2026-08-10T15:31:55.187Z",
+    "demande_prix": 1,
+    "fournisseur": 1,
+    "montant": "8900000.00",
+    "devise": "XOF",
+    "delai_livraison_jours": 14,
+    "conditions_paiement": "30 % a la commande, solde a la livraison",
+    "note_technique": 14,
+    "retenue": false,
+    "commentaire": ""
+  }
+},
+{
+  "model": "finance.offrefournisseur",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.188Z",
+    "modifie_le": "2026-08-10T15:31:55.188Z",
+    "demande_prix": 1,
+    "fournisseur": 5,
+    "montant": "7990000.00",
+    "devise": "XOF",
+    "delai_livraison_jours": 45,
+    "conditions_paiement": "30 % a la commande, solde a la livraison",
+    "note_technique": 11,
+    "retenue": false,
+    "commentaire": ""
+  }
+},
+{
+  "model": "finance.caisse",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.168Z",
+    "modifie_le": "2026-08-10T15:31:55.168Z",
+    "code": "CAI-PRIN",
+    "libelle": "Caisse principale siege",
+    "responsable": [
+      "thsylla"
+    ],
+    "devise": "XOF",
+    "solde_initial": "1500000.00",
+    "plafond_alerte": "300000.00",
+    "actif": true
+  }
+},
+{
+  "model": "finance.caisse",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-17T09:56:33.249Z",
+    "modifie_le": "2026-08-17T09:56:33.249Z",
+    "code": "CAI-PROD",
+    "libelle": "Caisse menue depense Production",
+    "responsable": [
+      "ntraore"
+    ],
+    "devise": "XOF",
+    "solde_initial": "400000.00",
+    "plafond_alerte": "100000.00",
+    "actif": true
+  }
+},
+{
+  "model": "finance.approvisionnementcaisse",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.172Z",
+    "modifie_le": "2026-08-10T15:31:55.172Z",
+    "caisse": 1,
+    "montant": "2000000.00",
+    "date_operation": "2026-07-21",
+    "reference": "VIR-BANQUE-0142",
+    "commentaire": "Approvisionnement mensuel",
+    "enregistre_par": null
+  }
+},
+{
+  "model": "finance.depense",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-17T10:15:51.788Z",
+    "modifie_le": "2026-08-17T10:15:51.841Z",
+    "numero": "DEP-2026-0001",
+    "demandeur": [
+      "hcisse"
+    ],
+    "statut": "EN_VALIDATION",
+    "date_soumission": "2026-08-17T10:15:51.841Z",
+    "motif_rejet": "",
+    "devise": "XOF",
+    "categorie": 6,
+    "departement": null,
+    "fournisseur": null,
+    "libelle": "IA Claude",
+    "description": "",
+    "montant": "15000.00",
+    "date_depense": "2026-08-21",
+    "mode_paiement": "ESPECES",
+    "reference_paiement": "",
+    "piece_justificative": "justificatifs/depenses/KDB__Rodri.jpg"
+  }
+},
+{
+  "model": "finance.baremeperdiem",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.173Z",
+    "modifie_le": "2026-08-10T15:31:55.174Z",
+    "libelle": "Perdiem local",
+    "zone": "LOCALE",
+    "role_agent": "",
+    "montant_jour": "10000.00",
+    "devise": "XOF",
+    "actif": true
+  }
+},
+{
+  "model": "finance.baremeperdiem",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.175Z",
+    "modifie_le": "2026-08-10T15:31:55.175Z",
+    "libelle": "Perdiem national",
+    "zone": "NATIONALE",
+    "role_agent": "",
+    "montant_jour": "25000.00",
+    "devise": "XOF",
+    "actif": true
+  }
+},
+{
+  "model": "finance.baremeperdiem",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.176Z",
+    "modifie_le": "2026-08-10T15:31:55.176Z",
+    "libelle": "Perdiem sous-region",
+    "zone": "SOUS_REGION",
+    "role_agent": "",
+    "montant_jour": "50000.00",
+    "devise": "XOF",
+    "actif": true
+  }
+},
+{
+  "model": "finance.baremeperdiem",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.177Z",
+    "modifie_le": "2026-08-10T15:31:55.177Z",
+    "libelle": "Perdiem international",
+    "zone": "INTERNATIONALE",
+    "role_agent": "",
+    "montant_jour": "90000.00",
+    "devise": "XOF",
+    "actif": true
+  }
+},
+{
+  "model": "finance.baremeperdiem",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:31:55.178Z",
+    "modifie_le": "2026-08-10T15:31:55.178Z",
+    "libelle": "Perdiem national - encadrement",
+    "zone": "NATIONALE",
+    "role_agent": "",
+    "montant_jour": "40000.00",
+    "devise": "XOF",
+    "actif": true
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.007Z",
+    "modifie_le": "2026-08-17T10:02:09.776Z",
+    "code": "DG",
+    "nom": "Direction Generale",
+    "responsable": [
+      "yhdiallo"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.010Z",
+    "modifie_le": "2026-08-17T10:02:09.785Z",
+    "code": "RH",
+    "nom": "Ressources Humaines",
+    "responsable": [
+      "askoita"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.011Z",
+    "modifie_le": "2026-08-17T10:02:09.787Z",
+    "code": "FIN",
+    "nom": "Finance et Comptabilite",
+    "responsable": [
+      "thsylla"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-10T15:30:55.012Z",
+    "modifie_le": "2026-08-17T10:02:09.788Z",
+    "code": "COM",
+    "nom": "Communication et Creation",
+    "responsable": [
+      "modi.kone"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 7,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:29.891Z",
+    "modifie_le": "2026-08-17T10:02:09.790Z",
+    "code": "PROD",
+    "nom": "Production",
+    "responsable": [
+      "ntraore"
+    ]
+  }
+},
+{
+  "model": "accounts.departement",
+  "pk": 8,
+  "fields": {
+    "cree_le": "2026-08-17T09:54:29.893Z",
+    "modifie_le": "2026-08-17T10:02:09.792Z",
+    "code": "IT",
+    "nom": "Informatique et Developpement",
+    "responsable": [
+      "hcisse"
+    ]
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 1,
+  "fields": {
+    "cree_le": "2026-08-17T10:14:00.624Z",
+    "modifie_le": "2026-08-17T10:14:00.624Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 1,
+    "ordre": 1,
+    "libelle": "Validation hierarchique",
+    "role_valideur": "DIRECTION",
+    "valideur_attendu": [
+      "ysacko"
+    ],
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 2,
+  "fields": {
+    "cree_le": "2026-08-17T10:14:00.624Z",
+    "modifie_le": "2026-08-17T10:14:00.624Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 1,
+    "ordre": 2,
+    "libelle": "Controle RH",
+    "role_valideur": "RH",
+    "valideur_attendu": null,
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 3,
+  "fields": {
+    "cree_le": "2026-08-17T10:15:51.838Z",
+    "modifie_le": "2026-08-17T10:15:51.838Z",
+    "content_type": [
+      "finance",
+      "depense"
+    ],
+    "object_id": 1,
+    "ordre": 1,
+    "libelle": "Validation hierarchique",
+    "role_valideur": "DIRECTION",
+    "valideur_attendu": [
+      "ysacko"
+    ],
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 4,
+  "fields": {
+    "cree_le": "2026-08-17T10:15:51.838Z",
+    "modifie_le": "2026-08-17T10:15:51.838Z",
+    "content_type": [
+      "finance",
+      "depense"
+    ],
+    "object_id": 1,
+    "ordre": 2,
+    "libelle": "Controle Finance",
+    "role_valideur": "FINANCE",
+    "valideur_attendu": null,
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 5,
+  "fields": {
+    "cree_le": "2026-08-17T10:17:40.401Z",
+    "modifie_le": "2026-08-17T10:17:40.401Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 2,
+    "ordre": 1,
+    "libelle": "Validation hierarchique",
+    "role_valideur": "DIRECTION",
+    "valideur_attendu": [
+      "ysacko"
+    ],
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+},
+{
+  "model": "core.etapevalidation",
+  "pk": 6,
+  "fields": {
+    "cree_le": "2026-08-17T10:17:40.401Z",
+    "modifie_le": "2026-08-17T10:17:40.401Z",
+    "content_type": [
+      "rh",
+      "demandeabsence"
+    ],
+    "object_id": 2,
+    "ordre": 2,
+    "libelle": "Controle RH",
+    "role_valideur": "RH",
+    "valideur_attendu": null,
+    "decision": "EN_ATTENTE",
+    "decide_par": null,
+    "date_decision": null,
+    "commentaire": ""
+  }
+}
+]

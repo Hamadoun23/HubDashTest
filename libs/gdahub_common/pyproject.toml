@@ -1,0 +1,16 @@
+[project]
+name = "gdahub-common"
+version = "0.1.0"
+description = "Socle partage des services GDA Hub : authentification JWT, permissions, pagination, format d'erreur."
+requires-python = ">=3.12"
+dependencies = [
+    "djangorestframework>=3.18",
+    "pyjwt[crypto]>=2.10",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["gdahub_common*"]
