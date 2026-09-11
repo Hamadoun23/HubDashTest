@@ -1,7 +1,7 @@
 import { Bell, Building2, ChevronRight, Home, LogOut, Search, Settings, Sun } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { APPLICATIONS_HUB, NAVIGATION, type AppKey } from '../lib/navigation';
+import { APPLICATIONS_HUB } from '../lib/navigation';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from './ui/Avatar';
 
@@ -10,22 +10,12 @@ function estActif(chemin: string, href: string) {
   return chemin === href || chemin.startsWith(`${href}/`);
 }
 
-function appDepuisChemin(chemin: string): AppKey {
-  if (chemin.startsWith('/rh')) return 'rh';
-  if (chemin.startsWith('/jus')) return 'jus';
-  if (chemin.startsWith('/chantiers')) return 'chantiers';
-  if (chemin.startsWith('/planning')) return 'planning';
-  if (chemin.startsWith('/campagnes')) return 'campagnes';
-  return 'hub';
-}
-
 export function Sidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { identite, utilisateur, applications, deconnecter } = useAuth();
   const [lightMode, setLightMode] = useState(false);
 
-  const appActive = appDepuisChemin(pathname);
   // Chaque utilisateur ne voit que les applications auxquelles il a accès
   // (`applications`, renvoyées par identity à la connexion) — même filtre que
   // l'ancien lanceur en tuiles de l'accueil, appliqué ici à la sidebar.
@@ -92,42 +82,20 @@ export function Sidebar() {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">Applications</p>
           </div>
           <div className="space-y-0.5">
+            {/* Simples liens de redirection : une fois entré dans une app
+                métier, c'est son propre habillage qui prend le relais — le
+                hub ne s'y prolonge plus. Voir retrogradeAppmetier.md. */}
             {applicationsAccessibles.map((app) => {
               const Icone = app.icon;
-              const active = appActive === app.key;
               return (
-                <div key={app.key}>
-                  <Link
-                    to={app.chemin}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                      active ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
-                    }`}
-                  >
-                    <Icone size={16} className="shrink-0" />
-                    <span className="truncate">{app.nom}</span>
-                  </Link>
-
-                  {active && (
-                    <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border pl-3">
-                      {NAVIGATION.filter((g) => g.app === app.key).flatMap((groupe) => groupe.items).map((item) => {
-                        const ItemIcone = item.icon;
-                        const itemActif = estActif(pathname, item.href);
-                        return (
-                          <Link
-                            key={item.href}
-                            to={item.href}
-                            className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                              itemActif ? 'bg-accent/20 text-accent2' : 'text-muted hover:bg-surface2 hover:text-white'
-                            }`}
-                          >
-                            <ItemIcone size={13} className="shrink-0" />
-                            <span className="truncate">{item.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                <Link
+                  key={app.key}
+                  to={app.chemin}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface2 hover:text-white"
+                >
+                  <Icone size={16} className="shrink-0" />
+                  <span className="truncate">{app.nom}</span>
+                </Link>
               );
             })}
           </div>

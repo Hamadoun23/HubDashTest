@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { FlaskConical } from 'lucide-react';
-import { Card } from '../../../components/ui/Card';
-import { EtatErreur } from '../../../components/ui/EtatRequete';
-import { PageHeader } from '../../../components/ui/PageHeader';
-import { Badge, TableVirtus } from '../../../components/ui/Table';
+import { Card } from '../../../components/ui-light/Card';
+import { EtatErreur } from '../../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../../components/ui-light/PageHeader';
+import { Badge, TableVirtus } from '../../../components/ui-light/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import {
   completerProduction,
@@ -47,30 +47,30 @@ function FormulaireCompletion({ productionId, onTermine }: { productionId: numbe
 
   const champTexte = (cle: 'eau_ajoutee_l' | 'sucre_ajoute_kg' | 'sorbate_ajoute_g' | 'ph' | 'refractometre' | 'volume_final_l', label: string) => (
     <div key={cle}>
-      <label className="mb-1 block text-xs font-semibold text-muted">{label}</label>
+      <label className="mb-1 block text-xs font-semibold text-slate-500">{label}</label>
       <input
         value={champs[cle]}
         onChange={(e) => setChamps((c) => ({ ...c, [cle]: e.target.value }))}
         required
-        className="w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+        className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
       />
     </div>
   );
 
   const champCase = (cle: 'lavage_effectue' | 'filtration_effectuee' | 'pasteurisation_80c' | 'test_qualite', label: string) => (
-    <label key={cle} className="flex items-center gap-2 text-xs text-white">
+    <label key={cle} className="flex items-center gap-2 text-xs text-slate-900">
       <input
         type="checkbox"
         checked={champs[cle]}
         onChange={(e) => setChamps((c) => ({ ...c, [cle]: e.target.checked }))}
-        className="h-3.5 w-3.5 rounded border-border bg-bg accent-accent"
+        className="h-3.5 w-3.5 rounded border-slate-300 bg-white accent-jus-primary"
       />
       {label}
     </label>
   );
 
   return (
-    <form onSubmit={envoyer} className="mt-3 flex flex-col gap-3 rounded-2xl border border-border bg-bg p-4">
+    <form onSubmit={envoyer} className="mt-3 flex flex-col gap-3 rounded-2xl border border-slate-300 bg-white p-4">
       <div className="grid grid-cols-3 gap-3">
         {champTexte('eau_ajoutee_l', "Eau ajoutée (L)")}
         {champTexte('sucre_ajoute_kg', 'Sucre ajouté (kg)')}
@@ -85,11 +85,11 @@ function FormulaireCompletion({ productionId, onTermine }: { productionId: numbe
         {champCase('pasteurisation_80c', 'Pasteurisation 80°C')}
         {champCase('test_qualite', 'Test qualité OK')}
       </div>
-      {completion.erreur ? <p className="text-xs font-semibold text-red-400">{completion.erreur}</p> : null}
+      {completion.erreur ? <p className="text-xs font-semibold text-rose-600">{completion.erreur}</p> : null}
       <button
         type="submit"
         disabled={completion.enCours}
-        className="w-fit rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+        className="w-fit rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
       >
         {completion.enCours ? 'Enregistrement...' : 'Marquer comme terminée'}
       </button>
@@ -135,34 +135,34 @@ export default function Productions() {
 
   return (
     <div>
-      <PageHeader icon={FlaskConical} titre="Productions" sousTitre="Ordres de fabrication" />
+      <PageHeader icon={FlaskConical} titre="Productions" sousTitre="Ordres de fabrication" accent="#eb6834" />
 
       <Card className="mb-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white">{idEnEdition !== null ? "Modifier l'ordre de fabrication" : 'Nouvel ordre de fabrication'}</h2>
+          <h2 className="text-sm font-bold text-slate-900">{idEnEdition !== null ? "Modifier l'ordre de fabrication" : 'Nouvel ordre de fabrication'}</h2>
           {idEnEdition !== null && (
-            <button type="button" onClick={reinitialiser} className="text-xs font-semibold text-muted hover:text-white">
+            <button type="button" onClick={reinitialiser} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
               Annuler la modification
             </button>
           )}
         </div>
         <form onSubmit={envoyer} className="mt-3 flex items-end gap-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">Date</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Date</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">Recette</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Recette</label>
             <select
               value={recette}
               onChange={(e) => setRecette(e.target.value as Recette)}
-              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
             >
               <option value="R80_20">80/20</option>
               <option value="R75_25">75/25</option>
@@ -171,13 +171,13 @@ export default function Productions() {
           <button
             type="submit"
             disabled={creation.enCours || modification.enCours}
-            className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+            className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
           >
             {creation.enCours || modification.enCours ? 'Envoi...' : idEnEdition !== null ? 'Mettre à jour' : 'Créer'}
           </button>
         </form>
         {(creation.erreur ?? modification.erreur) ? (
-          <p className="mt-2 text-xs font-semibold text-red-400">{creation.erreur ?? modification.erreur}</p>
+          <p className="mt-2 text-xs font-semibold text-rose-600">{creation.erreur ?? modification.erreur}</p>
         ) : null}
       </Card>
 
@@ -193,7 +193,7 @@ export default function Productions() {
               <>
                 <button
                   onClick={() => setEnCompletion(enCompletion === p.id ? null : p.id)}
-                  className="text-xs font-semibold text-accent2 hover:text-accent"
+                  className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
                 >
                   {enCompletion === p.id ? 'Fermer' : 'Compléter →'}
                 </button>
@@ -204,7 +204,7 @@ export default function Productions() {
                     setDate(p.date_of);
                     setRecette(p.recette);
                   }}
-                  className="text-xs font-semibold text-accent2 hover:text-accent"
+                  className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
                 >
                   Modifier
                 </button>
@@ -214,14 +214,14 @@ export default function Productions() {
               type="button"
               onClick={() => supprimer(p.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
+              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
             >
               Supprimer
             </button>
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-2 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-2 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
 
       {enCompletion !== null && (
         <FormulaireCompletion

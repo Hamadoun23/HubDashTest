@@ -1,15 +1,15 @@
 import { useOutletContext } from 'react-router-dom';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { ProgressBar } from '../../components/ui/ProgressBar';
-import { Badge, TableVirtus } from '../../components/ui/Table';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { ProgressBar } from '../../components/ui-light/ProgressBar';
+import { TableVirtus } from '../../components/ui-light/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerTaches } from '../../lib/api/chantiers';
-import type { ContexteChantier } from './ChantierLayout';
+import { StatutBadge, type ContexteChantier } from './ChantierLayout';
 
-const TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
-  termine: 'success',
-  en_cours: 'warning',
-  annule: 'danger',
+const TONE: Record<string, 'vert' | 'bleu' | 'rouge' | 'neutre'> = {
+  termine: 'vert',
+  en_cours: 'bleu',
+  annule: 'rouge',
 };
 
 export default function Taches() {
@@ -27,9 +27,9 @@ export default function Taches() {
         t.subphase,
         t.activity,
         <div className="w-28">
-          <ProgressBar progress={t.progress} height={5} />
+          <ProgressBar progress={t.progress} height={5} accent="#c8521a" />
         </div>,
-        <Badge tone={TONE[t.status] ?? 'neutral'}>{t.status_label}</Badge>,
+        <StatutBadge ton={TONE[t.status] ?? 'neutre'}>{t.status_label}</StatutBadge>,
       ])}
     />
   );

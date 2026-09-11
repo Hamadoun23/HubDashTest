@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { Camera, Trash2, Upload } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { Card } from '../../components/ui-light/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { listerPhotos, supprimerPhotos, televerserPhoto, type CategoriePhoto } from '../../lib/api/chantiers';
 import type { ContexteChantier } from './ChantierLayout';
@@ -44,11 +44,11 @@ export default function Photos() {
     <div>
       <Card className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <label className="text-xs font-semibold text-muted">Catégorie</label>
+          <label className="text-xs font-semibold text-slate-500">Catégorie</label>
           <select
             value={categorie}
             onChange={(e) => setCategorie(e.target.value as CategoriePhoto)}
-            className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-chantiers-terracotta focus:outline-none"
           >
             {CATEGORIES.map((c) => (
               <option key={c.valeur} value={c.valeur}>
@@ -61,20 +61,20 @@ export default function Photos() {
         <button
           onClick={() => inputFichier.current?.click()}
           disabled={televersement.enCours}
-          className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+          className="flex items-center gap-2 rounded-xl bg-chantiers-terracotta px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
         >
           <Upload size={14} />
           {televersement.enCours ? 'Envoi...' : 'Ajouter une photo'}
         </button>
       </Card>
       {(televersement.erreur ?? suppression.erreur) ? (
-        <p className="mb-3 text-xs font-semibold text-red-400">{televersement.erreur ?? suppression.erreur}</p>
+        <p className="mb-3 text-xs font-semibold text-chantiers-rouge">{televersement.erreur ?? suppression.erreur}</p>
       ) : null}
 
       {(photos.donnees ?? []).length === 0 ? (
         <Card className="flex flex-col items-center gap-2 py-10 text-center">
-          <Camera size={20} className="text-muted" />
-          <p className="text-sm text-muted">Aucune photo pour ce chantier pour le moment.</p>
+          <Camera size={20} className="text-slate-400" />
+          <p className="text-sm text-slate-500">Aucune photo pour ce chantier pour le moment.</p>
         </Card>
       ) : (
         <div className="grid grid-cols-3 gap-4">
@@ -86,14 +86,14 @@ export default function Photos() {
                   onClick={() => supprimer(photo.id)}
                   disabled={suppression.enCours}
                   title="Supprimer la photo"
-                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-red-500/80 disabled:opacity-50"
+                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-chantiers-rouge/80 disabled:opacity-50"
                 >
                   <Trash2 size={13} />
                 </button>
               </div>
               <div className="p-3">
-                <p className="text-xs font-semibold text-white">{photo.category_display}</p>
-                {photo.caption ? <p className="mt-0.5 text-xs text-muted">{photo.caption}</p> : null}
+                <p className="text-xs font-semibold text-slate-800">{photo.category_display}</p>
+                {photo.caption ? <p className="mt-0.5 text-xs text-slate-500">{photo.caption}</p> : null}
               </div>
             </Card>
           ))}

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Award, Calendar, Check, Pencil, UserCog } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatTile } from '../../components/ui/StatTile';
+import { Card } from '../../components/ui-light/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { StatTile } from '../../components/ui-light/StatTile';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { modifierProfil } from '../../lib/api/auth';
@@ -33,7 +33,7 @@ export default function MonEspace() {
 
   return (
     <div>
-      <PageHeader icon={UserCog} titre="Mon espace" sousTitre="Solde de congés, ancienneté, contrat" />
+      <PageHeader icon={UserCog} titre="Mon espace" sousTitre="Solde de congés, ancienneté, contrat" accent="#d03e0d" />
 
       <div className="grid grid-cols-3 gap-4">
         <StatTile
@@ -55,47 +55,47 @@ export default function MonEspace() {
 
       <Card className="mt-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white">Informations</h2>
+          <h2 className="text-sm font-bold text-slate-900">Informations</h2>
           {edition ? (
-            <button onClick={enregistrer} disabled={modification.enCours} className="flex items-center gap-1.5 text-xs font-semibold text-accent2">
+            <button onClick={enregistrer} disabled={modification.enCours} className="flex items-center gap-1.5 text-xs font-semibold text-rh-marque700">
               <Check size={13} /> {modification.enCours ? 'Enregistrement...' : 'Enregistrer'}
             </button>
           ) : (
-            <button onClick={() => setEdition(true)} className="flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-white">
+            <button onClick={() => setEdition(true)} className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900">
               <Pencil size={13} /> Modifier
             </button>
           )}
         </div>
-        {modification.erreur ? <p className="mt-2 text-xs font-semibold text-red-400">{modification.erreur}</p> : null}
+        {modification.erreur ? <p className="mt-2 text-xs font-semibold text-rose-600">{modification.erreur}</p> : null}
         <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <dt className="text-xs text-muted">Poste</dt>
-            <dd className="mt-1 text-white">{utilisateur.poste || '—'}</dd>
+            <dt className="text-xs text-slate-500">Poste</dt>
+            <dd className="mt-1 text-slate-900">{utilisateur.poste || '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Département</dt>
-            <dd className="mt-1 text-white">{utilisateur.departement_nom || '—'}</dd>
+            <dt className="text-xs text-slate-500">Département</dt>
+            <dd className="mt-1 text-slate-900">{utilisateur.departement_nom || '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Date d'entrée</dt>
-            <dd className="mt-1 text-white">{utilisateur.date_embauche ?? '—'}</dd>
+            <dt className="text-xs text-slate-500">Date d'entrée</dt>
+            <dd className="mt-1 text-slate-900">{utilisateur.date_embauche ?? '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Responsable</dt>
-            <dd className="mt-1 text-white">{utilisateur.manager_nom || '—'}</dd>
+            <dt className="text-xs text-slate-500">Responsable</dt>
+            <dd className="mt-1 text-slate-900">{utilisateur.manager_nom || '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Email</dt>
-            <dd className="mt-1 text-white">{utilisateur.email}</dd>
+            <dt className="text-xs text-slate-500">Email</dt>
+            <dd className="mt-1 text-slate-900">{utilisateur.email}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Téléphone</dt>
-            <dd className="mt-1 text-white">
+            <dt className="text-xs text-slate-500">Téléphone</dt>
+            <dd className="mt-1 text-slate-900">
               {edition ? (
                 <input
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-rh-marque500 focus:outline-none"
                 />
               ) : (
                 utilisateur.telephone || '—'

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { Card } from '../../components/ui-light/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
 import { useApi } from '../../lib/hooks/useApi';
 import {
   LIBELLES_STATUT,
@@ -47,28 +47,28 @@ export function CalendrierPlanning() {
   return (
     <Card className="!p-0 overflow-hidden">
       <div className="flex items-center justify-between p-5 pb-0">
-        <h2 className="text-base font-bold text-white">
+        <h2 className="text-base font-bold text-slate-900">
           Planning global — {MOIS[periode.mois - 1]} {periode.annee}
         </h2>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => exporterTournagesCsv(periode.mois, periode.annee)}
             title="Exporter les tournages"
-            className="flex h-7 items-center gap-1 rounded-full bg-surface2 px-2.5 text-[11px] font-semibold text-muted hover:text-white"
+            className="flex h-7 items-center gap-1 rounded-full bg-slate-100 px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-900"
           >
             <Download size={12} /> CSV
           </button>
           <button
             onClick={() => changerMois(-1)}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface2"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100"
           >
-            <ChevronLeft size={14} className="text-white" />
+            <ChevronLeft size={14} className="text-slate-700" />
           </button>
           <button
             onClick={() => changerMois(1)}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface2"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100"
           >
-            <ChevronRight size={14} className="text-white" />
+            <ChevronRight size={14} className="text-slate-700" />
           </button>
         </div>
       </div>
@@ -78,7 +78,7 @@ export function CalendrierPlanning() {
           <thead>
             <tr>
               {JOURS.map((jour) => (
-                <th key={jour} className="pb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                <th key={jour} className="pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {jour}
                 </th>
               ))}
@@ -90,11 +90,11 @@ export function CalendrierPlanning() {
                 {semaine.map((jour, ci) => (
                   <td
                     key={ci}
-                    className={`h-24 w-[14.2%] rounded-xl border border-border p-1.5 align-top ${
-                      jour.est_mois_courant ? 'bg-surface2/60' : 'bg-transparent opacity-40'
+                    className={`h-24 w-[14.2%] rounded-xl border border-slate-200 p-1.5 align-top ${
+                      jour.est_mois_courant ? 'bg-slate-50' : 'bg-transparent opacity-40'
                     }`}
                   >
-                    <span className="text-[11px] font-semibold text-muted">{Number(jour.date.split('-')[2])}</span>
+                    <span className="text-[11px] font-semibold text-slate-500">{Number(jour.date.split('-')[2])}</span>
                     <div className="mt-1 space-y-1">
                       {jour.tournages.map((t) => (
                         <div
@@ -125,7 +125,7 @@ export function CalendrierPlanning() {
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-border p-5 text-[11px] text-muted">
+      <div className="flex flex-wrap items-center gap-4 border-t border-slate-200 p-5 text-[11px] text-slate-500">
         {(Object.entries(LIBELLES_STATUT) as [StatutEvenement, string][]).map(([statut, libelle]) => (
           <span key={statut} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full" style={{ background: COULEUR_STATUT[statut] }} /> {libelle}
@@ -133,7 +133,7 @@ export function CalendrierPlanning() {
         ))}
         <button
           onClick={() => exporterPublicationsCsv(periode.mois, periode.annee)}
-          className="ml-auto flex items-center gap-1 font-semibold text-accent2 hover:text-accent"
+          className="ml-auto flex items-center gap-1 font-semibold text-planning-o3 hover:text-[#c93a15]"
         >
           <Download size={12} /> Exporter les publications
         </button>

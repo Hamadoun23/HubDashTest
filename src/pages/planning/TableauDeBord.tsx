@@ -1,8 +1,8 @@
 import { AlertTriangle, Clapperboard, Lightbulb, Megaphone, Users, Video } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatTile } from '../../components/ui/StatTile';
-import { Badge } from '../../components/ui/Table';
+import { Card } from '../../components/ui-light/Card';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { StatTile } from '../../components/ui-light/StatTile';
+import { Badge } from '../../components/ui-light/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import {
   LIBELLES_STATUT,
@@ -41,7 +41,7 @@ function LigneEvenement({ item, enRetard }: { item: EvenementAffiche; enRetard?:
   return (
     <div
       className={`flex items-center justify-between gap-3 rounded-2xl border p-3 ${
-        enRetard ? 'border-red-500/30 bg-red-500/10' : 'border-border bg-surface2'
+        enRetard ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-slate-50'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -52,8 +52,8 @@ function LigneEvenement({ item, enRetard }: { item: EvenementAffiche; enRetard?:
           <Icon size={14} color={enRetard ? '#f87171' : '#ff8a4c'} />
         </span>
         <div>
-          <p className="text-sm font-semibold text-white">{evenement.client_nom}</p>
-          <p className="text-xs text-muted">
+          <p className="text-sm font-semibold text-slate-900">{evenement.client_nom}</p>
+          <p className="text-xs text-slate-500">
             {item.type === 'tournage' ? 'Tournage' : 'Publication'} ·{' '}
             {new Date(evenement.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
           </p>
@@ -82,7 +82,12 @@ export default function TableauDeBordPlanning() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader icon={Clapperboard} titre="Planning" sousTitre="Gérez vos plannings et générez des rapports en un clic" />
+      <PageHeader
+        icon={Clapperboard}
+        titre="Planning"
+        sousTitre="Gérez vos plannings et générez des rapports en un clic"
+        accent="#e8481b"
+      />
       <div className={`grid gap-4 ${totalRetard > 0 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}`}>
         <StatTile icon={Users} valeur={clients.donnees?.length ?? '—'} libelle="Clients suivis" teinte="#60a5fa" />
         <StatTile
@@ -99,10 +104,10 @@ export default function TableauDeBordPlanning() {
 
       {donnees && (
         <Card>
-          <h2 className="text-sm font-bold text-white">Activité récente</h2>
+          <h2 className="text-sm font-bold text-slate-900">Activité récente</h2>
           <div className="mt-4 flex flex-col gap-2">
             {enRetard.length === 0 && aVenir.length === 0 ? (
-              <p className="py-6 text-center text-xs text-muted">Aucun tournage ni publication en retard ou à venir.</p>
+              <p className="py-6 text-center text-xs text-slate-500">Aucun tournage ni publication en retard ou à venir.</p>
             ) : (
               <>
                 {enRetard.slice(0, 5).map((item) => (

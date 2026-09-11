@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { HardHat } from 'lucide-react';
-import { EtatErreur } from '../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
-import { Badge } from '../../components/ui/Table';
+import { EtatErreur } from '../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
+import { Badge } from '../../components/ui-light/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { annulerDemande, creerDemandeAbsence, mesDemandes, modifierDemandeAbsence, soumettreDemande } from '../../lib/api/rh';
 
@@ -71,6 +71,7 @@ export default function Retards() {
       icon={HardHat}
       titre="Signaler un retard"
       sousTitre={idEnEdition !== null ? 'Modifier le signalement sélectionné' : "Prévenir d'une arrivée tardive"}
+      accent="#d03e0d"
       onSubmit={envoyer}
       envoiEnCours={creation.enCours || soumission.enCours || modification.enCours}
       erreurEnvoi={creation.erreur ?? soumission.erreur ?? modification.erreur}
@@ -82,7 +83,7 @@ export default function Retards() {
       ]}
       entete={
         idEnEdition !== null ? (
-          <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-accent2 hover:text-accent">
+          <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-rh-marque700 hover:text-rh-marque800">
             ← Annuler la modification
           </button>
         ) : undefined
@@ -96,13 +97,13 @@ export default function Retards() {
         <Badge tone={TONE[r.statut] ?? 'neutral'}>{r.statut_libelle}</Badge>,
         r.modifiable ? (
           <div className="flex gap-2">
-            <button onClick={() => modifier(r)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white">
+            <button onClick={() => modifier(r)} className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900">
               Modifier
             </button>
             <button
               onClick={() => annulation.executer(r.id).then(() => demandes.recharger())}
               disabled={annulation.enCours}
-              className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white"
+              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900"
             >
               Annuler
             </button>

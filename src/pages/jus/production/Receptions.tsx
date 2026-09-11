@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { PackageOpen } from 'lucide-react';
-import { EtatErreur } from '../../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../../components/ui/FormulaireEtHistorique';
-import { Badge } from '../../../components/ui/Table';
+import { EtatErreur } from '../../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../../components/ui-light/FormulaireEtHistorique';
+import { Badge } from '../../../components/ui-light/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { creerReception, listerReceptions, obtenirOptions, supprimerReception } from '../../../lib/api/jus';
 
@@ -49,6 +49,7 @@ export default function Receptions() {
   ) : (
     <div>
       <FormulaireEtHistorique
+        accent="#eb6834"
         icon={PackageOpen}
         titre="Réceptions"
         sousTitre="Contrôle qualité à l'arrivée"
@@ -82,13 +83,13 @@ export default function Receptions() {
             type="button"
             onClick={() => supprimer(r.id)}
             disabled={suppression.enCours}
-            className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
+            className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
           >
             Supprimer
           </button>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Cloud, CloudRain, CloudSnow, Sun, Zap } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { Card } from '../../components/ui-light/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
 import { useApi } from '../../lib/hooks/useApi';
 import { obtenirMeteo } from '../../lib/api/chantiers';
 import type { ContexteChantier } from './ChantierLayout';
@@ -36,7 +36,7 @@ export default function Meteo() {
 
   if (jours.length === 0) {
     return (
-      <Card className="py-10 text-center text-sm text-muted">
+      <Card className="py-10 text-center text-sm text-slate-500">
         Prévisions indisponibles pour le moment.
       </Card>
     );
@@ -51,12 +51,12 @@ export default function Meteo() {
         const min = daily?.temperature_2m_min?.[i];
         return (
           <Card key={jour} className="flex flex-col items-center gap-2 text-center">
-            <p className="text-xs text-muted">{new Date(jour).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}</p>
-            <Icone size={28} className="text-accent2" />
-            <p className="font-display text-2xl font-bold tabular-nums text-white">
+            <p className="text-xs text-slate-500">{new Date(jour).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' })}</p>
+            <Icone size={28} className="text-chantiers-terracotta" />
+            <p className="font-display text-2xl font-bold tabular-nums text-chantiers-marron">
               {max !== undefined ? `${Math.round(max)}°` : '—'}
             </p>
-            <p className="text-xs text-muted">{min !== undefined ? `min ${Math.round(min)}°` : ''}</p>
+            <p className="text-xs text-slate-500">{min !== undefined ? `min ${Math.round(min)}°` : ''}</p>
           </Card>
         );
       })}

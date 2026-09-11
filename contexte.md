@@ -23,10 +23,62 @@ services Django (`backend/`) + `libs/gdahub_common/` (socle partagé) +
   corrigé vers `backend/campagnes-frontend/dist` (son emplacement réel dans
   ce dépôt fusionné).
 
-Tout le reste du travail (CRUD, réconciliation backend/frontend, sidebar,
-tableaux de bord) a été fait sans Docker ni SQLite réel — vérifié par lecture
-de code et appels HTTP simulés. **Rien n'a encore tourné avec les 6 vrais
-services connectés au frontend.** C'est l'objet de ce test.
+Tout le reste du travail (CRUD, réconciliation backend/frontend, tableaux de
+bord) a été fait sans Docker ni SQLite réel — vérifié par lecture de code et
+appels HTTP simulés (Playwright avec `/api/**` mocké). **Rien n'a encore
+tourné avec les 6 vrais services Django connectés au vrai frontend.** C'est
+l'objet de ce test.
+
+## Identité visuelle : le hub sombre, chaque app métier son propre style
+
+Décision prise le 11/09/2026 (documentée dans `retrogradeAppmetier.md` du
+dépôt `Hamadoun23/gdahub`, où une session parallèle est arrivée à la même
+conclusion) : forcer un seul design sombre "Virtus" sur toutes les apps
+métier était une erreur. **Seule la coquille du hub garde cet habillage** —
+`src/pages/Accueil.tsx`, `src/pages/Administration.tsx`,
+`src/pages/MonCompte.tsx`, `src/pages/Connexion.tsx`, `src/App.tsx`,
+`src/components/Sidebar.tsx`, `src/components/TopBar.tsx`. Une fois dans une
+app métier, elle affiche son **propre** habillage, distinct du hub et des
+autres apps :
+
+- **Jus d'orange** (`/jus/*`) — clair, sidebar blanche, accent orange
+  `#eb6834`. Layout : `src/layouts/JusLayout.tsx`.
+- **RH & Finance** (`/rh/*`) — clair, logo GD&A, orange de marque `#d03e0d`
+  (texte/actions) / `#ff6a3a` (aplats). Layout : `src/layouts/RhLayout.tsx`.
+- **Chantiers** (`/chantiers/*`) — bandeau sombre en entête, fond crème
+  `#f4f1eb`, accent terracotta `#c8521a`, titres bruns `#381419`, statuts
+  vert `#1a7a42` / bleu `#1a5c8a` / rouge `#c01a1a`. Layout :
+  `src/layouts/ChantiersLayout.tsx` (+ `src/pages/chantiers/ChantierLayout.tsx`
+  pour les onglets d'un chantier précis).
+- **Planning** (`/planning/*`) — bandeau dégradé orange
+  (`#ff8a5c → #ff6a3a → #e8481b`) avec onglets horizontaux, fond clair.
+  Layout : `src/layouts/PlanningLayout.tsx`.
+- **Campagnes** (`/campagnes/*`) — hors périmètre de ce changement (n'existe
+  pas dans le dépôt `gdahub` de référence) : reste sous la coquille sombre
+  du hub, inchangé.
+
+La sidebar du hub (`src/components/Sidebar.tsx`) ne fait plus que **rediriger**
+vers la racine de chaque app (`/rh`, `/jus/production`, `/chantiers`,
+`/planning`, `/campagnes`) — plus de sous-menu déroulant dans le style sombre
+une fois dans une app.
+
+Un kit de composants clairs partagé par les 4 apps métier vit dans
+`src/components/ui-light/` (`Card`, `PageHeader`, `StatTile`, `Badge`,
+`TableVirtus`, `EtatChargement`/`EtatErreur`, `CircularProgress`,
+`TrendChart`, `DualTrendChart`, `Avatar`/`AvatarStack`, `ProgressBar`,
+`FormulaireEtHistorique`, `RapportGenerique`) — l'équivalent clair de
+`src/components/ui/` (toujours utilisé tel quel par la coquille sombre du
+hub, ne pas le supprimer). Toutes les pages sous `src/pages/{jus,rh,
+chantiers,planning}/` ont été reskinnées pour utiliser ce kit clair ; aucune
+logique de récupération de données n'a changé.
+
+**Vérifié en local dans cette session** (Playwright, backend mocké, pas de
+vrai Django) : `tsc --noEmit` et `npm run build` propres, et un grep sur les
+4 dossiers d'apps métier ne trouve plus aucune classe sombre résiduelle
+(`text-white`/`bg-surface`/`border-border`/`bg-accent`/`text-accent`) hors
+usages légitimes (texte blanc sur bouton plein coloré). **Jamais vérifié
+avec les vrais services Django ni un vrai navigateur non automatisé** — à
+faire ici.
 
 ## Étape 1 — Démarrer chaque service Django (un terminal par service)
 
@@ -98,8 +150,8 @@ python manage.py migrate
 python manage.py runserver 8006
 ```
 
-**Campagnes n'a aucune commande de seed** (contrairement aux 5 autres
-services) — à écrire :
+**Campagnes n'a toujours aucune commande de seed** (contrairement aux 5
+autres services) — à écrire :
 `backend/campagnes/campagnes/management/commands/donnees_test.py`, même
 pattern que Chantiers/Planning. Doit créer quelques campagnes
 (`vente_carte` et `enrolement_app`), des agences, des commerciaux avec
@@ -125,15 +177,26 @@ concerné et l'objet `PORTS` en haut de `vite.config.ts`.
 Aller sur `http://localhost:5173`. Compte super admin :
 `hcisse@gdamali.net` / `admin`.
 
-## Étape 3 — Vérifier que chaque tableau de bord affiche des vraies données
+## Étape 3 — Vérifier que chaque app affiche de vraies données ET son bon habillage
 
-- `/` (accueil du hub) — congés, dossiers à valider, graphique à deux courbes
-- `/rh`, `/rh/presences` — solde de congés, pointages
+Pour chaque route ci-dessous, vérifier à la fois **les chiffres** (doivent
+être ceux du seed, pas des zéros/NaN) et **l'habillage** (voir palettes
+ci-dessus — un fond sombre "Virtus" en dehors de `/`, `/administration`,
+`/mon-compte` ou `/campagnes` serait un régression à signaler) :
+
+- `/` (accueil du hub, sombre) — congés, dossiers à valider, graphique à
+  deux courbes
+- `/rh`, `/rh/presences` (clair, orange marque) — solde de congés, pointages
 - `/jus/commercial`, `/jus/production`, `/jus/finance`, `/jus/direction`,
-  `/jus/reporting` — les 5 tableaux de bord
-- `/chantiers` — avancement moyen, liste de projets
-- `/planning` — tournages/publications à venir
-- `/campagnes` — une fois la commande de seed écrite
+  `/jus/reporting` (clair, orange `#eb6834`) — les 5 tableaux de bord
+- `/chantiers` (bandeau sombre, fond crème) — avancement moyen, liste de
+  projets
+- `/planning` (bandeau dégradé orange, onglets horizontaux) —
+  tournages/publications à venir
+- `/campagnes` (sombre, inchangé) — une fois la commande de seed écrite
+- Cliquer sur chaque app depuis la sidebar du hub, puis sur "← GDA Hub" dans
+  chaque app pour revenir — vérifier qu'aucun style ne "fuit" d'une app à
+  l'autre au moment de la transition.
 
 ## Points d'attention déjà identifiés (à confirmer en conditions réelles)
 
@@ -146,9 +209,13 @@ Aller sur `http://localhost:5173`. Compte super admin :
 - Le pont SSO Campagnes (cookie de session Django + JWT du hub, voir
   `src/lib/api/campagnesClient.ts`) n'a jamais tourné en conditions réelles.
 - `backend/campagnes` est le seul service dont le code n'a pu être vérifié
-  que statiquement (relecture), jamais par exécution réelle avant
-  aujourd'hui — à surveiller en priorité.
+  que statiquement (relecture), jamais par exécution réelle — à surveiller
+  en priorité.
 - Motif obligatoire (≥10 caractères) pour Arrêter/Annuler/Reprogrammer une
   campagne ; justification obligatoire dès qu'un avancement de tâche
   augmente (Chantiers → Saisie du jour) — corrigés sans avoir pu revérifier
   après coup avec un vrai backend qui tourne.
+- Le reskin des 4 apps métier (voir section ci-dessus) n'a été vérifié que
+  par Playwright avec `/api/**` mocké, jamais avec les vrais services Django
+  ni un œil humain sur un vrai navigateur — c'est le principal absent de
+  cette session, et l'objet de ce test.

@@ -1,11 +1,11 @@
 import { Boxes, Factory, ShoppingCart, Sprout, Wine } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { CircularProgress } from '../../components/ui/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatTile } from '../../components/ui/StatTile';
-import { Badge, TableVirtus } from '../../components/ui/Table';
+import { Card } from '../../components/ui-light/Card';
+import { CircularProgress } from '../../components/ui-light/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { StatTile } from '../../components/ui-light/StatTile';
+import { Badge, TableVirtus } from '../../components/ui-light/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { obtenirSummary } from '../../lib/api/jus';
 
@@ -30,7 +30,7 @@ export default function Reporting() {
 
   return (
     <div>
-      <PageHeader icon={Boxes} titre="Jus d'orange — Reporting" sousTitre="Récolte, fabrication, distribution" />
+      <PageHeader icon={Boxes} titre="Jus d'orange — Reporting" sousTitre="Récolte, fabrication, distribution" accent="#eb6834" />
 
       <div className="mb-4 grid grid-cols-4 gap-4">
         <StatTile icon={Sprout} valeur={`${kpi.recolte_total} kg`} libelle="Récolte totale" teinte="#4ade80" />
@@ -42,14 +42,14 @@ export default function Reporting() {
       <Card className="mb-4 flex items-center gap-4">
         <CircularProgress progress={disponibiliteStock} size={64} strokeWidth={6} gradientId="jus-reporting-stock-gradient" />
         <div>
-          <p className="text-sm font-semibold text-white">{Math.round(disponibiliteStock)}% des articles au-dessus du seuil</p>
-          <p className="text-xs text-muted">
+          <p className="text-sm font-semibold text-slate-900">{Math.round(disponibiliteStock)}% des articles au-dessus du seuil</p>
+          <p className="text-xs text-slate-500">
             {articlesOk} sur {stock_articles.length} article(s) de stock ({kpi.articles_sous_seuil} sous le seuil d'alerte)
           </p>
         </div>
       </Card>
 
-      <h2 className="mb-3 text-sm font-bold text-white">État des stocks</h2>
+      <h2 className="mb-3 text-sm font-bold text-slate-900">État des stocks</h2>
       <TableVirtus
         colonnes={['Article', 'Stock', 'Seuil', 'Statut']}
         lignes={stock_articles.map((a) => [
@@ -61,11 +61,11 @@ export default function Reporting() {
       />
 
       <Card className="mt-4 flex flex-col gap-2">
-        <h2 className="mb-2 text-sm font-bold text-white">Rapports par module</h2>
+        <h2 className="mb-2 text-sm font-bold text-slate-900">Rapports par module</h2>
         {MODULES.map((m) => (
-          <Link key={m.chemin} to={m.chemin} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-white hover:bg-surface2">
+          <Link key={m.chemin} to={m.chemin} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-900 hover:bg-slate-50">
             {m.libelle}
-            <span className="text-xs text-accent2">Voir le détail →</span>
+            <span className="text-xs text-jus-primaryDark">Voir le détail →</span>
           </Link>
         ))}
       </Card>

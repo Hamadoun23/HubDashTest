@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { Activity, CheckCircle2, HardHat, ListChecks } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { CircularProgress } from '../../components/ui/CircularProgress';
-import { EtatErreur } from '../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
-import { StatTile } from '../../components/ui/StatTile';
-import { Badge } from '../../components/ui/Table';
+import { Card } from '../../components/ui-light/Card';
+import { CircularProgress } from '../../components/ui-light/CircularProgress';
+import { EtatErreur } from '../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
+import { StatTile } from '../../components/ui-light/StatTile';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerProjet, listerProjets, modifierProjet, supprimerProjet, type StatutProjet } from '../../lib/api/chantiers';
+import { StatutBadge } from './ChantierLayout';
 
-const TONE: Record<StatutProjet, 'success' | 'warning' | 'danger' | 'neutral'> = {
-  termine: 'success',
-  en_cours: 'warning',
-  planifie: 'neutral',
-  suspendu: 'danger',
+const TONE: Record<StatutProjet, 'vert' | 'bleu' | 'rouge' | 'neutre'> = {
+  termine: 'vert',
+  en_cours: 'bleu',
+  planifie: 'neutre',
+  suspendu: 'rouge',
 };
 
 export default function Liste() {
@@ -84,17 +84,24 @@ export default function Liste() {
     <div>
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <Card className="flex items-center gap-4">
-          <CircularProgress progress={avancementMoyen} size={72} strokeWidth={7} gradientId="chantiers-avancement-moyen" />
+          <CircularProgress
+            progress={avancementMoyen}
+            size={72}
+            strokeWidth={7}
+            gradientId="chantiers-avancement-moyen"
+            accent="#c8521a"
+            accentClair="#f0b998"
+          />
           <div>
-            <p className="text-sm font-semibold text-white">Avancement moyen</p>
-            <p className="text-xs text-muted">Tous les chantiers confondus</p>
+            <p className="text-sm font-semibold text-chantiers-marron">Avancement moyen</p>
+            <p className="text-xs text-slate-500">Tous les chantiers confondus</p>
           </div>
         </Card>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatTile icon={HardHat} valeur={totalChantiers} libelle="Chantiers au total" />
-          <StatTile icon={Activity} valeur={enCours} libelle="En cours" teinte="#ffb673" />
-          <StatTile icon={CheckCircle2} valeur={termines} libelle="Terminés" teinte="#4ade80" />
-          <StatTile icon={ListChecks} valeur={totalTaches} libelle="Tâches au total" />
+          <StatTile icon={HardHat} valeur={totalChantiers} libelle="Chantiers au total" teinte="#c8521a" />
+          <StatTile icon={Activity} valeur={enCours} libelle="En cours" teinte="#1a5c8a" />
+          <StatTile icon={CheckCircle2} valeur={termines} libelle="Terminés" teinte="#1a7a42" />
+          <StatTile icon={ListChecks} valeur={totalTaches} libelle="Tâches au total" teinte="#c8521a" />
         </div>
       </div>
 
@@ -102,6 +109,7 @@ export default function Liste() {
         icon={HardHat}
         titre="Chantiers"
         sousTitre={idEnEdition !== null ? 'Modifier le chantier sélectionné' : 'Suivi de chantier'}
+        accent="#c8521a"
         onSubmit={envoyer}
         envoiEnCours={creation.enCours || modification.enCours}
         erreurEnvoi={creation.erreur ?? modification.erreur ?? suppression.erreur}
@@ -115,7 +123,7 @@ export default function Liste() {
         ]}
         entete={
           idEnEdition !== null ? (
-            <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-accent2 hover:text-accent">
+            <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-chantiers-terracotta hover:opacity-80">
               ← Annuler la modification
             </button>
           ) : undefined
@@ -126,15 +134,15 @@ export default function Liste() {
           p.name,
           p.client || '—',
           `${Math.round(p.overall_progress)}%`,
-          <Badge tone={TONE[p.status] ?? 'neutral'}>{p.status_display}</Badge>,
+          <StatutBadge ton={TONE[p.status] ?? 'neutre'}>{p.status_display}</StatutBadge>,
           <div className="flex items-center gap-2">
-            <Link to={`/chantiers/${p.id}`} className="text-xs font-semibold text-accent2">
+            <Link to={`/chantiers/${p.id}`} className="text-xs font-semibold text-chantiers-terracotta">
               Détail →
             </Link>
-            <button onClick={() => modifier(p)} className="text-xs font-semibold text-muted hover:text-white">
+            <button onClick={() => modifier(p)} className="text-xs font-semibold text-slate-500 hover:text-chantiers-marron">
               Modifier
             </button>
-            <button onClick={() => supprimer(p.id)} disabled={suppression.enCours} className="text-xs font-semibold text-red-400 hover:text-red-300">
+            <button onClick={() => supprimer(p.id)} disabled={suppression.enCours} className="text-xs font-semibold text-chantiers-rouge hover:opacity-80">
               Supprimer
             </button>
           </div>,

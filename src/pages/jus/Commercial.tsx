@@ -1,10 +1,10 @@
 import { ReceiptText, ShoppingCart, Users, Wallet } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { CircularProgress } from '../../components/ui/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatTile } from '../../components/ui/StatTile';
-import { Badge, TableVirtus } from '../../components/ui/Table';
+import { Card } from '../../components/ui-light/Card';
+import { CircularProgress } from '../../components/ui-light/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { StatTile } from '../../components/ui-light/StatTile';
+import { Badge, TableVirtus } from '../../components/ui-light/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerVentes, obtenirSummary } from '../../lib/api/jus';
 
@@ -27,7 +27,7 @@ export default function Commercial() {
 
   return (
     <div>
-      <PageHeader icon={ShoppingCart} titre="Jus d'orange — Commercial" sousTitre="Prospection, clients, ventes" />
+      <PageHeader icon={ShoppingCart} titre="Jus d'orange — Commercial" sousTitre="Prospection, clients, ventes" accent="#eb6834" />
 
       <div className="mb-4 grid grid-cols-4 gap-4">
         <StatTile icon={Users} valeur={kpi.clients} libelle="Clients" teinte="#60a5fa" />
@@ -39,16 +39,16 @@ export default function Commercial() {
       <Card className="mb-4 flex items-center gap-4">
         <CircularProgress progress={tauxEncaissement} size={64} strokeWidth={6} gradientId="jus-commercial-encaissement-gradient" />
         <div>
-          <p className="text-sm font-semibold text-white">{Math.round(tauxEncaissement)}% du chiffre d'affaires encaissé</p>
-          <p className="text-xs text-muted">
+          <p className="text-sm font-semibold text-slate-900">{Math.round(tauxEncaissement)}% du chiffre d'affaires encaissé</p>
+          <p className="text-xs text-slate-500">
             {totalPaye} F reçus sur {totalFacture} F facturés ({listeVentes.length} ventes)
           </p>
         </div>
       </Card>
 
       <div className="mb-3 flex items-center gap-2">
-        <ReceiptText size={15} className="text-accent2" />
-        <h2 className="text-sm font-bold text-white">Dernières ventes</h2>
+        <ReceiptText size={15} className="text-jus-primaryDark" />
+        <h2 className="text-sm font-bold text-slate-900">Dernières ventes</h2>
       </div>
       <TableVirtus
         colonnes={['Client', 'Montant', 'Statut']}

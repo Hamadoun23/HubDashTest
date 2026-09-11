@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Card } from '../../components/ui/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { ProgressBar } from '../../components/ui/ProgressBar';
+import { Card } from '../../components/ui-light/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { ProgressBar } from '../../components/ui-light/ProgressBar';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerMiseAJour, modifierMiseAJour, vueDuJour, type ElementJour } from '../../lib/api/chantiers';
 import type { ContexteChantier } from './ChantierLayout';
@@ -29,49 +29,49 @@ function LigneTache({ chantierId, item, recharger }: { chantierId: number; item:
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface2 p-4">
+    <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-white">{item.task.activity}</p>
-          <p className="text-xs text-muted">
+          <p className="text-sm font-semibold text-chantiers-marron">{item.task.activity}</p>
+          <p className="text-xs text-slate-500">
             {item.task.phase} · {item.task.subphase}
           </p>
         </div>
-        <span className="text-xs font-semibold text-muted">{item.effective_status}</span>
+        <span className="text-xs font-semibold text-slate-500">{item.effective_status}</span>
       </div>
-      <ProgressBar progress={item.effective_progress} height={5} />
+      <ProgressBar progress={item.effective_progress} height={5} accent="#c8521a" />
       <div className="mt-1 flex items-end gap-2">
         <div className="flex-1">
-          <label className="mb-1 block text-xs font-semibold text-muted">Avancement (%)</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-500">Avancement (%)</label>
           <input
             type="number"
             min={0}
             max={100}
             value={progress}
             onChange={(e) => setProgress(Number(e.target.value))}
-            className="w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-chantiers-terracotta focus:outline-none"
           />
         </div>
         <div className="flex-[2]">
-          <label className="mb-1 block text-xs font-semibold text-muted">
+          <label className="mb-1 block text-xs font-semibold text-slate-500">
             Commentaire{progressionEnHausse ? ' (obligatoire pour justifier la hausse)' : ''}
           </label>
           <input
             value={commentaire}
             onChange={(e) => setCommentaire(e.target.value)}
             placeholder="Travaux réalisés, incidents..."
-            className="w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-white placeholder:text-muted focus:border-accent focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-chantiers-terracotta focus:outline-none"
           />
         </div>
         <button
           onClick={enregistrer}
           disabled={saisie.enCours || (progressionEnHausse && !commentaire.trim())}
-          className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-black disabled:opacity-60"
+          className="rounded-lg bg-chantiers-terracotta px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
         >
           {saisie.enCours ? 'Envoi...' : item.daily_update ? 'Mettre à jour' : 'Enregistrer'}
         </button>
       </div>
-      {saisie.erreur ? <p className="text-xs font-semibold text-red-400">{saisie.erreur}</p> : null}
+      {saisie.erreur ? <p className="text-xs font-semibold text-chantiers-rouge">{saisie.erreur}</p> : null}
     </div>
   );
 }
@@ -86,12 +86,12 @@ export default function SaisieDuJour() {
   return (
     <div>
       <Card className="mb-4">
-        <h2 className="text-sm font-bold text-white">Saisie du jour — {projet.name}</h2>
-        <p className="mt-1 text-xs text-muted">{jour.donnees.date}</p>
+        <h2 className="text-sm font-bold text-chantiers-marron">Saisie du jour — {projet.name}</h2>
+        <p className="mt-1 text-xs text-slate-500">{jour.donnees.date}</p>
       </Card>
 
       {jour.donnees.items.length === 0 ? (
-        <p className="rounded-3xl border border-border bg-surface p-8 text-center text-sm text-muted backdrop-blur-xl">
+        <p className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
           Aucune tâche à saisir aujourd'hui.
         </p>
       ) : (

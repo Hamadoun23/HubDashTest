@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Users } from 'lucide-react';
-import { EtatErreur } from '../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
+import { EtatErreur } from '../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerClient, listerClients } from '../../lib/api/planning';
 
@@ -24,6 +24,7 @@ export default function Clients() {
       icon={Users}
       titre="Clients"
       sousTitre="Comptes suivis par Planning"
+      accent="#e8481b"
       onSubmit={envoyer}
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}

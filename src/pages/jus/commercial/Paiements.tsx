@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Wallet } from 'lucide-react';
-import { EtatChargement, EtatErreur } from '../../../components/ui/EtatRequete';
-import { PageHeader } from '../../../components/ui/PageHeader';
-import { TableVirtus } from '../../../components/ui/Table';
+import { EtatChargement, EtatErreur } from '../../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../../components/ui-light/PageHeader';
+import { TableVirtus } from '../../../components/ui-light/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { listerPaiements, modifierPaiement, supprimerPaiement, type ModePaie } from '../../../lib/api/jus';
 
@@ -47,7 +47,7 @@ export default function Paiements() {
 
   return (
     <div>
-      <PageHeader icon={Wallet} titre="Paiements" sousTitre="Encaissements reçus — enregistrés depuis une facture" />
+      <PageHeader icon={Wallet} titre="Paiements" sousTitre="Encaissements reçus — enregistrés depuis une facture" accent="#eb6834" />
       <TableVirtus
         colonnes={['Facture', 'Montant', 'Mode', 'Référence', 'Date', '']}
         lignes={(paiements.donnees ?? []).map((p) => [
@@ -66,7 +66,7 @@ export default function Paiements() {
                 setReference(p.reference);
                 setDate(p.date_paie);
               }}
-              className="text-xs font-semibold text-accent2 hover:text-accent"
+              className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
             >
               Modifier
             </button>
@@ -74,32 +74,32 @@ export default function Paiements() {
               type="button"
               onClick={() => supprimer(p.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
+              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
             >
               Supprimer
             </button>
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-2 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-2 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
 
       {idEnEdition !== null && (
-        <form onSubmit={enregistrerModification} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-4">
+        <form onSubmit={enregistrerModification} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-300 bg-slate-50 p-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">Montant</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Montant</label>
             <input
               value={montant}
               onChange={(e) => setMontant(e.target.value)}
               required
-              className="w-28 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+              className="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">Mode</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Mode</label>
             <select
               value={mode}
               onChange={(e) => setMode(e.target.value as ModePaie)}
-              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
             >
               <option value="ESPECE">Espèces</option>
               <option value="CHEQUE">Chèque</option>
@@ -108,34 +108,34 @@ export default function Paiements() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">Référence</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Référence</label>
             <input
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-muted">Date</label>
+            <label className="mb-1 block text-xs font-semibold text-slate-500">Date</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={modification.enCours}
-            className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+            className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
           >
             {modification.enCours ? 'Envoi...' : 'Mettre à jour'}
           </button>
-          <button type="button" onClick={annulerEdition} className="text-xs font-semibold text-muted hover:text-white">
+          <button type="button" onClick={annulerEdition} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
             Annuler la modification
           </button>
-          {modification.erreur ? <p className="text-xs font-semibold text-red-400">{modification.erreur}</p> : null}
+          {modification.erreur ? <p className="text-xs font-semibold text-rose-600">{modification.erreur}</p> : null}
         </form>
       )}
     </div>

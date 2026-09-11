@@ -1,7 +1,7 @@
 import { Users } from 'lucide-react';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { TableVirtus } from '../../components/ui/Table';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { TableVirtus } from '../../components/ui-light/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerUtilisateurs, type Utilisateur } from '../../lib/api/rh';
 
@@ -19,7 +19,7 @@ export default function Annuaire() {
 
   return (
     <div>
-      <PageHeader icon={Users} titre="Annuaire" sousTitre={`${agents.length} collaborateurs`} />
+      <PageHeader icon={Users} titre="Annuaire" sousTitre={`${agents.length} collaborateurs`} accent="#d03e0d" />
       <TableVirtus
         colonnes={['Nom', 'Poste', 'Département', 'Email']}
         lignes={agents.map((a) => [a.nom_complet, a.poste || '—', a.departement_nom || '—', a.email])}

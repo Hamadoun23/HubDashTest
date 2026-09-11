@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lightbulb } from 'lucide-react';
-import { EtatErreur } from '../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
+import { EtatErreur } from '../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerIdee, listerIdees } from '../../lib/api/planning';
 
@@ -27,6 +27,7 @@ export default function IdeesContenu() {
       icon={Lightbulb}
       titre="Idées de contenu"
       sousTitre="Ce qui se prépare pour vos clients"
+      accent="#e8481b"
       onSubmit={envoyer}
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}

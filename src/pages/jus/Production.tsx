@@ -1,10 +1,10 @@
 import { AlertTriangle, Boxes, FlaskConical, Sprout, Wine } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { CircularProgress } from '../../components/ui/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatTile } from '../../components/ui/StatTile';
-import { TrendChart } from '../../components/ui/TrendChart';
+import { Card } from '../../components/ui-light/Card';
+import { CircularProgress } from '../../components/ui-light/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { StatTile } from '../../components/ui-light/StatTile';
+import { TrendChart } from '../../components/ui-light/TrendChart';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerCueillettes, obtenirSummary } from '../../lib/api/jus';
 
@@ -37,7 +37,7 @@ export default function Production() {
 
   return (
     <div>
-      <PageHeader icon={FlaskConical} titre="Jus d'orange — Production" sousTitre="De la cueillette au conditionnement" />
+      <PageHeader icon={FlaskConical} titre="Jus d'orange — Production" sousTitre="De la cueillette au conditionnement" accent="#eb6834" />
       <div className="mb-4 grid grid-cols-4 gap-4">
         <StatTile icon={Sprout} valeur={`${kpi.recolte_total} kg`} libelle="Récolte totale" teinte="#4ade80" />
         <StatTile icon={Boxes} valeur={kpi.jus_stock} libelle="Stock de jus" teinte="#60a5fa" />
@@ -48,13 +48,13 @@ export default function Production() {
       <div className="mb-4 grid grid-cols-[1fr_auto] gap-4">
         {tendanceRecolte.length > 0 && (
           <Card>
-            <h2 className="mb-3 text-sm font-bold text-white">Récolte par jour (kg)</h2>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Récolte par jour (kg)</h2>
             <TrendChart donnees={tendanceRecolte} formatValeur={(v) => `${v} kg`} />
           </Card>
         )}
         <Card className="flex flex-col items-center justify-center gap-2">
           <CircularProgress progress={disponibiliteStock} gradientId="jus-production-stock-gradient" />
-          <p className="text-center text-xs text-muted">
+          <p className="text-center text-xs text-slate-500">
             Disponibilité du stock
             <br />
             ({articlesOk}/{stock_articles.length} articles au-dessus du seuil)
@@ -63,16 +63,16 @@ export default function Production() {
       </div>
 
       <Card>
-        <h2 className="mb-3 text-sm font-bold text-white">Dernières cueillettes</h2>
+        <h2 className="mb-3 text-sm font-bold text-slate-900">Dernières cueillettes</h2>
         {dernieresCueillettes.length === 0 ? (
-          <p className="py-6 text-center text-xs text-muted">Aucune cueillette enregistrée pour le moment.</p>
+          <p className="py-6 text-center text-xs text-slate-500">Aucune cueillette enregistrée pour le moment.</p>
         ) : (
           <div className="flex flex-col gap-2">
             {dernieresCueillettes.map((c) => (
-              <div key={c.id} className="flex items-center justify-between rounded-2xl border border-border bg-surface2 p-3">
+              <div key={c.id} className="flex items-center justify-between rounded-2xl border border-slate-300 bg-white p-3">
                 <div>
-                  <p className="text-sm font-semibold text-white">{c.producteur_display || c.producteur_nom_archive}</p>
-                  <p className="text-xs text-muted">
+                  <p className="text-sm font-semibold text-slate-900">{c.producteur_display || c.producteur_nom_archive}</p>
+                  <p className="text-xs text-slate-500">
                     {c.date_cueil} · {c.qte_total} kg · qualité {Math.round(c.taux_qualite)}%
                   </p>
                 </div>

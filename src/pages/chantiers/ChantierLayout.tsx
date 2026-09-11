@@ -10,8 +10,7 @@ import {
   PencilLine,
 } from 'lucide-react';
 import { Link, NavLink, Outlet, useParams } from 'react-router-dom';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { Badge } from '../../components/ui/Table';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
 import { useApi } from '../../lib/hooks/useApi';
 import { obtenirProjet, type Projet } from '../../lib/api/chantiers';
 
@@ -30,6 +29,36 @@ const STATUTS_TERMINES = new Set(['termine']);
 
 export type ContexteChantier = { projet: Projet; recharger: () => void };
 
+/**
+ * Pastille de statut aux couleurs propres à Chantiers (vert/bleu/rouge, pas
+ * les tons génériques emerald/amber/rose du Badge partagé) — voir
+ * retrogradeAppmetier.md.
+ */
+const COULEURS_STATUT: Record<'vert' | 'bleu' | 'rouge' | 'neutre', string> = {
+  vert: '#1a7a42',
+  bleu: '#1a5c8a',
+  rouge: '#c01a1a',
+  neutre: '#381419',
+};
+
+export function StatutBadge({
+  ton,
+  children,
+}: {
+  ton: 'vert' | 'bleu' | 'rouge' | 'neutre';
+  children: React.ReactNode;
+}) {
+  const couleur = COULEURS_STATUT[ton];
+  return (
+    <span
+      className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+      style={{ background: `${couleur}1f`, color: couleur }}
+    >
+      {children}
+    </span>
+  );
+}
+
 export default function ChantierLayout() {
   const { id } = useParams();
   const chantierId = Number(id);
@@ -43,18 +72,18 @@ export default function ChantierLayout() {
   if (!idValide) {
     return (
       <div>
-        <Link to="/chantiers" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-accent2">
+        <Link to="/chantiers" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-chantiers-terracotta">
           <ArrowLeft size={14} />
           Retour aux chantiers
         </Link>
-        <p className="text-sm text-muted">Chantier introuvable.</p>
+        <p className="text-sm text-slate-500">Chantier introuvable.</p>
       </div>
     );
   }
 
   return (
     <div>
-      <Link to="/chantiers" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-accent2">
+      <Link to="/chantiers" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-chantiers-terracotta">
         <ArrowLeft size={14} />
         Retour aux chantiers
       </Link>
@@ -67,15 +96,15 @@ export default function ChantierLayout() {
         <>
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/20">
-                <HardHat size={18} className="text-accent2" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-chantiers-terracotta/20">
+                <HardHat size={18} className="text-chantiers-terracotta" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">{projet.name}</h1>
-                <p className="text-xs text-muted">{projet.client || `Chantier n°${projet.id}`}</p>
+                <h1 className="text-xl font-bold text-chantiers-marron">{projet.name}</h1>
+                <p className="text-xs text-slate-500">{projet.client || `Chantier n°${projet.id}`}</p>
               </div>
             </div>
-            <Badge tone={STATUTS_TERMINES.has(projet.status) ? 'success' : 'warning'}>{projet.status_display}</Badge>
+            <StatutBadge ton={STATUTS_TERMINES.has(projet.status) ? 'vert' : 'bleu'}>{projet.status_display}</StatutBadge>
           </div>
 
           <div className="mb-5 flex flex-wrap gap-2">
@@ -86,7 +115,9 @@ export default function ChantierLayout() {
                 end={onglet.bout}
                 className={({ isActive }) =>
                   `flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
-                    isActive ? 'bg-accent text-black' : 'bg-surface2 text-muted hover:text-white'
+                    isActive
+                      ? 'bg-chantiers-terracotta text-white shadow-sm'
+                      : 'border border-slate-200 bg-white text-slate-600 hover:border-chantiers-terracotta/40 hover:text-chantiers-terracotta'
                   }`
                 }
               >

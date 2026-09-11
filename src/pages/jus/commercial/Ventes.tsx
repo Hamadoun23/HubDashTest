@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Citrus } from 'lucide-react';
-import { EtatChargement, EtatErreur } from '../../../components/ui/EtatRequete';
-import { PageHeader } from '../../../components/ui/PageHeader';
-import { Badge, TableVirtus } from '../../../components/ui/Table';
+import { EtatChargement, EtatErreur } from '../../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../../components/ui-light/PageHeader';
+import { Badge, TableVirtus } from '../../../components/ui-light/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { listerVentes, modifierVente, supprimerVente, type StatutPaiement } from '../../../lib/api/jus';
 
@@ -36,7 +36,7 @@ export default function Ventes() {
 
   return (
     <div>
-      <PageHeader icon={Citrus} titre="Ventes" sousTitre="Toutes les ventes commerciales — créées depuis une commande complétée" />
+      <PageHeader icon={Citrus} titre="Ventes" sousTitre="Toutes les ventes commerciales — créées depuis une commande complétée" accent="#eb6834" />
       <TableVirtus
         colonnes={['Client', 'Montant', 'Payé', 'Reste', 'Statut', '']}
         lignes={(ventes.donnees ?? []).map((v) => [
@@ -51,7 +51,7 @@ export default function Ventes() {
                 <select
                   value={statutPaiement}
                   onChange={(e) => setStatutPaiement(e.target.value as StatutPaiement)}
-                  className="rounded-lg border border-border bg-surface2 px-2 py-1 text-xs text-white"
+                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900"
                 >
                   <option value="ACHAT_VENTE">Achat/vente (payé)</option>
                   <option value="PARTIELLE">Paiement partiel</option>
@@ -60,11 +60,11 @@ export default function Ventes() {
                 <button
                   onClick={() => enregistrerStatut(v.id)}
                   disabled={modification.enCours}
-                  className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
+                  className="rounded-lg bg-jus-primary px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
                 >
                   Valider
                 </button>
-                <button type="button" onClick={() => setEnEdition(null)} className="text-xs font-semibold text-muted hover:text-white">
+                <button type="button" onClick={() => setEnEdition(null)} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
                   Annuler
                 </button>
               </>
@@ -75,7 +75,7 @@ export default function Ventes() {
                   setEnEdition(v.id);
                   setStatutPaiement(v.statut_paiement);
                 }}
-                className="text-xs font-semibold text-accent2 hover:text-accent"
+                className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
               >
                 Modifier le statut
               </button>
@@ -84,7 +84,7 @@ export default function Ventes() {
               type="button"
               onClick={() => supprimer(v.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
+              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
             >
               Supprimer
             </button>
@@ -92,7 +92,7 @@ export default function Ventes() {
         ])}
       />
       {(modification.erreur || suppression.erreur) ? (
-        <p className="mt-2 text-xs font-semibold text-red-400">{modification.erreur ?? suppression.erreur}</p>
+        <p className="mt-2 text-xs font-semibold text-rose-600">{modification.erreur ?? suppression.erreur}</p>
       ) : null}
     </div>
   );
