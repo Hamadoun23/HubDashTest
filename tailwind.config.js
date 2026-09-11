@@ -47,9 +47,18 @@ export default {
           o2: '#ff6a3a',
           o3: '#e8481b',
         },
+        // Identité réelle de Campagnes (alias interne "BDM" / "GDA Money"),
+        // reprise du dépôt de production `Hamadoun23/Bdm`
+        // (frontend/tailwind.config.js : `gda.orange`) — pas de la copie
+        // trouvée dans backend/campagnes-frontend/ de ce dépôt, qui s'est
+        // avérée être une version déjà "uniformisée" vers la charte sombre
+        // du hub, à l'opposé de l'app réelle (rail d'icônes clair, canevas
+        // crème #F6F5F2). `primaryDark` sert aux textes/liens sur fond clair
+        // (contraste AA) ; `primary` (la teinte de marque exacte, #FF6A3A)
+        // sert aux boutons pleins et aux accents, comme dans l'app réelle.
         campagnes: {
-          primary: '#7c3aed',
-          primaryDark: '#5b21b6',
+          primary: '#ff6a3a',
+          primaryDark: '#d03e0d',
         },
       },
       fontFamily: {

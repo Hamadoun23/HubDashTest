@@ -6,7 +6,7 @@ import { Badge } from '../../components/ui-light/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { accepterContrat, accuserReceptionAide, obtenirMonContrat, rejeterContrat } from '../../lib/api/campagnes';
 
-const ACCENT = '#7c3aed';
+const ACCENT = '#d03e0d';
 const TONE = { en_attente: 'warning', accepte: 'success', rejete: 'danger' } as const;
 
 export default function MonContrat() {
@@ -24,7 +24,7 @@ export default function MonContrat() {
     return (
       <div>
         <PageHeader icon={FileSignature} titre="Mon contrat" sousTitre="Contrat de prestation" accent={ACCENT} />
-        <Card className="py-10 text-center text-sm text-slate-500">Aucune campagne active ne vous concerne pour le moment.</Card>
+        <Card className="py-10 text-center text-sm text-gray-500">Aucune campagne active ne vous concerne pour le moment.</Card>
       </div>
     );
   }
@@ -35,14 +35,14 @@ export default function MonContrat() {
 
       <Card className="mb-4">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900">Statut</h2>
+          <h2 className="text-sm font-bold text-gray-900">Statut</h2>
           {c.statut ? <Badge tone={TONE[c.statut]}>{c.statut}</Badge> : null}
         </div>
 
         {c.document?.articles.map((a) => (
           <div key={a.id} className="mb-4">
             <h3 className="text-xs font-bold uppercase tracking-wide text-campagnes-primaryDark">{a.titre}</h3>
-            <p className="mt-1 whitespace-pre-line text-sm text-slate-700">{a.contenu}</p>
+            <p className="mt-1 whitespace-pre-line text-sm text-gray-700">{a.contenu}</p>
           </div>
         ))}
 
@@ -68,16 +68,16 @@ export default function MonContrat() {
       </Card>
 
       <div>
-        <h2 className="mb-3 text-sm font-bold text-slate-900">Aides hebdomadaires</h2>
+        <h2 className="mb-3 text-sm font-bold text-gray-900">Aides hebdomadaires</h2>
         {c.aides.length === 0 ? (
-          <Card className="text-sm text-slate-500">Aucune aide versée pour le moment.</Card>
+          <Card className="text-sm text-gray-500">Aucune aide versée pour le moment.</Card>
         ) : (
           <div className="flex flex-col gap-2">
             {c.aides.map((a) => (
               <Card key={a.id} className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Semaine du {a.semaine_debut}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-semibold text-gray-900">Semaine du {a.semaine_debut}</p>
+                  <p className="text-xs text-gray-500">
                     Carburant : {a.montant_carburant} · Crédit tél. : {a.montant_credit_tel}
                   </p>
                 </div>

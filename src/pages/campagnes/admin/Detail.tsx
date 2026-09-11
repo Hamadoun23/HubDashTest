@@ -90,8 +90,8 @@ export default function Detail() {
 
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{campagne.nom}</h1>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-xl font-bold text-gray-900">{campagne.nom}</h1>
+          <p className="text-xs text-gray-500">
             {campagne.date_debut} → {campagne.date_fin} · {campagne.agences_libelle}
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function Detail() {
               <button
                 onClick={arreter}
                 disabled={arret.enCours}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-campagnes-primary"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-campagnes-primary"
               >
                 <Ban size={13} /> Arrêter
               </button>
@@ -121,7 +121,7 @@ export default function Detail() {
                   setNouvelleFin(campagne.date_fin);
                   setReprogrammationOuverte((v) => !v);
                 }}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-campagnes-primary"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-campagnes-primary"
               >
                 <CalendarClock size={13} /> Reprogrammer
               </button>
@@ -131,7 +131,7 @@ export default function Detail() {
                   setAideMontant(campagne.aide_hebdo_montant ?? '');
                   setEditionOuverte((v) => !v);
                 }}
-                className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-campagnes-primary"
+                className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-campagnes-primary"
               >
                 <Pencil size={13} /> Modifier
               </button>
@@ -141,35 +141,35 @@ export default function Detail() {
       </div>
 
       {reprogrammationOuverte && (
-        <form onSubmit={reprogrammer} className="mb-5 flex items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <form onSubmit={reprogrammer} className="mb-5 flex items-end gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Nouveau début</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-500">Nouveau début</label>
             <input
               type="date"
               value={nouveauDebut}
               onChange={(e) => setNouveauDebut(e.target.value)}
               required
-              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:outline-none"
+              className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Nouvelle fin</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-500">Nouvelle fin</label>
             <input
               type="date"
               value={nouvelleFin}
               onChange={(e) => setNouvelleFin(e.target.value)}
               required
-              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:outline-none"
+              className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none"
             />
           </div>
           <div className="flex-1">
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Motif (10 caractères min.)</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-500">Motif (10 caractères min.)</label>
             <input
               value={motifReprogrammation}
               onChange={(e) => setMotifReprogrammation(e.target.value)}
               required
               minLength={10}
-              className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none"
             />
           </div>
           <button
@@ -179,7 +179,7 @@ export default function Detail() {
           >
             {reprogrammation.enCours ? 'Envoi...' : 'Confirmer'}
           </button>
-          <button type="button" onClick={() => setReprogrammationOuverte(false)} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <button type="button" onClick={() => setReprogrammationOuverte(false)} className="text-xs font-semibold text-gray-500 hover:text-gray-900">
             Annuler
           </button>
           {reprogrammation.erreur ? <p className="text-xs font-semibold text-rose-600">{reprogrammation.erreur}</p> : null}
@@ -187,21 +187,21 @@ export default function Detail() {
       )}
 
       {editionOuverte && (
-        <form onSubmit={enregistrerEdition} className="mb-5 flex items-end gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <form onSubmit={enregistrerEdition} className="mb-5 flex items-end gap-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Prime meilleur vendeur</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-500">Prime meilleur vendeur</label>
             <input
               value={primeVendeur}
               onChange={(e) => setPrimeVendeur(e.target.value)}
-              className="w-40 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:outline-none"
+              className="w-40 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Aide hebdomadaire</label>
+            <label className="mb-1 block text-xs font-semibold text-gray-500">Aide hebdomadaire</label>
             <input
               value={aideMontant}
               onChange={(e) => setAideMontant(e.target.value)}
-              className="w-40 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:outline-none"
+              className="w-40 rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-sm text-gray-900 focus:outline-none"
             />
           </div>
           <button
@@ -211,7 +211,7 @@ export default function Detail() {
           >
             {modification.enCours ? 'Envoi...' : 'Mettre à jour'}
           </button>
-          <button type="button" onClick={() => setEditionOuverte(false)} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <button type="button" onClick={() => setEditionOuverte(false)} className="text-xs font-semibold text-gray-500 hover:text-gray-900">
             Annuler
           </button>
           {modification.erreur ? <p className="text-xs font-semibold text-rose-600">{modification.erreur}</p> : null}
@@ -224,7 +224,7 @@ export default function Detail() {
             key={o.cle}
             onClick={() => setOnglet(o.cle)}
             className={`rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
-              onglet === o.cle ? 'bg-campagnes-primary text-white' : 'bg-slate-100 text-slate-500 hover:text-slate-900'
+              onglet === o.cle ? 'bg-campagnes-primary text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-900'
             }`}
           >
             {o.libelle}
@@ -235,21 +235,21 @@ export default function Detail() {
       {onglet === 'pilotage' && (
         <div className="grid grid-cols-2 gap-4">
           <Card className="flex flex-col gap-2">
-            <p className="text-xs text-slate-500">Prime meilleur vendeur</p>
-            <p className="text-lg font-bold text-slate-900">{campagne.prime_meilleur_vendeur ?? '—'}</p>
+            <p className="text-xs text-gray-500">Prime meilleur vendeur</p>
+            <p className="text-lg font-bold text-gray-900">{campagne.prime_meilleur_vendeur ?? '—'}</p>
           </Card>
           <Card className="flex flex-col gap-2">
-            <p className="text-xs text-slate-500">Remise</p>
-            <p className="text-lg font-bold text-slate-900">{campagne.remise_libelle ?? '—'}</p>
+            <p className="text-xs text-gray-500">Remise</p>
+            <p className="text-lg font-bold text-gray-900">{campagne.remise_libelle ?? '—'}</p>
           </Card>
           <Card className="flex flex-col gap-2">
-            <p className="text-xs text-slate-500">Aide hebdomadaire</p>
-            <p className="text-lg font-bold text-slate-900">{campagne.aide_hebdo_active ? campagne.aide_hebdo_montant : 'Désactivée'}</p>
+            <p className="text-xs text-gray-500">Aide hebdomadaire</p>
+            <p className="text-lg font-bold text-gray-900">{campagne.aide_hebdo_active ? campagne.aide_hebdo_montant : 'Désactivée'}</p>
           </Card>
           <Card className="flex flex-col gap-2">
-            <p className="text-xs text-slate-500">Commerciaux actifs</p>
-            <p className="text-lg font-bold text-slate-900">
-              {detail.donnees.nbCommerciauxActifs} <span className="text-xs font-normal text-slate-500">/ {detail.donnees.nbCommerciauxActifs + detail.donnees.nbCommerciauxInactifs}</span>
+            <p className="text-xs text-gray-500">Commerciaux actifs</p>
+            <p className="text-lg font-bold text-gray-900">
+              {detail.donnees.nbCommerciauxActifs} <span className="text-xs font-normal text-gray-500">/ {detail.donnees.nbCommerciauxActifs + detail.donnees.nbCommerciauxInactifs}</span>
             </p>
           </Card>
         </div>
@@ -272,8 +272,8 @@ export default function Detail() {
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-4">
             <Card className="flex flex-col gap-1">
-              <p className="text-xs text-slate-500">Ventes totales</p>
-              <p className="text-lg font-bold text-slate-900">{detail.donnees.stats.total_ventes}</p>
+              <p className="text-xs text-gray-500">Ventes totales</p>
+              <p className="text-lg font-bold text-gray-900">{detail.donnees.stats.total_ventes}</p>
             </Card>
           </div>
           <TableVirtus
@@ -284,17 +284,17 @@ export default function Detail() {
       )}
 
       {onglet === 'historique' && (
-        <div className="flex flex-col gap-3 border-l border-slate-200 pl-4">
+        <div className="flex flex-col gap-3 border-l border-gray-200 pl-4">
           {campagne.actions.length === 0 ? (
-            <p className="text-xs text-slate-500">Aucune action enregistrée.</p>
+            <p className="text-xs text-gray-500">Aucune action enregistrée.</p>
           ) : (
             campagne.actions.map((a) => (
               <div key={a.id} className="relative">
                 <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-campagnes-primary" />
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-gray-500">
                   {a.created_at} · {a.user_name}
                 </p>
-                <p className="mt-0.5 text-sm text-slate-900">{a.description}</p>
+                <p className="mt-0.5 text-sm text-gray-900">{a.description}</p>
               </div>
             ))
           )}

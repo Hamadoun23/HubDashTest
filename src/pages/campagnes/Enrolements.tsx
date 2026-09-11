@@ -39,7 +39,7 @@ export default function Enrolements() {
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}
       texteBouton="Enregistrer l'enrôlement"
-      accent="#7c3aed"
+      accent="#d03e0d"
       champs={[
         { label: 'Prénom', valeur: prenom, onChange: setPrenom, requis: true },
         { label: 'Nom', valeur: nom, onChange: setNom, requis: true },

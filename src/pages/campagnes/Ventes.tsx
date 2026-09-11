@@ -44,7 +44,7 @@ export default function Ventes() {
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}
       texteBouton="Enregistrer la vente"
-      accent="#7c3aed"
+      accent="#d03e0d"
       champs={[
         { label: 'Prénom du client', valeur: prenom, onChange: setPrenom, requis: true },
         { label: 'Nom du client', valeur: nom, onChange: setNom, requis: true },

@@ -25,7 +25,7 @@ export default function Liste() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <PageHeader icon={Clapperboard} titre="Campagnes" sousTitre="Toutes les campagnes du partenaire" accent="#7c3aed" />
+        <PageHeader icon={Clapperboard} titre="Campagnes" sousTitre="Toutes les campagnes du partenaire" accent="#d03e0d" />
         <Link
           to="/campagnes/admin/campagnes/creer"
           className="mb-6 flex h-fit items-center gap-2 rounded-xl bg-campagnes-primary px-4 py-2.5 text-xs font-bold text-white"
