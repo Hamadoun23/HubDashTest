@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { UserPlus } from 'lucide-react';
-import { EtatErreur } from '../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
+import { EtatErreur } from '../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerEnrolement, listerEnrolements, obtenirTableauDeBord } from '../../lib/api/campagnes';
 
@@ -39,6 +39,7 @@ export default function Enrolements() {
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}
       texteBouton="Enregistrer l'enrôlement"
+      accent="#7c3aed"
       champs={[
         { label: 'Prénom', valeur: prenom, onChange: setPrenom, requis: true },
         { label: 'Nom', valeur: nom, onChange: setNom, requis: true },

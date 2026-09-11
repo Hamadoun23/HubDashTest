@@ -47,6 +47,10 @@ export default {
           o2: '#ff6a3a',
           o3: '#e8481b',
         },
+        campagnes: {
+          primary: '#7c3aed',
+          primaryDark: '#5b21b6',
+        },
       },
       fontFamily: {
         sans: ['Manrope', 'system-ui', 'sans-serif'],

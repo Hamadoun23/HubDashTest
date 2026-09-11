@@ -53,28 +53,32 @@ autres apps :
 - **Planning** (`/planning/*`) — bandeau dégradé orange
   (`#ff8a5c → #ff6a3a → #e8481b`) avec onglets horizontaux, fond clair.
   Layout : `src/layouts/PlanningLayout.tsx`.
-- **Campagnes** (`/campagnes/*`) — hors périmètre de ce changement (n'existe
-  pas dans le dépôt `gdahub` de référence) : reste sous la coquille sombre
-  du hub, inchangé.
+- **Campagnes** (`/campagnes/*`) — clair, sidebar violette `#7c3aed`.
+  N'existe pas dans le dépôt `gdahub` de référence (cette app n'a jamais eu
+  de vues React unifiées, elle servait à l'origine ses propres pages
+  Django/Inertia) : pas de palette à reprendre, donc identité propre choisie
+  en suivant le même principe que les 4 autres — surtout PAS l'habillage
+  sombre de la coquille du hub, corrigé après un premier essai qui l'avait
+  laissée par erreur sous `<App>`. Layout : `src/layouts/CampagnesLayout.tsx`.
 
 La sidebar du hub (`src/components/Sidebar.tsx`) ne fait plus que **rediriger**
 vers la racine de chaque app (`/rh`, `/jus/production`, `/chantiers`,
 `/planning`, `/campagnes`) — plus de sous-menu déroulant dans le style sombre
 une fois dans une app.
 
-Un kit de composants clairs partagé par les 4 apps métier vit dans
+Un kit de composants clairs partagé par les 5 apps métier vit dans
 `src/components/ui-light/` (`Card`, `PageHeader`, `StatTile`, `Badge`,
 `TableVirtus`, `EtatChargement`/`EtatErreur`, `CircularProgress`,
 `TrendChart`, `DualTrendChart`, `Avatar`/`AvatarStack`, `ProgressBar`,
 `FormulaireEtHistorique`, `RapportGenerique`) — l'équivalent clair de
 `src/components/ui/` (toujours utilisé tel quel par la coquille sombre du
 hub, ne pas le supprimer). Toutes les pages sous `src/pages/{jus,rh,
-chantiers,planning}/` ont été reskinnées pour utiliser ce kit clair ; aucune
-logique de récupération de données n'a changé.
+chantiers,planning,campagnes}/` ont été reskinnées pour utiliser ce kit
+clair ; aucune logique de récupération de données n'a changé.
 
 **Vérifié en local dans cette session** (Playwright, backend mocké, pas de
 vrai Django) : `tsc --noEmit` et `npm run build` propres, et un grep sur les
-4 dossiers d'apps métier ne trouve plus aucune classe sombre résiduelle
+5 dossiers d'apps métier ne trouve plus aucune classe sombre résiduelle
 (`text-white`/`bg-surface`/`border-border`/`bg-accent`/`text-accent`) hors
 usages légitimes (texte blanc sur bouton plein coloré). **Jamais vérifié
 avec les vrais services Django ni un vrai navigateur non automatisé** — à
@@ -193,7 +197,7 @@ ci-dessus — un fond sombre "Virtus" en dehors de `/`, `/administration`,
   projets
 - `/planning` (bandeau dégradé orange, onglets horizontaux) —
   tournages/publications à venir
-- `/campagnes` (sombre, inchangé) — une fois la commande de seed écrite
+- `/campagnes` (clair, violet `#7c3aed`) — une fois la commande de seed écrite
 - Cliquer sur chaque app depuis la sidebar du hub, puis sur "← GDA Hub" dans
   chaque app pour revenir — vérifier qu'aucun style ne "fuit" d'une app à
   l'autre au moment de la transition.

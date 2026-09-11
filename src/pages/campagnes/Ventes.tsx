@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CreditCard } from 'lucide-react';
-import { EtatErreur } from '../../components/ui/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
+import { EtatErreur } from '../../components/ui-light/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerVente, listerVentes, optionsCreationVente } from '../../lib/api/campagnes';
 
@@ -44,6 +44,7 @@ export default function Ventes() {
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}
       texteBouton="Enregistrer la vente"
+      accent="#7c3aed"
       champs={[
         { label: 'Prénom du client', valeur: prenom, onChange: setPrenom, requis: true },
         { label: 'Nom du client', valeur: nom, onChange: setNom, requis: true },

@@ -1,8 +1,8 @@
 import { Clapperboard, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { EtatChargement, EtatErreur } from '../../../components/ui/EtatRequete';
-import { PageHeader } from '../../../components/ui/PageHeader';
-import { Badge, TableVirtus } from '../../../components/ui/Table';
+import { EtatChargement, EtatErreur } from '../../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../../components/ui-light/PageHeader';
+import { Badge, TableVirtus } from '../../../components/ui-light/Table';
 import { useApi } from '../../../lib/hooks/useApi';
 import { listerCampagnesAdmin, type StatutCampagne } from '../../../lib/api/campagnes';
 
@@ -25,10 +25,10 @@ export default function Liste() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <PageHeader icon={Clapperboard} titre="Campagnes" sousTitre="Toutes les campagnes du partenaire" />
+        <PageHeader icon={Clapperboard} titre="Campagnes" sousTitre="Toutes les campagnes du partenaire" accent="#7c3aed" />
         <Link
           to="/campagnes/admin/campagnes/creer"
-          className="mb-6 flex h-fit items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-xs font-bold text-black"
+          className="mb-6 flex h-fit items-center gap-2 rounded-xl bg-campagnes-primary px-4 py-2.5 text-xs font-bold text-white"
         >
           <Plus size={14} />
           Nouvelle campagne
@@ -41,7 +41,7 @@ export default function Liste() {
           LIBELLE_TYPE[c.type] ?? c.type,
           `${c.date_debut} → ${c.date_fin}`,
           <Badge tone={TONE[c.statut]}>{c.statut}</Badge>,
-          <Link to={`/campagnes/admin/campagnes/${c.id}`} className="text-xs font-semibold text-accent2">
+          <Link to={`/campagnes/admin/campagnes/${c.id}`} className="text-xs font-semibold text-campagnes-primaryDark">
             Voir le détail →
           </Link>,
         ])}

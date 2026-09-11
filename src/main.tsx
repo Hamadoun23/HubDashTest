@@ -14,6 +14,7 @@ import JusLayout from './layouts/JusLayout';
 import RhLayout from './layouts/RhLayout';
 import ChantiersLayout from './layouts/ChantiersLayout';
 import PlanningLayout from './layouts/PlanningLayout';
+import CampagnesLayout from './layouts/CampagnesLayout';
 
 import ChantierLayout from './pages/chantiers/ChantierLayout';
 import ChantiersDetail from './pages/chantiers/Detail';
@@ -98,7 +99,9 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/" element={<Accueil />} />
               <Route path="/administration" element={<Administration />} />
               <Route path="/mon-compte" element={<MonCompte />} />
+            </Route>
 
+            <Route element={<CampagnesLayout />}>
               <Route path="/campagnes" element={<CampagnesTableauDeBord />} />
               <Route path="/campagnes/ventes" element={<CampagnesVentes />} />
               <Route path="/campagnes/enrolements" element={<CampagnesEnrolements />} />

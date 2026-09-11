@@ -1,12 +1,14 @@
 import { Award, Clapperboard, TrendingUp, Users } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { CircularProgress } from '../../components/ui/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { StatTile } from '../../components/ui/StatTile';
-import { TrendChart } from '../../components/ui/TrendChart';
+import { Card } from '../../components/ui-light/Card';
+import { CircularProgress } from '../../components/ui-light/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { PageHeader } from '../../components/ui-light/PageHeader';
+import { StatTile } from '../../components/ui-light/StatTile';
+import { TrendChart } from '../../components/ui-light/TrendChart';
 import { useApi } from '../../lib/hooks/useApi';
 import { obtenirTableauDeBord } from '../../lib/api/campagnes';
+
+const ACCENT = '#7c3aed';
 
 export default function TableauDeBord() {
   const tableau = useApi(obtenirTableauDeBord, []);
@@ -18,7 +20,7 @@ export default function TableauDeBord() {
 
   return (
     <div>
-      <PageHeader icon={Clapperboard} titre="Campagnes" sousTitre={`Bonjour ${d.user.display_name}`} />
+      <PageHeader icon={Clapperboard} titre="Campagnes" sousTitre={`Bonjour ${d.user.display_name}`} accent={ACCENT} />
 
       {d.variant === 'commercial' ? (
         <div className="flex flex-col gap-4">
@@ -28,14 +30,14 @@ export default function TableauDeBord() {
           </div>
           {d.vente.campagneActive ? (
             <Card>
-              <p className="text-xs text-muted">Campagne active</p>
-              <p className="mt-1 text-sm font-bold text-white">{d.vente.campagneActive.nom}</p>
-              <p className="mt-0.5 text-xs text-muted">
+              <p className="text-xs text-slate-500">Campagne active</p>
+              <p className="mt-1 text-sm font-bold text-slate-900">{d.vente.campagneActive.nom}</p>
+              <p className="mt-0.5 text-xs text-slate-500">
                 {d.vente.campagneActive.date_debut} → {d.vente.campagneActive.date_fin}
               </p>
             </Card>
           ) : (
-            <Card className="text-sm text-muted">Aucune campagne active pour le moment.</Card>
+            <Card className="text-sm text-slate-500">Aucune campagne active pour le moment.</Card>
           )}
         </div>
       ) : d.variant === 'admin' || d.variant === 'direction' ? (
@@ -50,28 +52,28 @@ export default function TableauDeBord() {
           <div className="grid grid-cols-[1fr_auto] gap-4">
             {d.venteTrend.length > 0 && (
               <Card>
-                <h2 className="mb-3 text-sm font-bold text-white">Évolution des ventes</h2>
-                <TrendChart donnees={d.venteTrend.map((valeur, i) => ({ label: String(i + 1), valeur }))} />
+                <h2 className="mb-3 text-sm font-bold text-slate-900">Évolution des ventes</h2>
+                <TrendChart donnees={d.venteTrend.map((valeur, i) => ({ label: String(i + 1), valeur }))} accent={ACCENT} />
               </Card>
             )}
             <Card className="flex flex-col items-center justify-center gap-2">
-              <CircularProgress progress={d.pctCommerciauxActifs} gradientId="campagnes-commerciaux-actifs-gradient" />
-              <p className="text-center text-xs text-muted">Commerciaux actifs</p>
+              <CircularProgress progress={d.pctCommerciauxActifs} gradientId="campagnes-commerciaux-actifs-gradient" accent={ACCENT} accentClair="#c4b5fd" />
+              <p className="text-center text-xs text-slate-500">Commerciaux actifs</p>
             </Card>
           </div>
 
           <Card>
-            <h2 className="mb-3 text-sm font-bold text-white">Classement</h2>
+            <h2 className="mb-3 text-sm font-bold text-slate-900">Classement</h2>
             {d.classement.length === 0 ? (
-              <p className="text-xs text-muted">Aucune vente enregistrée pour le moment.</p>
+              <p className="text-xs text-slate-500">Aucune vente enregistrée pour le moment.</p>
             ) : (
               <div className="flex flex-col gap-2">
                 {d.classement.slice(0, 8).map((c) => (
-                  <div key={c.user_id} className="flex items-center justify-between rounded-xl bg-surface2 px-3 py-2">
-                    <span className="text-sm text-white">
+                  <div key={c.user_id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
+                    <span className="text-sm text-slate-800">
                       #{c.rang} {c.user_name}
                     </span>
-                    <span className="text-sm font-bold text-white">{c.total_ventes}</span>
+                    <span className="text-sm font-bold text-slate-900">{c.total_ventes}</span>
                   </div>
                 ))}
               </div>
@@ -80,7 +82,7 @@ export default function TableauDeBord() {
         </div>
       ) : (
         <Card>
-          <p className="text-sm text-white">
+          <p className="text-sm text-slate-800">
             {d.campagneActive ? `Campagne active : ${d.campagneActive.nom}` : 'Aucune campagne active pour le moment.'}
           </p>
         </Card>
