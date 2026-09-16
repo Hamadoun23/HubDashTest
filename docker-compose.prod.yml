@@ -1,0 +1,258 @@
+# GDA Hub - variante de production, pour le VPS partage avec les autres
+# applications GDA (financerh, jusorange, bdm, pulsemotors, ...).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build     demarrage
+#   docker compose -f docker-compose.prod.yml logs -f frontend  journaux
+#   docker compose -f docker-compose.prod.yml down              arret (les donnees restent)
+#
+# Difference avec docker-compose.yml (usage local) : seule la passerelle
+# est publiee sur l'hote (127.0.0.1:8080). Les bases et les backends
+# individuels ne le sont pas - inutile en production, et certains ports
+# (8110, 8130...) sont deja pris par d'autres applications sur ce VPS.
+# nginx, sur l'hote, route hub.gdamali.net vers 127.0.0.1:8080.
+
+name: gdahub
+
+x-postgres: &postgres
+  image: postgres:17-alpine
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+    interval: 5s
+    timeout: 5s
+    retries: 30
+
+x-django: &django
+  restart: unless-stopped
+  environment: &env-django
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-developpement-local-non-secret}
+    DJANGO_DEBUG: "True"
+    DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0,gateway,identity,financerh,jusorange,campagnes,chantiers,planning,hub.gdamali.net,www.hub.gdamali.net
+    DJANGO_TIME_ZONE: Africa/Bamako
+    GDAHUB_JWKS_URL: http://identity:8000/.well-known/jwks.json
+    GDAHUB_JETON_EMETTEUR: gdahub-identity
+    GDAHUB_JETON_AUDIENCE: gdahub
+
+services:
+  # --- Les bases : une par application ------------------------------------
+  # Pas de port publie sur l'hote : seuls les conteneurs du reseau interne
+  # y accedent.
+  db-identity:
+    <<: *postgres
+    container_name: gdahub-db-identity
+    environment:
+      POSTGRES_USER: gdahub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: identity
+    volumes: ["donnees-identity:/var/lib/postgresql/data"]
+
+  db-financerh:
+    <<: *postgres
+    container_name: gdahub-db-financerh
+    environment:
+      POSTGRES_USER: financerh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: financerh
+    volumes: ["donnees-financerh:/var/lib/postgresql/data"]
+
+  db-jusorange:
+    <<: *postgres
+    image: postgres:16-alpine
+    container_name: gdahub-db-jusorange
+    environment:
+      POSTGRES_USER: jusorange
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: jusorange
+    volumes: ["donnees-jusorange:/var/lib/postgresql/data"]
+
+  db-chantiers:
+    <<: *postgres
+    container_name: gdahub-db-chantiers
+    environment:
+      POSTGRES_USER: chantiers
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: chantiers
+    volumes: ["donnees-chantiers:/var/lib/postgresql/data"]
+
+  db-planning:
+    <<: *postgres
+    container_name: gdahub-db-planning
+    environment:
+      POSTGRES_USER: planning
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: planning
+    volumes: ["donnees-planning:/var/lib/postgresql/data"]
+
+  db-campagnes:
+    <<: *postgres
+    container_name: gdahub-db-campagnes
+    environment:
+      POSTGRES_USER: campagnes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: campagnes
+    volumes: ["donnees-campagnes:/var/lib/postgresql/data"]
+
+  # --- Identity : le compte unique ----------------------------------------
+  identity:
+    <<: *django
+    build:
+      context: .
+      dockerfile: backend/identity/Dockerfile
+      target: developpement
+    container_name: gdahub-identity
+    depends_on:
+      db-identity: {condition: service_healthy}
+    environment:
+      <<: *env-django
+      GDAHUB_APPLICATION: hub
+      GDAHUB_ADMIN_MOT_DE_PASSE: "1234"
+      GDAHUB_MOT_DE_PASSE_INITIAL: "1234"
+      DATABASE_URL: postgres://gdahub:${POSTGRES_PASSWORD:-gdahub-local}@db-identity:5432/identity
+      CSRF_TRUSTED_ORIGINS: http://hub.gdamali.net,https://hub.gdamali.net,http://www.hub.gdamali.net,https://www.hub.gdamali.net
+      MEDIA_URL: /media/hub/
+    volumes:
+      - ./backend/identity:/app
+      - ./libs/gdahub_common:/libs/gdahub_common
+      - media-identity:/app/media
+      - cles:/cles
+      - ./infra/effectif:/effectif:ro
+
+  # --- Les applications rassemblees ---------------------------------------
+  financerh:
+    <<: *django
+    build:
+      context: ./backend/financerh
+      target: developpement
+    container_name: gdahub-financerh
+    depends_on:
+      db-financerh: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://financerh:${POSTGRES_PASSWORD:-gdahub-local}@db-financerh:5432/financerh
+      MEDIA_URL: /media/rh/
+    volumes:
+      - ./backend/financerh:/app
+      - /app/.venv
+      - media-financerh:/app/media
+
+  jusorange:
+    <<: *django
+    build:
+      context: ./backend/jusorange
+      target: developpement
+    container_name: gdahub-jusorange
+    depends_on:
+      db-jusorange: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://jusorange:${POSTGRES_PASSWORD:-gdahub-local}@db-jusorange:5432/jusorange
+      MEDIA_URL: /media/jus/
+    volumes:
+      - ./backend/jusorange:/app
+      - media-jusorange:/app/media
+
+  chantiers:
+    <<: *django
+    build:
+      context: ./backend/chantiers
+      target: developpement
+    container_name: gdahub-chantiers
+    depends_on:
+      db-chantiers: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://chantiers:${POSTGRES_PASSWORD:-gdahub-local}@db-chantiers:5432/chantiers
+      MEDIA_URL: /media/chantiers/
+    volumes:
+      - ./backend/chantiers:/app
+      - media-chantiers:/app/media
+
+  planning:
+    <<: *django
+    build:
+      context: ./backend/planning
+      target: developpement
+    container_name: gdahub-planning
+    depends_on:
+      db-planning: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://planning:${POSTGRES_PASSWORD:-gdahub-local}@db-planning:5432/planning
+      MEDIA_URL: /media/planning/
+    volumes:
+      - ./backend/planning:/app
+      - media-planning:/app/media
+
+  campagnes:
+    <<: *django
+    build:
+      context: .
+      dockerfile: backend/campagnes/Dockerfile
+      target: developpement
+    container_name: gdahub-campagnes
+    depends_on:
+      db-campagnes: {condition: service_healthy}
+      identity: {condition: service_started}
+    environment:
+      <<: *env-django
+      DATABASE_URL: postgres://campagnes:${POSTGRES_PASSWORD:-gdahub-local}@db-campagnes:5432/campagnes
+      CHEMIN_BASE: /campagnes
+      VITE_DEV: "False"
+      SESSION_COOKIE_NAME: campagnes_sessionid
+      CSRF_COOKIE_NAME: campagnes_csrftoken
+    volumes:
+      - ./backend/campagnes:/app
+      - media-campagnes-app:/app/media
+      - statiques-campagnes:/app/staticfiles
+
+  # --- L'interface, unique -------------------------------------------------
+  frontend:
+    build:
+      context: .
+      target: developpement
+    container_name: gdahub-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: /api
+      VITE_CAMPAGNES_BASE_URL: /campagnes
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  # --- La passerelle : une seule origine, seule publiee sur l'hote --------
+  gateway:
+    image: nginx:1.29-alpine
+    container_name: gdahub-gateway
+    restart: unless-stopped
+    depends_on: [identity, financerh, jusorange, chantiers, planning, campagnes, frontend]
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./gateway/entetes-proxy.conf:/etc/nginx/entetes-proxy.conf:ro
+      - media-financerh:/var/media/rh:ro
+      - media-jusorange:/var/media/jus:ro
+      - media-chantiers:/var/media/chantiers:ro
+      - media-planning:/var/media/planning:ro
+      - media-campagnes-app:/var/media/campagnes:ro
+      - statiques-campagnes:/var/statiques/campagnes:ro
+      - media-identity:/var/media/identity:ro
+    ports: ["127.0.0.1:8080:80"]
+
+volumes:
+  cles:
+  donnees-identity:
+  donnees-financerh:
+  donnees-jusorange:
+  donnees-chantiers:
+  donnees-planning:
+  donnees-campagnes:
+  media-identity:
+  media-financerh:
+  media-jusorange:
+  media-chantiers:
+  media-planning:
+  media-campagnes-app:
+  statiques-campagnes:
