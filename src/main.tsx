@@ -72,6 +72,8 @@ import CampagnesCreer from './pages/campagnes/admin/Creer';
 import CampagnesDetail from './pages/campagnes/admin/Detail';
 import CampagnesPerformances from './pages/campagnes/Performances';
 import CampagnesMonContrat from './pages/campagnes/MonContrat';
+import CampagnesTelephonique from './pages/campagnes/Telephonique';
+import CampagnesChoixClient from './pages/campagnes/ChoixClient';
 
 import Absences from './pages/rh/Absences';
 import Annuaire from './pages/rh/Annuaire';
@@ -110,6 +112,8 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/campagnes/admin/campagnes/:id" element={<CampagnesDetail />} />
               <Route path="/campagnes/performances" element={<CampagnesPerformances />} />
               <Route path="/campagnes/mon-contrat" element={<CampagnesMonContrat />} />
+              <Route path="/campagnes/reporting-telephonique" element={<CampagnesTelephonique />} />
+              <Route path="/campagnes/choix-client" element={<CampagnesChoixClient />} />
             </Route>
 
             {/* Chaque app métier reprend son identité visuelle propre — la

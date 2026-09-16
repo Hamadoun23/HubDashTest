@@ -1,0 +1,19 @@
+# Contexte de build du frontend (docker-compose.yml : frontend, context ".").
+# Sans ce fichier, TOUT le depot part vers le demon Docker a chaque build —
+# les 6 venvs Python de backend/, node_modules, .git — des gigaoctets de
+# fichiers qui n'ont rien a faire dans l'image React/Vite.
+
+.git
+node_modules
+backend/*/.venv
+backend/*/db.sqlite3
+backend/*/__pycache__
+backend/*/staticfiles
+backend/*/media
+backend/campagnes-frontend/node_modules
+backend/campagnes-frontend/dist
+libs/*/.venv
+testhub
+Bdm-main
+dist
+*.pyc

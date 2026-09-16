@@ -57,7 +57,7 @@ class Partenaire(LaravelModel):
     actif = models.BooleanField(default=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "partenaires"
         ordering = ["ordre", "nom"]
 
@@ -92,7 +92,7 @@ class Agence(LaravelModel):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "agences"
 
     def __str__(self):
@@ -114,7 +114,7 @@ class TypeCarte(LaravelModel):
     actif = models.BooleanField(default=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "types_cartes"
 
     def __str__(self):
@@ -185,7 +185,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "users"
 
     def __str__(self):
@@ -267,10 +267,10 @@ class UserLoginLog(LaravelModel):
     user_agent = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "user_login_logs"
         # `-id` en tri secondaire : plusieurs connexions tombent à la même
-        # seconde et MySQL les rend alors dans un ordre arbitraire, qui varie
+        # seconde et la base les rend alors dans un ordre arbitraire, qui varie
         # avec le plan d'exécution. Sans ce départage, la pagination n'est pas
         # reproductible d'une requête à l'autre.
         ordering = ["-logged_in_at", "-id"]

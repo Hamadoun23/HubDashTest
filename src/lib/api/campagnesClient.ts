@@ -23,7 +23,7 @@
  *   protocole Inertia généraliste. */
 import { jetonAcces } from './client';
 
-const BASE = (import.meta.env.VITE_CAMPAGNES_BASE_URL as string | undefined) ?? '/campagnes';
+export const BASE = (import.meta.env.VITE_CAMPAGNES_BASE_URL as string | undefined) ?? '/campagnes';
 
 export class CampagnesError extends Error {
   statut: number;
@@ -50,10 +50,14 @@ type OptionsCampagnes = { method?: string; corps?: unknown };
 export async function campagnesFetch<P>(chemin: string, options: OptionsCampagnes = {}): Promise<ReponseInertia<P>> {
   const { method = 'GET', corps } = options;
 
-  // Le cookie CSRF n'existe qu'après une première réponse qui l'a posé — une
-  // requête d'écriture avant toute lecture ne l'aurait pas encore.
+  // Le cookie CSRF n'existe qu'après une première réponse qui l'a posé. Django
+  // ne le pose qu'en rendant la page HTML complète (`app.html`, dont le
+  // `{{ csrf_token }}` déclenche `get_token()` côté middleware) : une requête
+  // portant `X-Inertia: true` reçoit le JSON allégé et ne le déclenche jamais,
+  // quel que soit le nombre de lectures faites au préalable via `campagnesFetch`.
+  // D'où un appel `fetch` direct ici, sans les en-têtes Inertia.
   if (method !== 'GET' && !lireCookie('campagnes_csrftoken')) {
-    await campagnesFetch('/dashboard').catch(() => undefined);
+    await fetch(`${BASE}/dashboard`, { credentials: 'include' }).catch(() => undefined);
   }
 
   const entetes: Record<string, string> = {
@@ -91,7 +95,7 @@ export async function campagnesApiFetch<T>(
   fichier?: { champ: string; valeur: File },
 ): Promise<T> {
   if (!lireCookie('campagnes_csrftoken')) {
-    await campagnesFetch('/dashboard').catch(() => undefined);
+    await fetch(`${BASE}/dashboard`, { credentials: 'include' }).catch(() => undefined);
   }
 
   const entetes: Record<string, string> = { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' };

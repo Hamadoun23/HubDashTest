@@ -145,17 +145,47 @@ python manage.py runserver 8005
 ```
 
 ```bash
-# Campagnes — port 8006 (ne PAS définir CHEMIN_BASE en local : le proxy Vite
-# retire déjà le préfixe /campagnes avant d'atteindre Django)
+# Campagnes — port 8006. CHEMIN_BASE=/campagnes EST nécessaire ici (contrairement
+# à ce qu'on pourrait croire) : le proxy Vite du hub retire /campagnes avant
+# d'atteindre Django, mais les redirections internes de Django (choix-client,
+# login, etc.) ont besoin de CHEMIN_BASE pour se recomposer avec ce préfixe une
+# fois relues par le navigateur, sinon elles sortent du chemin proxifié et 404.
+# SESSION_COOKIE_PATH/CSRF_COOKIE_PATH sont forcés à "/" (et pas déduits de
+# CHEMIN_BASE) car la page React du hub est servie à la racine, pas sous
+# /campagnes — sans ça le cookie CSRF est invisible depuis le JS du hub.
+# Sous Git Bash sur Windows, MSYS_NO_PATHCONV=1 est indispensable : sinon
+# "/campagnes" est réécrit en chemin Windows (ex. "C:/campagnes") avant même
+# d'atteindre Python.
 cd backend/campagnes
-python3.13 -m venv .venv && source .venv/bin/activate
+python -m venv .venv && source .venv/Scripts/activate
 pip install -r requirements.txt gunicorn
+pip install -e ../../libs/gdahub_common
 python manage.py migrate
+export MSYS_NO_PATHCONV=1
+export GDAHUB_JWKS_URL="http://localhost:8011/.well-known/jwks.json"  # ou le port réel d'identity
+export CHEMIN_BASE="/campagnes"
+export SESSION_COOKIE_NAME="campagnes_sessionid"
+export CSRF_COOKIE_NAME="campagnes_csrftoken"
+export SESSION_COOKIE_PATH="/"
+export CSRF_COOKIE_PATH="/"
 python manage.py runserver 8006
 ```
 
-**Campagnes n'a toujours aucune commande de seed** (contrairement aux 5
-autres services) — à écrire :
+**Autres écarts SQLite découverts en la faisant tourner pour de vrai** :
+- La quasi-totalité des tables (`core`, `campagnes`, `terrain`) sont
+  `managed=False` : elles supposent un dump MySQL de prod déjà chargé et
+  `migrate` ne les crée jamais sur une base vide. Pour un jeu de test local
+  sans ce dump, il faut créer les tables « à la main » (passer
+  `Model._meta.managed = True` le temps d'un `schema_editor.create_model()`
+  par modèle, dans un script ponctuel — jamais dans les fichiers source) puis
+  semer les données via l'ORM.
+- `rapports/services.py::agreger_par_periode` utilisait du SQL brut
+  MySQL (`YEARWEEK`, `DATE_FORMAT`) sans branche SQLite — corrigé avec un
+  équivalent `strftime` approximatif (numérotation de semaine différente de
+  l'ISO exact, sans conséquence en local).
+
+**Campagnes n'a aucune commande de seed** (contrairement aux 5 autres
+services) — à écrire :
 `backend/campagnes/campagnes/management/commands/donnees_test.py`, même
 pattern que Chantiers/Planning. Doit créer quelques campagnes
 (`vente_carte` et `enrolement_app`), des agences, des commerciaux avec

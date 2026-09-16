@@ -30,7 +30,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# `default-libmysqlclient-dev` n'est pas necessaire : PyMySQL est en Python pur.
+# psycopg[binary] embarque déjà libpq : pas de paquet système à installer.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*

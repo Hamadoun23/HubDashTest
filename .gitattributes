@@ -1,0 +1,5 @@
+# Les scripts shell tournent dans des conteneurs Linux : des fins de ligne
+# CRLF (introduites par un checkout Windows) cassent leur "#!/bin/sh" avec
+# une erreur "no such file or directory" au demarrage du conteneur.
+*.sh text eol=lf
+entrypoint.sh text eol=lf

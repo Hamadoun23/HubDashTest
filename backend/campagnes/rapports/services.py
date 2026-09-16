@@ -317,14 +317,38 @@ def agreger_par_periode(queryset, mode: str, colonne_date: str = "created_at"):
     """
     Regroupe un queryset par semaine ISO ou par mois.
 
-    On passe par `YEARWEEK(date, 3)` et `DATE_FORMAT(date, '%Y-%m')`, exactement
-    comme Laravel sur MySQL : la numérotation des semaines ISO diffère selon les
-    fonctions employées, un écart ici décalerait tous les graphiques.
+    La syntaxe de regroupement dépend du moteur : `TO_CHAR(date, 'IYYYIW')` sur
+    Postgres (production et Docker — voir docker-compose.yml) produit la même
+    clé AAAASS que `YEARWEEK(date, 3)` sur MySQL (semaine ISO 8601), lue par
+    `_libelle_semaine` ci-dessous.
     """
+    from django.db import connection
     from django.db.models.functions import Cast
     from django.db.models import CharField, Func
 
-    if mode == "semaine":
+    if connection.vendor == "sqlite":
+        # SQLite n'a pas d'equivalent natif a la semaine ISO : approximation
+        # via strftime, suffisante pour le developpement local sans Docker
+        # (Postgres et MySQL, ci-dessous, gardent la vraie semaine ISO — un
+        # ecart de numerotation ici ne les affecte pas).
+        if mode == "semaine":
+            expression = Func(
+                colonne_date, template="strftime('%%%%Y%%%%W', %(expressions)s)", output_field=CharField()
+            )
+        else:
+            expression = Func(
+                colonne_date, template="strftime('%%%%Y-%%%%m', %(expressions)s)", output_field=CharField()
+            )
+    elif connection.vendor == "postgresql":
+        if mode == "semaine":
+            expression = Func(
+                colonne_date, template="TO_CHAR(%(expressions)s, 'IYYYIW')", output_field=CharField()
+            )
+        else:
+            expression = Func(
+                colonne_date, template="TO_CHAR(%(expressions)s, 'YYYY-MM')", output_field=CharField()
+            )
+    elif mode == "semaine":
         expression = Func(
             colonne_date, template="YEARWEEK(%(expressions)s, 3)", output_field=CharField()
         )

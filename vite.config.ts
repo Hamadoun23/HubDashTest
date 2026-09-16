@@ -7,7 +7,9 @@ import { defineConfig } from 'vite';
 // de chemin (jus/chantiers/planning retirent leur préfixe, identity/rh/finance
 // le gardent, campagnes le retire entièrement).
 const PORTS = {
-  identity: 8001,
+  // 8001 est pris par Kong (Docker, autre projet local) sur cette machine —
+  // identity tourne sur 8011 à la place.
+  identity: 8011,
   financerh: 8002,
   jusorange: 8003,
   chantiers: 8004,
@@ -29,6 +31,12 @@ export default defineConfig({
       // surveiller des milliers de fichiers Python sans rapport avec ce
       // frontend, qui ralentiraient le rechargement à chaque `pip install`.
       ignored: ['**/backend/**', '**/gateway/**', '**/libs/**', '**/infra/**'],
+      // Sous Docker Desktop sur Windows, les evenements natifs du systeme de
+      // fichiers (inotify) ne remontent pas de l'hote vers le conteneur pour
+      // un volume monte : sans le polling, Vite ne voit tout simplement
+      // jamais les fichiers modifies et le HMR reste silencieusement mort.
+      usePolling: true,
+      interval: 300,
     },
     proxy: {
       '/api/identity': { target: `http://localhost:${PORTS.identity}` },

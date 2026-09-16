@@ -145,6 +145,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
     "DATE_INPUT_FORMATS": ["%Y-%m-%d", "%d/%m/%Y"],
+    # Par defaut, un TimeField serialise en ISO 8601 inclut les microsecondes
+    # des qu'elles sont non nulles (ex. pointages crees via datetime.now()) —
+    # "10:07:41.895430" au lieu de "10:07:41" a l'ecran.
+    "TIME_FORMAT": "%H:%M:%S",
 }
 
 SIMPLE_JWT = {

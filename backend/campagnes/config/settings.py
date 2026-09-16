@@ -1,19 +1,15 @@
 """
 Configuration Django — migration du backend Laravel de BDM.
 
-Deux partis pris structurants, hérités du plan de migration :
+Bascule Postgres (voir contexte.md) : les modèles métier, longtemps en
+`managed = False` pour coller au schéma MySQL de Laravel au caractère près,
+sont repassés en `managed = True` et ont leurs propres migrations Django —
+la compatibilité avec un futur dump MySQL de production est abandonnée au
+profit d'un schéma géré nativement par Django sur Postgres.
 
-1. Les tables métier ne sont JAMAIS gérées par Django (`managed = False` sur
-   tous les modèles). Le schéma reste celui de Laravel, au caractère près, ce
-   qui permet de basculer et de revenir en arrière sans aucune migration de
-   données.
-
-2. `USE_TZ = False`. Laravel tourne en UTC (config/app.php) et écrit des
-   datetimes naïfs. Avec `USE_TZ = True`, les lookups `__date` de Django
-   génèrent du `CONVERT_TZ(...)`, qui renvoie NULL si les tables de fuseaux de
-   MySQL ne sont pas chargées — les filtres de campagne remonteraient alors
-   silencieusement zéro ligne. En naïf, Django génère `DATE(colonne)`, ce que
-   fait déjà Laravel.
+`USE_TZ = False` reste inchangé : Laravel tournait en UTC (config/app.php) et
+écrivait des datetimes naïfs ; le reste du code (filtres `__date`, etc.)
+suppose toujours des datetimes naïfs.
 """
 
 from pathlib import Path
@@ -113,31 +109,14 @@ TEMPLATES = [
 # Base de données
 # --------------------------------------------------------------------------
 
-# Sans DB_HOST (développement local sans MySQL), on retombe sur SQLite — même
-# convention que les autres services du hub (voir backend/financerh/config/
-# settings.py). Le mode SQL strict et le charset utf8mb4 n'ont de sens qu'avec
-# un vrai MySQL, donc ils restent dans la branche MySQL uniquement.
-if env("DB_HOST"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "HOST": env("DB_HOST", "127.0.0.1"),
-            "PORT": env("DB_PORT", "3307"),
-            "NAME": env("DB_NAME", "bdm_dev"),
-            "USER": env("DB_USER", "root"),
-            "PASSWORD": env("DB_PASSWORD", ""),
-            "OPTIONS": {
-                "charset": "utf8mb4",
-                # Même mode SQL que Laravel : les agrégats des rapports sont écrits
-                # pour un MySQL sans ONLY_FULL_GROUP_BY.
-                "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-            },
-            "TEST": {
-                "CHARSET": "utf8mb4",
-                "COLLATION": "utf8mb4_unicode_ci",
-            },
-        }
-    }
+# Postgres via DATABASE_URL (Docker — voir docker-compose.yml), même
+# convention que les autres services du hub (backend/financerh/config/
+# settings.py). Sans DATABASE_URL (dev local hors Docker), on retombe sur
+# SQLite.
+if env("DATABASE_URL", "").startswith("postgres"):
+    import dj_database_url
+
+    DATABASES = {"default": dj_database_url.parse(env("DATABASE_URL"))}
 else:
     DATABASES = {
         "default": {
@@ -181,9 +160,14 @@ AUTHENTICATION_BACKENDS = ["core.auth_backend.LaravelBcryptBackend"]
 # navigation. D'ou un nom propre a BDM, et un chemin qui borne sa portee.
 SESSION_COOKIE_NAME = os.environ.get("SESSION_COOKIE_NAME", "sessionid")
 CSRF_COOKIE_NAME = os.environ.get("CSRF_COOKIE_NAME", "csrftoken")
-if CHEMIN_BASE:
-    SESSION_COOKIE_PATH = f"{CHEMIN_BASE}/"
-    CSRF_COOKIE_PATH = f"{CHEMIN_BASE}/"
+
+# Chemin des cookies : par defaut celui de CHEMIN_BASE, car la vraie
+# passerelle sert la page ET l'API sous le meme sous-chemin. Le hub GDA, lui,
+# sert sa page React a la racine (SPA en HashRouter) et ne proxifie que l'API
+# sous /campagnes : le cookie doit alors rester visible a la racine, d'ou cet
+# override explicite plutot que de le deriver de CHEMIN_BASE.
+SESSION_COOKIE_PATH = os.environ.get("SESSION_COOKIE_PATH") or (f"{CHEMIN_BASE}/" if CHEMIN_BASE else "/")
+CSRF_COOKIE_PATH = os.environ.get("CSRF_COOKIE_PATH") or (f"{CHEMIN_BASE}/" if CHEMIN_BASE else "/")
 
 # Laravel : SESSION_LIFETIME=120 (minutes), expire_on_close = false.
 SESSION_COOKIE_AGE = 120 * 60
@@ -244,12 +228,16 @@ VITE_DEV = env_bool("VITE_DEV", DEBUG)
 VITE_DEV_SERVER = env("VITE_DEV_SERVER", "http://localhost:5173")
 VITE_MANIFEST_PATH = REPO_DIR / "campagnes-frontend" / "dist" / ".vite" / "manifest.json"
 
-# En dev, le serveur Vite est une origine distincte de Django.
+# En dev, le serveur Vite est une origine distincte de Django — que ce soit
+# le Vite natif de ce dépôt (8000/8001) ou celui du hub GDA, qui proxifie
+# /campagnes vers ce service en conservant l'origine du navigateur (5173).
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://localhost:8001",
     "http://127.0.0.1:8001",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 

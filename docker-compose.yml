@@ -92,21 +92,15 @@ services:
     volumes: ["donnees-planning:/var/lib/postgresql/data"]
 
   db-campagnes:
-    image: mysql:8.0
+    <<: *postgres
     container_name: gdahub-db-campagnes
-    restart: unless-stopped
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
-      MYSQL_ROOT_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
-      MYSQL_DATABASE: campagnes
-    ports: ["127.0.0.1:3306:3306"]
-    volumes: ["donnees-campagnes-mysql:/var/lib/mysql"]
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-      start_period: 40s
+      POSTGRES_USER: campagnes
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_DB: campagnes
+    # 5446 est deja pris par un autre projet sur cette machine (mansavibes-db-1).
+    ports: ["127.0.0.1:5447:5432"]
+    volumes: ["donnees-campagnes:/var/lib/postgresql/data"]
 
   # --- Identity : le compte unique ----------------------------------------
   # Le seul service qui connait les mots de passe et qui signe les jetons.
@@ -122,6 +116,8 @@ services:
     environment:
       <<: *env-django
       GDAHUB_APPLICATION: hub
+      GDAHUB_ADMIN_MOT_DE_PASSE: "1234"
+      GDAHUB_MOT_DE_PASSE_INITIAL: "1234"
       DATABASE_URL: postgres://gdahub:${POSTGRES_PASSWORD:-gdahub-local}@db-identity:5432/identity
       CSRF_TRUSTED_ORIGINS: http://localhost:8080,http://127.0.0.1:8080
       # Les photos de profil sont servies en adresse absolue : sans ce
@@ -231,11 +227,7 @@ services:
       identity: {condition: service_started}
     environment:
       <<: *env-django
-      DB_HOST: db-campagnes
-      DB_PORT: "3306"
-      DB_NAME: campagnes
-      DB_USER: root
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      DATABASE_URL: postgres://campagnes:${POSTGRES_PASSWORD:-gdahub-local}@db-campagnes:5432/campagnes
       CHEMIN_BASE: /campagnes
       # L'image embarque le front deja compile (npm run build). Sans ce
       # drapeau, VITE_DEV suit DJANGO_DEBUG et la page va chercher son
@@ -301,7 +293,7 @@ volumes:
   donnees-jusorange:
   donnees-chantiers:
   donnees-planning:
-  donnees-campagnes-mysql:
+  donnees-campagnes:
   media-identity:
   media-financerh:
   media-jusorange:

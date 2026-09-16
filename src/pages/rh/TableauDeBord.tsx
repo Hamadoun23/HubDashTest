@@ -1,11 +1,11 @@
 import { AlertTriangle, Calendar, ClipboardList, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card } from '../../components/ui-light/Card';
-import { CircularProgress } from '../../components/ui-light/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../components/ui-light/PageHeader';
-import { StatTile } from '../../components/ui-light/StatTile';
-import { Badge } from '../../components/ui-light/Table';
+import { Card } from '../../components/ui/Card';
+import { CircularProgress } from '../../components/ui/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { StatTile } from '../../components/ui/StatTile';
+import { Badge } from '../../components/ui/Table';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useApi } from '../../lib/hooks/useApi';
 import { demandesAValider, monSolde } from '../../lib/api/rh';
@@ -28,7 +28,6 @@ export default function TableauDeBordRh() {
         icon={Users}
         titre="RH & Finance"
         sousTitre={utilisateur ? `Bonjour ${utilisateur.first_name}, voici ce qui attend votre décision` : 'Ce qui attend votre décision'}
-        accent="#d03e0d"
       />
 
       {solde.donnees && (
@@ -39,14 +38,12 @@ export default function TableauDeBordRh() {
             strokeWidth={6}
             gradientId="rh-tableau-de-bord-conges-gradient"
             label={`${solde.donnees.jours_restants}j`}
-            accent="#d03e0d"
-            accentClair="#ffb199"
           />
           <div>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-sm font-semibold text-white">
               {solde.donnees.jours_restants} jours restants sur {solde.donnees.jours_acquis + solde.donnees.jours_reportes}
             </p>
-            <p className="text-xs text-slate-500">{solde.donnees.jours_pris} jours déjà pris cette année</p>
+            <p className="text-xs text-muted">{solde.donnees.jours_pris} jours déjà pris cette année</p>
           </div>
         </Card>
       )}
@@ -64,20 +61,20 @@ export default function TableauDeBordRh() {
 
       <Card className="mt-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900">À valider</h2>
-          <Link to="/rh/validations" className="text-xs font-semibold text-rh-marque700">
+          <h2 className="text-sm font-bold text-white">À valider</h2>
+          <Link to="/rh/validations" className="text-xs font-semibold text-accent2 hover:text-accent">
             Tout voir →
           </Link>
         </div>
         <div className="mt-4 space-y-2">
           {liste.length === 0 ? (
-            <p className="py-6 text-center text-xs text-slate-500">Aucun dossier en attente de votre décision.</p>
+            <p className="py-6 text-center text-xs text-muted">Aucun dossier en attente de votre décision.</p>
           ) : (
             liste.slice(0, 6).map((dossier) => (
-              <div key={dossier.id} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div key={dossier.id} className="flex items-center justify-between rounded-xl bg-surface2 p-3">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">{dossier.demandeur_nom}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-sm font-semibold text-white">{dossier.demandeur_nom}</p>
+                  <p className="text-xs text-muted">
                     {dossier.type_absence_libelle} · {dossier.numero} · {dossier.etape_courante_libelle}
                   </p>
                 </div>

@@ -53,7 +53,7 @@ class Client(LaravelModel):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "clients"
 
     def __str__(self):
@@ -98,7 +98,7 @@ class Vente(LaravelModel):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "ventes"
 
     def peut_etre_supprimee_par_commercial(self) -> bool:
@@ -131,7 +131,7 @@ class EnrolementClient(LaravelModel):
     adresse = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "enrolement_clients"
 
     @property
@@ -208,7 +208,7 @@ class AdhesionCarte(LaravelModel):
     employeur = models.CharField(max_length=191, null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "adhesions_cartes"
 
     def __str__(self):
@@ -262,7 +262,7 @@ class TelephoniqueRapport(LaravelModel):
     nj_autres_precision = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "telephonique_rapports"
         unique_together = [("user", "date_rapport")]
 
@@ -326,7 +326,7 @@ class Prime(LaravelModel):
     rang = models.IntegerField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "primes"
 
 
@@ -359,5 +359,5 @@ class Reclamation(LaravelModel):
     description = models.TextField(null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "reclamations"

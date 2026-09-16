@@ -89,7 +89,7 @@ class Campagne(LaravelModel):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagnes"
 
     def __str__(self):
@@ -448,7 +448,7 @@ class CampagneAgence(LaravelModelSansTimestamps):
     agence = models.ForeignKey(Agence, on_delete=models.CASCADE, db_column="agence_id")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_agence"
         unique_together = [("campagne", "agence")]
 
@@ -461,7 +461,7 @@ class CampagneAideBeneficiaire(LaravelModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_aide_beneficiaire"
         unique_together = [("campagne", "user")]
 
@@ -474,7 +474,7 @@ class CampagneCommercialContrat(LaravelModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_commercial_contrat"
         unique_together = [("campagne", "user")]
 
@@ -489,7 +489,7 @@ class CampagneRemiseTypeCarte(LaravelModel):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_remise_type_carte"
         unique_together = [("campagne", "type_carte")]
 
@@ -509,7 +509,7 @@ class CampagneAction(LaravelModel):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_actions"
 
 
@@ -538,7 +538,7 @@ class CampagneAideVersement(LaravelModel):
     accuse_commentaire = models.TextField(null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_aide_versements"
 
     @property
@@ -557,7 +557,7 @@ class CampagneContratArticle(LaravelModel):
     contenu = models.TextField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "campagne_contrat_articles"
 
 
@@ -585,7 +585,7 @@ class ContratPrestationReponse(LaravelModel):
     repondu_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "contrat_prestation_reponses"
         unique_together = [("campagne", "user")]
 
@@ -616,5 +616,5 @@ class CommercialAgenceTransfert(LaravelModel):
     note = models.TextField(null=True, blank=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "commercial_agence_transferts"
