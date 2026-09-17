@@ -65,6 +65,9 @@ CIRCUITS = [
     *_parcours(TypeDocument.ABSENCE, INFORMATION),
     # Demandes d'engagement : le financier rend un avis, c'est son domaine.
     *_parcours(TypeDocument.DEPENSE, AVIS),
+    # Requisitions : meme parcours que les depenses, le financier verifie
+    # l'engagement avant l'achat plutot qu'apres.
+    *_parcours(TypeDocument.REQUISITION, AVIS),
 ]
 
 

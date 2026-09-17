@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from comptes.models import (
     Application,
+    Departement,
     Habilitation,
     JournalConnexion,
     SessionJeton,
@@ -14,7 +15,21 @@ from comptes.models import (
 )
 
 
+class DepartementSerializer(serializers.ModelSerializer):
+    responsable_nom = serializers.CharField(source="responsable.nom_complet", read_only=True, default="")
+    effectif = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Departement
+        fields = ["id", "code", "nom", "responsable", "responsable_nom", "effectif", "ordre", "actif"]
+
+
 class ApplicationSerializer(serializers.ModelSerializer):
+    departements = DepartementSerializer(many=True, read_only=True)
+    departements_ids = serializers.PrimaryKeyRelatedField(
+        source="departements", queryset=Departement.objects.all(), many=True, write_only=True, required=False
+    )
+
     class Meta:
         model = Application
         fields = [
@@ -23,6 +38,8 @@ class ApplicationSerializer(serializers.ModelSerializer):
             "nom",
             "description",
             "groupe",
+            "departements",
+            "departements_ids",
             "chemin",
             "prefixe_api",
             "roles_disponibles",
@@ -83,6 +100,7 @@ class UtilisateurSerializer(serializers.ModelSerializer):
     """Fiche d'un compte, habilitations comprises."""
 
     nom_complet = serializers.CharField(read_only=True)
+    departement_nom = serializers.CharField(source="departement.nom", read_only=True, default="")
     habilitations = HabilitationSerializer(many=True, read_only=True)
 
     class Meta:
@@ -96,6 +114,8 @@ class UtilisateurSerializer(serializers.ModelSerializer):
             "email",
             "telephone",
             "fonction",
+            "departement",
+            "departement_nom",
             "est_actif",
             "is_superuser",
             "derniere_connexion",
@@ -118,6 +138,7 @@ class UtilisateurEcritureSerializer(serializers.ModelSerializer):
             "nom",
             "prenom",
             "email",
+            "departement",
             "telephone",
             "fonction",
             "est_actif",

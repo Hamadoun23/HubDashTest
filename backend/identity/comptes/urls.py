@@ -11,6 +11,7 @@ from comptes import views
 routeur = DefaultRouter(trailing_slash=False)
 routeur.register("utilisateurs", views.UtilisateurViewSet, basename="utilisateur")
 routeur.register("applications", views.ApplicationViewSet, basename="application")
+routeur.register("departements", views.DepartementViewSet, basename="departement")
 routeur.register("habilitations", views.HabilitationViewSet, basename="habilitation")
 routeur.register("connexions", views.JournalConnexionViewSet, basename="connexion")
 

@@ -22,11 +22,38 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from comptes.models import Application, Habilitation, Utilisateur
+from comptes.models import Application, Departement, Habilitation, Utilisateur
 
 BOARD = "Board"
 METIER = "Applications metier"
 ADMINISTRATION = "Administration"
+
+#: L'organigramme reel de GDA, au quotidien — distinct de ``groupe`` ci-dessus,
+#: qui n'est qu'un intitule de section de menu. Une application peut servir
+#: plusieurs departements (FinanceRH sert RH et Finance). « direction » n'est
+#: pas un departement metier mais la gouvernance transverse ; « hub » n'en
+#: sert aucun, c'est l'administration du groupe lui-meme.
+DEPARTEMENTS = [
+    {"code": "rh", "nom": "Ressources humaines", "ordre": 1},
+    {"code": "finance", "nom": "Finance", "ordre": 2},
+    {"code": "com", "nom": "Communication", "ordre": 3},
+    {"code": "commercial", "nom": "Commercial", "ordre": 4},
+    {"code": "production", "nom": "Production", "ordre": 5},
+    {"code": "construction", "nom": "Construction", "ordre": 6},
+    {"code": "direction", "nom": "Direction", "ordre": 7},
+]
+
+#: Quels departements travaillent au quotidien dans chaque application.
+DEPARTEMENTS_PAR_APPLICATION = {
+    "rh": ["rh"],
+    "finance": ["finance"],
+    "direction": ["direction"],
+    "campagnes": ["commercial"],
+    "orange": ["production"],
+    "daily": ["construction"],
+    "planning": ["com"],
+    "hub": [],
+}
 
 #: Le catalogue des applications, tel que le menu du hub l'affiche.
 #:
@@ -199,6 +226,14 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
+        departements = {}
+        for donnees in DEPARTEMENTS:
+            departement, _ = Departement.objects.update_or_create(
+                code=donnees["code"], defaults={"nom": donnees["nom"], "ordre": donnees["ordre"]}
+            )
+            departements[donnees["code"]] = departement
+        self.stdout.write(f"{len(departements)} departements alignes.")
+
         for donnees in APPLICATIONS:
             application, cree = Application.objects.update_or_create(
                 code=donnees["code"],
@@ -207,6 +242,9 @@ class Command(BaseCommand):
                     for champ, valeur in donnees.items()
                     if champ not in {"code", "role_admin"}
                 },
+            )
+            application.departements.set(
+                departements[code] for code in DEPARTEMENTS_PAR_APPLICATION.get(donnees["code"], [])
             )
             etat = "creee" if cree else "mise a jour"
             self.stdout.write(f"  {application.groupe:20} {application.code:14} {etat}")

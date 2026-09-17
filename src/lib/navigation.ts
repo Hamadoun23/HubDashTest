@@ -90,6 +90,7 @@ export const NAVIGATION: NavGroup[] = [
     items: [
       { label: 'Tableau de bord', href: '/rh', icon: Home },
       { label: 'À valider', href: '/rh/validations', icon: ClipboardList },
+      { label: 'Réquisitions', href: '/rh/requisitions', icon: Package },
       { label: 'Historique', href: '/rh/historique', icon: FileText },
       { label: 'Mes congés', href: '/rh/absences', icon: Calendar },
       { label: 'Présences', href: '/rh/presences', icon: Clock },

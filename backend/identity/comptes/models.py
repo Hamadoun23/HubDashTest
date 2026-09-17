@@ -58,6 +58,17 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField("Adresse e-mail", blank=True)
     telephone = models.CharField("Telephone", max_length=30, blank=True)
     fonction = models.CharField("Fonction", max_length=150, blank=True)
+    departement = models.ForeignKey(
+        "comptes.Departement",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="membres",
+        verbose_name="Departement",
+        help_text="Le departement reel auquel cette personne est rattachee "
+        "au quotidien — distinct des habilitations, qui donnent acces a une "
+        "application mais ne disent pas d'ou vient la personne.",
+    )
     photo = models.ImageField(
         "Photo de profil", upload_to="photos", null=True, blank=True
     )
@@ -142,6 +153,44 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
         }
 
 
+class Departement(models.Model):
+    """Un departement reel de GDA, au sens ou l'entreprise l'entend au quotidien.
+
+    A ne pas confondre avec ``Application.groupe`` : celui-ci n'est qu'un
+    intitule de section du menu du hub (« Board », « Applications metier »),
+    pense pour l'affichage. Le departement, lui, decrit l'organigramme —
+    RH, Finance, Communication... — independamment de la maniere dont le
+    shell range ses ecrans. Une application peut servir plusieurs
+    departements (FinanceRH sert RH et Finance a la fois).
+    """
+
+    code = models.SlugField("Code", max_length=32, unique=True, help_text="rh, finance, com...")
+    nom = models.CharField("Nom", max_length=100)
+    responsable = models.ForeignKey(
+        "comptes.Utilisateur",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="departements_diriges",
+        verbose_name="Chef de departement",
+    )
+    ordre = models.PositiveSmallIntegerField("Ordre d'affichage", default=100)
+    actif = models.BooleanField("Departement actif", default=True)
+
+    class Meta:
+        db_table = "departement"
+        ordering = ["ordre", "nom"]
+        verbose_name = "Departement"
+        verbose_name_plural = "Departements"
+
+    def __str__(self):
+        return self.nom
+
+    @property
+    def effectif(self):
+        return self.membres.filter(est_actif=True).count()
+
+
 class Application(models.Model):
     """Une des applications de GDA Hub.
 
@@ -161,6 +210,15 @@ class Application(models.Model):
         help_text="Intitule de la section du menu : « Board », "
         "« Applications metier »... Le libelle sert directement d'en-tete, "
         "pour qu'ajouter une section ne demande pas de toucher au front.",
+    )
+    departements = models.ManyToManyField(
+        Departement,
+        related_name="applications",
+        blank=True,
+        verbose_name="Departements servis",
+        help_text="Les departements reels qui travaillent au quotidien dans "
+        "cette application. Sert la vue globale de l'administration, pas le "
+        "routage : distinct de « groupe ».",
     )
     chemin = models.CharField(
         "Chemin dans le shell",

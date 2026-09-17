@@ -24,6 +24,7 @@ from rest_framework.views import APIView
 from comptes import cookie, jetons
 from comptes.models import (
     Application,
+    Departement,
     Habilitation,
     JournalConnexion,
     SessionJeton,
@@ -34,6 +35,7 @@ from comptes.serializers import (
     ApplicationSerializer,
     ChangementMotDePasseSerializer,
     ConnexionSerializer,
+    DepartementSerializer,
     HabilitationSerializer,
     JournalConnexionSerializer,
     RafraichissementSerializer,
@@ -415,9 +417,19 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     """Catalogue des applications de GDA Hub."""
 
     permission_classes = [EstAdminHub]
-    queryset = Application.objects.all()
+    queryset = Application.objects.all().prefetch_related("departements")
     serializer_class = ApplicationSerializer
     filterset_fields = ["active"]
+    search_fields = ["code", "nom"]
+
+
+class DepartementViewSet(viewsets.ModelViewSet):
+    """L'organigramme reel de GDA, distinct du menu du hub (``Application.groupe``)."""
+
+    permission_classes = [EstAdminHub]
+    queryset = Departement.objects.prefetch_related("applications")
+    serializer_class = DepartementSerializer
+    filterset_fields = ["actif"]
     search_fields = ["code", "nom"]
 
 
