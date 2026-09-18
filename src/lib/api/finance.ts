@@ -43,6 +43,7 @@ export type Requisition = {
   priorite: Priorite;
   priorite_libelle: string;
   montant: string;
+  montant_estime: boolean;
   lignes: LigneRequisition[];
   statut: StatutDemande;
   statut_libelle: string;
@@ -62,6 +63,7 @@ export type NouvelleRequisition = {
   justification?: string;
   date_besoin?: string | null;
   priorite?: Priorite;
+  montant_estime?: boolean;
   lignes: LigneRequisition[];
 };
 

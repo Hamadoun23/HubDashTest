@@ -117,6 +117,7 @@ class RequisitionSerializer(DocumentValidableSerializer):
             "priorite",
             "priorite_libelle",
             "montant",
+            "montant_estime",
             "lignes",
         ] + CHAMPS_CIRCULATION
         read_only_fields = LECTURE_SEULE_CIRCULATION + ["montant"]

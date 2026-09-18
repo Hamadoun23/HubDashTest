@@ -32,12 +32,16 @@ export default function DetailCompte() {
   const departements = useApi(listerDepartementsAdmin, []);
   const activation = useAction(modifierUtilisateurAdmin);
   const affectation = useAction(modifierUtilisateurAdmin);
+  const editionFiche = useAction(modifierUtilisateurAdmin);
   const nomination = useAction(modifierDepartementAdmin);
   const creationHabilitation = useAction(creerHabilitation);
+  const reactivationHabilitation = useAction(modifierHabilitation);
   const bascule = useAction(modifierHabilitation);
 
   const [applicationCible, setApplicationCible] = useState('');
   const [rolesCibles, setRolesCibles] = useState<string[]>([]);
+  type ChampFiche = 'email' | 'telephone' | 'fonction';
+  const [editionChamps, setEditionChamps] = useState<Partial<Record<ChampFiche, string>>>({});
 
   if (utilisateurs.chargement || applications.chargement || departements.chargement) {
     return <EtatChargement texte="Chargement du compte…" />;
@@ -59,6 +63,29 @@ export default function DetailCompte() {
 
   function basculerRole(code: string) {
     setRolesCibles((precedent) => (precedent.includes(code) ? precedent.filter((r) => r !== code) : [...precedent, code]));
+  }
+
+  function valeurChamp(champ: ChampFiche): string {
+    return editionChamps[champ] ?? utilisateur![champ] ?? '';
+  }
+
+  function changerChamp(champ: ChampFiche, valeur: string) {
+    setEditionChamps((precedent) => ({ ...precedent, [champ]: valeur }));
+  }
+
+  async function enregistrerChamp(champ: ChampFiche) {
+    const valeur = editionChamps[champ];
+    if (valeur === undefined) return;
+    const nettoye = valeur.trim();
+    if (nettoye !== (utilisateur![champ] ?? '')) {
+      await editionFiche.executer(utilisateurId, { [champ]: nettoye });
+      utilisateurs.recharger();
+    }
+    setEditionChamps((precedent) => {
+      const suite = { ...precedent };
+      delete suite[champ];
+      return suite;
+    });
   }
 
   async function basculerActif() {
@@ -92,7 +119,15 @@ export default function DetailCompte() {
   async function accorder(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!applicationCible || rolesCibles.length === 0) return;
-    await creationHabilitation.executer({ utilisateur: utilisateurId, application: Number(applicationCible), roles: rolesCibles });
+    // Un accès révoqué laisse une ligne inactive en base (utilisateur, application
+    // est unique) : la réactiver plutôt que d'en recréer une, sous peine de heurter
+    // cette contrainte.
+    const existante = utilisateur!.habilitations.find((h) => h.application === Number(applicationCible));
+    if (existante) {
+      await reactivationHabilitation.executer(existante.id, { active: true, roles: rolesCibles });
+    } else {
+      await creationHabilitation.executer({ utilisateur: utilisateurId, application: Number(applicationCible), roles: rolesCibles });
+    }
     setApplicationCible('');
     setRolesCibles([]);
     utilisateurs.recharger();
@@ -114,23 +149,45 @@ export default function DetailCompte() {
       <div className="grid grid-cols-[1fr_1.3fr] gap-6">
         <Card className="flex flex-col gap-3">
           <h2 className="text-sm font-bold text-white">Fiche</h2>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
             <div>
-              <dt className="text-xs font-semibold text-muted">Email</dt>
-              <dd className="text-white">{utilisateur.email || '—'}</dd>
+              <label className={LABEL}>Email</label>
+              <input
+                value={valeurChamp('email')}
+                onChange={(e) => changerChamp('email', e.target.value)}
+                onBlur={() => enregistrerChamp('email')}
+                className={CHAMP}
+              />
             </div>
             <div>
-              <dt className="text-xs font-semibold text-muted">Téléphone</dt>
-              <dd className="text-white">{utilisateur.telephone || '—'}</dd>
+              <label className={LABEL}>Téléphone</label>
+              <input
+                value={valeurChamp('telephone')}
+                onChange={(e) => changerChamp('telephone', e.target.value)}
+                onBlur={() => enregistrerChamp('telephone')}
+                className={CHAMP}
+              />
             </div>
             <div className="col-span-2">
-              <dt className="text-xs font-semibold text-muted">Fonction</dt>
-              <dd className="text-white">{utilisateur.fonction || '—'}</dd>
+              <label className={LABEL}>Fonction</label>
+              <input
+                value={valeurChamp('fonction')}
+                onChange={(e) => changerChamp('fonction', e.target.value)}
+                onBlur={() => enregistrerChamp('fonction')}
+                className={CHAMP}
+              />
             </div>
-          </dl>
+          </div>
 
           <div className="border-t border-border pt-3">
-            <label className={LABEL}>Département</label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className={LABEL}>Département</label>
+              {departementActuel ? (
+                <Link to={`/administration/departements/${departementActuel.id}`} className="text-xs font-semibold text-muted hover:text-white">
+                  Voir l'équipe
+                </Link>
+              ) : null}
+            </div>
             <select
               value={utilisateur.departement ?? ''}
               onChange={(e) => changerDepartement(e.target.value)}
@@ -240,13 +297,15 @@ export default function DetailCompte() {
                     </div>
                   </div>
                 ) : null}
-                {creationHabilitation.erreur && <p className="text-xs font-semibold text-red-400">{creationHabilitation.erreur}</p>}
+                {(creationHabilitation.erreur || reactivationHabilitation.erreur) && (
+                  <p className="text-xs font-semibold text-red-400">{creationHabilitation.erreur || reactivationHabilitation.erreur}</p>
+                )}
                 <button
                   type="submit"
-                  disabled={creationHabilitation.enCours || !applicationCible || rolesCibles.length === 0}
+                  disabled={creationHabilitation.enCours || reactivationHabilitation.enCours || !applicationCible || rolesCibles.length === 0}
                   className="self-start rounded-xl bg-accent px-3 py-2 text-xs font-bold text-black disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {creationHabilitation.enCours ? 'Attribution...' : 'Accorder'}
+                  {creationHabilitation.enCours || reactivationHabilitation.enCours ? 'Attribution...' : 'Accorder'}
                 </button>
               </form>
             </Card>

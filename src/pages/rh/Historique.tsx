@@ -1,7 +1,7 @@
 import { FileText } from 'lucide-react';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../components/ui-light/PageHeader';
-import { Badge, TableVirtus } from '../../components/ui-light/Table';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Badge, TableVirtus } from '../../components/ui/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerDemandesAbsence } from '../../lib/api/rh';
 
@@ -19,9 +19,9 @@ export default function Historique() {
 
   return (
     <div>
-      <PageHeader icon={FileText} titre="Historique" sousTitre="Tout ce qui a été demandé et décidé" accent="#d03e0d" />
+      <PageHeader icon={FileText} titre="Historique" sousTitre="Tout ce qui a été demandé et décidé" />
       {decidees.length === 0 ? (
-        <p className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        <p className="rounded-3xl border border-border bg-surface p-8 text-center text-sm text-muted">
           Aucune décision enregistrée pour le moment.
         </p>
       ) : (

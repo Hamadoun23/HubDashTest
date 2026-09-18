@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Calendar } from 'lucide-react';
-import { Card } from '../../components/ui-light/Card';
-import { CircularProgress } from '../../components/ui-light/CircularProgress';
-import { EtatErreur } from '../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
-import { Badge } from '../../components/ui-light/Table';
+import { Card } from '../../components/ui/Card';
+import { CircularProgress } from '../../components/ui/CircularProgress';
+import { EtatErreur } from '../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
+import { Badge } from '../../components/ui/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { annulerDemande, creerDemandeAbsence, mesDemandes, modifierDemandeAbsence, monSolde, soumettreDemande } from '../../lib/api/rh';
 
@@ -76,18 +76,16 @@ export default function Absences() {
                 strokeWidth={6}
                 gradientId="conges-gradient"
                 label={`${solde.donnees.jours_restants}j`}
-                accent="#d03e0d"
-                accentClair="#ffb199"
               />
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-white">
                   {solde.donnees.jours_restants} jours restants sur {solde.donnees.jours_acquis + solde.donnees.jours_reportes}
                 </p>
-                <p className="text-xs text-slate-500">{solde.donnees.jours_pris} jours déjà pris cette année</p>
+                <p className="text-xs text-muted">{solde.donnees.jours_pris} jours déjà pris cette année</p>
               </div>
             </>
           ) : (
-            <p className="text-xs text-slate-500">{solde.chargement ? 'Chargement du solde…' : 'Solde indisponible'}</p>
+            <p className="text-xs text-muted">{solde.chargement ? 'Chargement du solde…' : 'Solde indisponible'}</p>
           )}
         </Card>
       </div>
@@ -99,24 +97,19 @@ export default function Absences() {
           icon={Calendar}
           titre="Mes congés"
           sousTitre={idEnEdition !== null ? 'Modifier la demande sélectionnée' : 'Poser des jours sur son solde annuel'}
-          accent="#d03e0d"
           onSubmit={envoyer}
           envoiEnCours={creation.enCours || soumission.enCours || modification.enCours}
           erreurEnvoi={creation.erreur ?? soumission.erreur ?? modification.erreur}
           texteBouton={idEnEdition !== null ? 'Mettre à jour' : 'Envoyer la demande'}
+          texteAction="Poser un congé"
+          enEdition={idEnEdition !== null}
+          onFermer={annulerEdition}
           champs={[
             { label: 'Type de congé', placeholder: 'Congé annuel', valeur: type, onChange: setType, requis: true },
             { label: 'Du', type: 'date', valeur: debut, onChange: setDebut, requis: true },
             { label: 'Au', type: 'date', valeur: fin, onChange: setFin, requis: true },
             { label: 'Motif (optionnel)', type: 'textarea', placeholder: 'Précisez si besoin...', valeur: motif, onChange: setMotif },
           ]}
-          entete={
-            idEnEdition !== null ? (
-              <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-rh-marque700 hover:text-rh-marque800">
-                ← Annuler la modification
-              </button>
-            ) : undefined
-          }
           colonnesHistorique={['Référence', 'Période', 'Type', 'Statut', '']}
           lignesHistorique={conges.map((d) => [
             d.numero,
@@ -125,13 +118,13 @@ export default function Absences() {
             <Badge tone={TONE[d.statut] ?? 'neutral'}>{d.statut_libelle}</Badge>,
             d.modifiable ? (
               <div className="flex gap-2">
-                <button onClick={() => modifier(d)} className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900">
+                <button onClick={() => modifier(d)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white">
                   Modifier
                 </button>
                 <button
                   onClick={() => annulation.executer(d.id).then(() => demandes.recharger())}
                   disabled={annulation.enCours}
-                  className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900"
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white"
                 >
                   Annuler
                 </button>

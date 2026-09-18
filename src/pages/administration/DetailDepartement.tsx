@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, Building2, Crown, IdCard, Trash2 } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, Building2, Crown, Plus, Trash2, UserPlus } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -13,12 +13,13 @@ const CHAMP =
 const LABEL = 'mb-1.5 block text-xs font-semibold text-muted';
 
 /** Gère uniquement l'appartenance à ce département (qui en fait partie, qui
- * le dirige). Donner un accès à une application est une autre affaire, gérée
- * depuis la fiche de chaque personne (bouton "Fiche" ci-dessous) — cette
- * page ne fait qu'une chose pour rester simple. */
+ * le dirige) — cliquer sur un collaborateur ouvre sa fiche. Donner un accès
+ * à une application est une autre affaire, gérée depuis cette fiche
+ * individuelle : cette page ne fait qu'une chose pour rester simple. */
 export default function DetailDepartement() {
   const { id } = useParams();
   const departementId = Number(id);
+  const navigate = useNavigate();
 
   const departements = useApi(listerDepartementsAdmin, []);
   const utilisateurs = useApi(() => listerUtilisateursAdmin(), []);
@@ -129,39 +130,64 @@ export default function DetailDepartement() {
               <p className="rounded-3xl border border-border bg-surface p-6 text-center text-xs text-muted">Personne n'est encore rattaché.</p>
             ) : (
               <div className="flex flex-col gap-2">
-                {membres.map((m) => (
-                  <Card key={m.id} className="flex items-center justify-between gap-3 !p-3.5">
-                    <div className="flex items-center gap-2">
-                      {departement.responsable === m.id ? <Crown size={14} className="text-accent2" /> : null}
-                      <div>
-                        <p className="text-sm font-semibold text-white">{m.nom_complet}</p>
-                        <p className="text-xs text-muted">{m.fonction || m.identifiant}</p>
+                {membres.map((m) => {
+                  const accesActifs = m.habilitations.filter((h) => h.active);
+                  const accesVisibles = accesActifs.slice(0, 2);
+                  const accesRestants = accesActifs.length - accesVisibles.length;
+                  return (
+                    <div
+                      key={m.id}
+                      onClick={() => navigate(`/administration/comptes/${m.id}`)}
+                      title="Voir sa fiche"
+                      className="group flex cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-3.5 transition hover:border-accent/40 hover:bg-surface2/40"
+                    >
+                      <div className="flex items-center gap-2">
+                        {departement.responsable === m.id ? <Crown size={14} className="shrink-0 text-accent2" /> : null}
+                        <div>
+                          <p className="text-sm font-semibold text-white">{m.nom_complet}</p>
+                          <p className="text-xs text-muted">{m.fonction || m.identifiant}</p>
+                          {accesActifs.length > 0 ? (
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {accesVisibles.map((h) => (
+                                <span key={h.id} className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-semibold text-muted">
+                                  {h.application_nom}
+                                </span>
+                              ))}
+                              {accesRestants > 0 ? (
+                                <span className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] font-semibold text-muted">+{accesRestants}</span>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to={`/administration/comptes/${m.id}`}
-                        title="Voir sa fiche (pour lui donner accès à une application)"
-                        className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white"
-                      >
-                        <IdCard size={12} /> Fiche
-                      </Link>
                       <button
-                        onClick={() => retirer(m.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          retirer(m.id);
+                        }}
                         disabled={affectation.enCours}
-                        className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white disabled:opacity-50"
+                        title="Retirer du département"
+                        className="shrink-0 rounded-lg p-1.5 text-muted opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100 disabled:opacity-50"
                       >
-                        <Trash2 size={12} /> Retirer
+                        <Trash2 size={14} />
                       </button>
                     </div>
-                  </Card>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
           <div>
-            <h2 className="mb-3 text-sm font-bold text-white">Ajouter un collaborateur</h2>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="text-sm font-bold text-white">Ajouter un collaborateur</h2>
+              <Link
+                to={`/administration/nouveau-compte?departement=${departementId}`}
+                className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-muted hover:text-white"
+              >
+                <UserPlus size={13} /> Créer un nouveau compte
+              </Link>
+            </div>
             <input
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
@@ -178,7 +204,7 @@ export default function DetailDepartement() {
                     key={c.id}
                     onClick={() => ajouter(c.id)}
                     disabled={affectation.enCours}
-                    className="flex items-center justify-between rounded-xl border border-border bg-surface2 px-3 py-2 text-left text-xs hover:border-accent/50 disabled:opacity-50"
+                    className="group flex items-center justify-between rounded-xl border border-border bg-surface2 px-3 py-2 text-left text-xs transition hover:border-accent/50 disabled:opacity-50"
                   >
                     <span>
                       <span className="font-semibold text-white">{c.nom_complet}</span>{' '}
@@ -187,7 +213,7 @@ export default function DetailDepartement() {
                         {c.departement_nom ? ` (actuellement ${c.departement_nom})` : ''}
                       </span>
                     </span>
-                    <span className="shrink-0 font-semibold text-accent2">Ajouter</span>
+                    <Plus size={14} className="shrink-0 text-muted transition group-hover:text-accent2" />
                   </button>
                 ))
               )}

@@ -11,6 +11,7 @@ import NouveauCompte from './pages/administration/NouveauCompte';
 import DetailCompte from './pages/administration/DetailCompte';
 import NouveauDepartement from './pages/administration/NouveauDepartement';
 import DetailDepartement from './pages/administration/DetailDepartement';
+import DetailApplication from './pages/administration/DetailApplication';
 import Connexion from './pages/Connexion';
 import MonCompte from './pages/MonCompte';
 
@@ -90,7 +91,6 @@ import Presences from './pages/rh/Presences';
 import Retards from './pages/rh/Retards';
 import TableauDeBordRh from './pages/rh/TableauDeBord';
 import Validations from './pages/rh/Validations';
-import Requisitions from './pages/finance/Requisitions';
 import RequisitionDetail from './pages/finance/RequisitionDetail';
 
 createRoot(document.getElementById('root')!).render(
@@ -110,6 +110,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/administration/comptes/:id" element={<DetailCompte />} />
               <Route path="/administration/nouveau-departement" element={<NouveauDepartement />} />
               <Route path="/administration/departements/:id" element={<DetailDepartement />} />
+              <Route path="/administration/applications/:id" element={<DetailApplication />} />
               <Route path="/mon-compte" element={<MonCompte />} />
             </Route>
 
@@ -140,7 +141,6 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/rh/presences" element={<Presences />} />
               <Route path="/rh/retards" element={<Retards />} />
               <Route path="/rh/validations" element={<Validations />} />
-              <Route path="/rh/requisitions" element={<Requisitions />} />
               <Route path="/rh/requisitions/:id" element={<RequisitionDetail />} />
             </Route>
 

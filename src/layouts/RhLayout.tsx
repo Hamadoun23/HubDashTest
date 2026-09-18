@@ -22,6 +22,21 @@ function estActif(chemin: string, href: string, estRacine: boolean) {
 
 const GROUPE = NAVIGATION.find((g) => g.app === 'rh')!;
 
+// Seule entrée du menu RH réservée aux validateurs : la page reste
+// accessible en direct (le backend la filtre déjà à ce qui vous concerne),
+// mais l'afficher à un simple salarié qui n'a jamais rien à valider n'est
+// que du bruit — voir l'état vide "Aucun dossier en attente" du tableau
+// de bord. Tout le reste (congés, présences, historique, annuaire...) est
+// déjà scopé par le backend à l'agent (+ son équipe s'il encadre, + tout
+// pour le back-office RH) : pas besoin de le cacher, ça reste pertinent.
+const HREF_VALIDATION = '/rh/validations';
+
+function estVisible(href: string, utilisateur: ReturnType<typeof useAuth>['utilisateur']) {
+  if (href !== HREF_VALIDATION) return true;
+  if (!utilisateur) return false;
+  return utilisateur.est_encadrant || utilisateur.role !== 'SALARIE';
+}
+
 export default function RhLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -29,6 +44,7 @@ export default function RhLayout() {
   const [menuOuvert, setMenuOuvert] = useState(false);
 
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
+  const elementsVisibles = GROUPE.items.filter((item) => estVisible(item.href, utilisateur));
 
   return (
     <div
@@ -49,9 +65,9 @@ export default function RhLayout() {
         </div>
 
         <nav className="mt-2 flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
-          {GROUPE.items.map((item, index) => {
+          {elementsVisibles.map((item) => {
             const Icon = item.icon;
-            const actif = estActif(pathname, item.href, index === 0);
+            const actif = estActif(pathname, item.href, item.href === GROUPE.items[0].href);
             return (
               <Link
                 key={item.href}

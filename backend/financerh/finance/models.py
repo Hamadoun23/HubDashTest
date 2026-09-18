@@ -88,6 +88,11 @@ class Requisition(DocumentFinancier):
         max_length=10, choices=Priorite.choices, default=Priorite.NORMALE
     )
     montant = models.DecimalField(default=Decimal("0"), **MONTANT)
+    montant_estime = models.BooleanField(
+        default=False,
+        verbose_name="Montant estimatif",
+        help_text="Coche si le montant est une estimation, pas un prix ferme.",
+    )
 
     class Meta(DocumentFinancier.Meta):
         verbose_name = "Requisition"

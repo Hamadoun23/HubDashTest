@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { UserRound } from 'lucide-react';
-import { EtatErreur } from '../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
-import { Badge } from '../../components/ui-light/Table';
+import { EtatErreur } from '../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
+import { Badge } from '../../components/ui/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { annulerDemande, creerDemandeAbsence, mesDemandes, modifierDemandeAbsence, soumettreDemande } from '../../lib/api/rh';
 
@@ -78,11 +78,13 @@ export default function Permissions() {
       icon={UserRound}
       titre="Mes permissions"
       sousTitre={idEnEdition !== null ? 'Modifier la permission sélectionnée' : "S'absenter sans entamer son solde de congés"}
-      accent="#d03e0d"
       onSubmit={envoyer}
       envoiEnCours={creation.enCours || soumission.enCours || modification.enCours}
       erreurEnvoi={creation.erreur ?? soumission.erreur ?? modification.erreur}
       texteBouton={idEnEdition !== null ? 'Mettre à jour' : 'Envoyer la demande'}
+      texteAction="Nouvelle permission"
+      enEdition={idEnEdition !== null}
+      onFermer={annulerEdition}
       champs={[
         { label: 'Date', type: 'date', valeur: date, onChange: setDate, requis: true },
         { label: 'De', type: 'time', valeur: heureDebut, onChange: setHeureDebut, requis: true },
@@ -96,13 +98,6 @@ export default function Permissions() {
           requis: true,
         },
       ]}
-      entete={
-        idEnEdition !== null ? (
-          <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-rh-marque700 hover:text-rh-marque800">
-            ← Annuler la modification
-          </button>
-        ) : undefined
-      }
       colonnesHistorique={['Référence', 'Date', 'Motif', 'Horaire', 'Statut', '']}
       lignesHistorique={permissions.map((d) => [
         d.numero,
@@ -112,13 +107,13 @@ export default function Permissions() {
         <Badge tone={TONE[d.statut] ?? 'neutral'}>{d.statut_libelle}</Badge>,
         d.modifiable ? (
           <div className="flex gap-2">
-            <button onClick={() => modifier(d)} className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900">
+            <button onClick={() => modifier(d)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white">
               Modifier
             </button>
             <button
               onClick={() => annulation.executer(d.id).then(() => demandes.recharger())}
               disabled={annulation.enCours}
-              className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-900"
+              className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white"
             >
               Annuler
             </button>

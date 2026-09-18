@@ -114,6 +114,9 @@ export default function Liste() {
         envoiEnCours={creation.enCours || modification.enCours}
         erreurEnvoi={creation.erreur ?? modification.erreur ?? suppression.erreur}
         texteBouton={idEnEdition !== null ? 'Mettre à jour' : 'Créer le chantier'}
+        texteAction="Nouveau chantier"
+        enEdition={idEnEdition !== null}
+        onFermer={annulerEdition}
         champs={[
           { label: 'Nom du chantier', placeholder: 'Résidence Sotuba', valeur: nom, onChange: setNom, requis: true },
           { label: 'Client', placeholder: 'Particulier — M. Sangaré', valeur: client, onChange: setClient },
@@ -121,13 +124,6 @@ export default function Liste() {
           { label: 'Fin prévue', type: 'date', valeur: fin, onChange: setFin },
           { label: 'Description (optionnel)', type: 'textarea', placeholder: 'Détails du projet...', valeur: description, onChange: setDescription },
         ]}
-        entete={
-          idEnEdition !== null ? (
-            <button onClick={annulerEdition} className="mb-3 text-xs font-semibold text-chantiers-terracotta hover:opacity-80">
-              ← Annuler la modification
-            </button>
-          ) : undefined
-        }
         colonnesHistorique={['Référence', 'Chantier', 'Client', 'Avancement', 'Statut', '']}
         lignesHistorique={liste.map((p) => [
           `#${p.id}`,

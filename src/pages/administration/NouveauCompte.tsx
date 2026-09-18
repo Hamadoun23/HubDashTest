@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ArrowLeft, UserPlus } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { useAction, useApi } from '../../lib/hooks/useApi';
-import { creerHabilitation, creerUtilisateurAdmin, listerApplicationsAdmin } from '../../lib/api/identity';
+import { creerHabilitation, creerUtilisateurAdmin, listerApplicationsAdmin, listerDepartementsAdmin } from '../../lib/api/identity';
 
 const CHAMP =
   'w-full rounded-xl border border-border bg-surface2 px-3 py-2 text-sm text-white placeholder:text-muted focus:border-accent focus:outline-none';
@@ -13,7 +13,10 @@ const LABEL = 'mb-1.5 block text-xs font-semibold text-muted';
 
 export default function NouveauCompte() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const departementPreselectionne = searchParams.get('departement') ?? '';
   const applications = useApi(listerApplicationsAdmin, []);
+  const departements = useApi(listerDepartementsAdmin, []);
   const creationCompte = useAction(creerUtilisateurAdmin);
   const creationHabilitation = useAction(creerHabilitation);
 
@@ -23,14 +26,17 @@ export default function NouveauCompte() {
   const [email, setEmail] = useState('');
   const [fonction, setFonction] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
+  const [departementCible, setDepartementCible] = useState(departementPreselectionne);
 
   const [applicationCible, setApplicationCible] = useState('');
   const [rolesCibles, setRolesCibles] = useState<string[]>([]);
 
-  if (applications.chargement) return <EtatChargement texte="Chargement…" />;
+  if (applications.chargement || departements.chargement) return <EtatChargement texte="Chargement…" />;
   if (applications.erreur) return <EtatErreur message={applications.erreur} recharger={applications.recharger} />;
+  if (departements.erreur) return <EtatErreur message={departements.erreur} recharger={departements.recharger} />;
 
   const catalogue = applications.donnees ?? [];
+  const listeDepartements = departements.donnees ?? [];
   const appCible = catalogue.find((a) => String(a.id) === applicationCible);
 
   function basculerRole(code: string) {
@@ -39,7 +45,15 @@ export default function NouveauCompte() {
 
   async function envoyer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const compte = await creationCompte.executer({ identifiant, nom, prenom, email, fonction, mot_de_passe: motDePasse });
+    const compte = await creationCompte.executer({
+      identifiant,
+      nom,
+      prenom,
+      email,
+      fonction,
+      mot_de_passe: motDePasse,
+      departement: departementCible ? Number(departementCible) : null,
+    });
     if (applicationCible && rolesCibles.length > 0) {
       await creationHabilitation.executer({
         utilisateur: compte.id,
@@ -47,7 +61,7 @@ export default function NouveauCompte() {
         roles: rolesCibles,
       });
     }
-    navigate('/administration');
+    navigate(`/administration/comptes/${compte.id}`);
   }
 
   const enCours = creationCompte.enCours || creationHabilitation.enCours;
@@ -55,8 +69,11 @@ export default function NouveauCompte() {
 
   return (
     <div>
-      <Link to="/administration" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-white">
-        <ArrowLeft size={14} /> Retour à l'administration
+      <Link
+        to={departementPreselectionne ? `/administration/departements/${departementPreselectionne}` : '/administration'}
+        className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-white"
+      >
+        <ArrowLeft size={14} /> {departementPreselectionne ? 'Retour au département' : "Retour à l'administration"}
       </Link>
 
       <PageHeader icon={UserPlus} titre="Nouveau compte" sousTitre="Créer un accès au hub et, si besoin, l'attribuer à une application" />
@@ -84,6 +101,17 @@ export default function NouveauCompte() {
           <div>
             <label className={LABEL}>Fonction</label>
             <input value={fonction} onChange={(e) => setFonction(e.target.value)} className={CHAMP} />
+          </div>
+          <div>
+            <label className={LABEL}>Département</label>
+            <select value={departementCible} onChange={(e) => setDepartementCible(e.target.value)} className={CHAMP}>
+              <option value="">Non rattaché</option>
+              {listeDepartements.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.nom}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className={LABEL}>Mot de passe initial</label>

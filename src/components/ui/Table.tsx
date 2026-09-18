@@ -3,9 +3,13 @@ import { Card } from './Card';
 export function TableVirtus({
   colonnes,
   lignes,
+  onRowClick,
 }: {
   colonnes: string[];
   lignes: React.ReactNode[][];
+  /** Rend toute la ligne cliquable (pas seulement une cellule) — utile quand chaque
+   * ligne ouvre une fiche de détail. Sans cette prop, comportement inchangé. */
+  onRowClick?: (index: number) => void;
 }) {
   return (
     <Card className="overflow-hidden !p-0">
@@ -22,7 +26,11 @@ export function TableVirtus({
           </thead>
           <tbody>
             {lignes.map((ligne, index) => (
-              <tr key={index} className="border-b border-border/60 last:border-0 hover:bg-surface2/60">
+              <tr
+                key={index}
+                onClick={onRowClick ? () => onRowClick(index) : undefined}
+                className={`border-b border-border/60 last:border-0 hover:bg-surface2/60 ${onRowClick ? 'cursor-pointer' : ''}`}
+              >
                 {ligne.map((cellule, cellIndex) => (
                   <td key={cellIndex} className="whitespace-nowrap px-4 py-3 text-white">
                     {cellule}

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../components/ui-light/PageHeader';
-import { Badge, TableVirtus } from '../../components/ui-light/Table';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Badge, TableVirtus } from '../../components/ui/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { demandesAValider, rejeterDemande, validerDemande } from '../../lib/api/rh';
 import { rejeterRequisition, requisitionsAValider, validerRequisition } from '../../lib/api/finance';
@@ -81,10 +81,10 @@ export default function Validations() {
 
   return (
     <div>
-      <PageHeader icon={ClipboardList} titre="À valider" sousTitre="Dossiers attendant votre décision" accent="#d03e0d" />
+      <PageHeader icon={ClipboardList} titre="À valider" sousTitre="Dossiers attendant votre décision" />
 
       {liste.length === 0 ? (
-        <p className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        <p className="rounded-3xl border border-border bg-surface p-8 text-center text-sm text-muted">
           Aucun dossier n'attend votre décision pour le moment.
         </p>
       ) : (
@@ -92,7 +92,7 @@ export default function Validations() {
           colonnes={['Référence', 'Collaborateur', 'Type', 'Étape', 'Statut', '']}
           lignes={liste.map((dossier) => [
             dossier.source === 'requisition' ? (
-              <Link to={`/rh/requisitions/${dossier.id}`} className="font-semibold text-rh-marque700 hover:text-rh-marque800">
+              <Link to={`/rh/requisitions/${dossier.id}`} className="font-semibold text-white hover:text-accent2">
                 {dossier.numero}
               </Link>
             ) : (
@@ -109,12 +109,12 @@ export default function Validations() {
                   value={commentaireRejet}
                   onChange={(e) => setCommentaireRejet(e.target.value)}
                   placeholder="Motif du rejet..."
-                  className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 placeholder:text-slate-400 focus:border-rh-marque500 focus:outline-none"
+                  className="rounded-lg border border-border bg-surface2 px-2 py-1 text-xs text-white placeholder:text-muted focus:border-accent focus:outline-none"
                 />
                 <button
                   onClick={() => confirmerRejet(dossier)}
                   disabled={rejet.enCours || !commentaireRejet.trim()}
-                  className="rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-700 disabled:opacity-50"
+                  className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-400 disabled:opacity-50"
                 >
                   Confirmer
                 </button>
@@ -123,7 +123,7 @@ export default function Validations() {
                     setDossierEnRejet(null);
                     setCommentaireRejet('');
                   }}
-                  className="text-xs text-slate-500"
+                  className="text-xs text-muted"
                 >
                   Annuler
                 </button>
@@ -133,13 +133,13 @@ export default function Validations() {
                 <button
                   onClick={() => approuver(dossier)}
                   disabled={validation.enCours}
-                  className="rounded-lg bg-rh-marque500 px-2.5 py-1 text-xs font-bold text-white disabled:opacity-50"
+                  className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
                 >
                   Approuver
                 </button>
                 <button
                   onClick={() => setDossierEnRejet(dossier.cle)}
-                  className="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-500"
+                  className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white"
                 >
                   Refuser
                 </button>
@@ -150,7 +150,7 @@ export default function Validations() {
       )}
 
       {(validation.erreur || rejet.erreur) && (
-        <p className="mt-3 text-xs font-semibold text-rose-600">{validation.erreur ?? rejet.erreur}</p>
+        <p className="mt-3 text-xs font-semibold text-red-400">{validation.erreur ?? rejet.erreur}</p>
       )}
     </div>
   );
