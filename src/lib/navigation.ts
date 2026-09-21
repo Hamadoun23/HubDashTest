@@ -98,14 +98,18 @@ export const NAVIGATION: NavGroup[] = [
     ],
   },
   {
+    key: 'orange-tableau-de-bord',
+    label: "Jus d'orange — Tableau de bord",
+    color: 'bg-orange-400',
+    app: 'jus',
+    items: [{ label: 'Tableau de bord', href: '/jus', icon: LayoutDashboard }],
+  },
+  {
     key: 'orange-direction',
     label: "Jus d'orange — Direction",
     color: 'bg-violet-400',
     app: 'jus',
-    items: [
-      { label: 'Tableau de bord', href: '/jus/direction', icon: LayoutDashboard },
-      { label: 'Utilisateurs', href: '/jus/direction/utilisateurs', icon: Users },
-    ],
+    items: [{ label: 'Utilisateurs', href: '/jus/direction/utilisateurs', icon: Users }],
   },
   {
     key: 'orange-production',
@@ -113,7 +117,6 @@ export const NAVIGATION: NavGroup[] = [
     color: 'bg-amber-400',
     app: 'jus',
     items: [
-      { label: 'Tableau de bord', href: '/jus/production', icon: LayoutDashboard },
       { label: 'Producteurs', href: '/jus/production/producteurs', icon: UserRound },
       { label: 'Cueillettes', href: '/jus/production/cueillettes', icon: Sprout },
       { label: 'Articles / Stock', href: '/jus/production/articles', icon: Boxes },
@@ -130,7 +133,6 @@ export const NAVIGATION: NavGroup[] = [
     color: 'bg-blue-400',
     app: 'jus',
     items: [
-      { label: 'Tableau de bord', href: '/jus/commercial', icon: LayoutDashboard },
       { label: 'Prospection', href: '/jus/commercial/prospection', icon: Map },
       { label: 'Clients', href: '/jus/commercial/clients', icon: UserRound },
       { label: 'Ventes', href: '/jus/commercial/ventes', icon: Citrus },
@@ -144,10 +146,7 @@ export const NAVIGATION: NavGroup[] = [
     label: "Jus d'orange — Finance",
     color: 'bg-emerald-400',
     app: 'jus',
-    items: [
-      { label: 'Tableau de bord', href: '/jus/finance', icon: LayoutDashboard },
-      { label: 'Trésorerie', href: '/jus/finance/tresorerie', icon: Landmark },
-    ],
+    items: [{ label: 'Trésorerie', href: '/jus/finance/tresorerie', icon: Landmark }],
   },
   {
     key: 'orange-reporting',

@@ -1,11 +1,11 @@
 import { Clock, Landmark, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Card } from '../../components/ui-light/Card';
-import { CircularProgress } from '../../components/ui-light/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../components/ui-light/PageHeader';
-import { StatTile } from '../../components/ui-light/StatTile';
-import { Badge, TableVirtus } from '../../components/ui-light/Table';
+import { Card } from '../../components/ui/Card';
+import { CircularProgress } from '../../components/ui/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { StatTile } from '../../components/ui/StatTile';
+import { Badge, TableVirtus } from '../../components/ui/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { obtenirRapprochement } from '../../lib/api/jus';
 
@@ -27,7 +27,7 @@ export default function Finance() {
 
   return (
     <div>
-      <PageHeader icon={Landmark} titre="Jus d'orange — Finance" sousTitre="Vue d'ensemble financière" accent="#eb6834" />
+      <PageHeader icon={Landmark} titre="Jus d'orange — Finance" sousTitre="Vue d'ensemble financière" />
       <div className="mb-4 grid grid-cols-4 gap-4">
         <StatTile icon={Wallet} valeur={`${totaux.total_commercial} F`} libelle="Facturé (commercial)" teinte="#60a5fa" />
         <StatTile icon={TrendingUp} valeur={`${totaux.total_recu} F`} libelle="Reçu (trésorerie)" teinte="#34d399" />
@@ -38,14 +38,14 @@ export default function Finance() {
       <Card className="mb-4 flex items-center gap-4">
         <CircularProgress progress={tauxRapprochement} size={64} strokeWidth={6} gradientId="jus-finance-rapprochement-gradient" />
         <div>
-          <p className="text-sm font-semibold text-slate-900">{Math.round(tauxRapprochement)}% du facturé effectivement reçu</p>
-          <p className="text-xs text-slate-500">{totaux.nb_ecarts_non_traites} écart(s) non traité(s)</p>
+          <p className="text-sm font-semibold text-white">{Math.round(tauxRapprochement)}% du facturé effectivement reçu</p>
+          <p className="text-xs text-muted">{totaux.nb_ecarts_non_traites} écart(s) non traité(s)</p>
         </div>
       </Card>
 
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-slate-900">Dernières opérations de trésorerie</h2>
-        <Link to="/jus/finance/tresorerie" className="text-xs font-semibold text-jus-primaryDark">
+        <h2 className="text-sm font-bold text-white">Dernières opérations de trésorerie</h2>
+        <Link to="/jus/finance/tresorerie" className="text-xs font-semibold text-accent2">
           Voir le détail →
         </Link>
       </div>

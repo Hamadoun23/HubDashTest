@@ -32,10 +32,7 @@ import SaisieDuJour from './pages/chantiers/SaisieDuJour';
 import Structure from './pages/chantiers/Structure';
 import Taches from './pages/chantiers/Taches';
 
-import Commercial from './pages/jus/Commercial';
-import Direction from './pages/jus/Direction';
-import Finance from './pages/jus/Finance';
-import Production from './pages/jus/Production';
+import TableauDeBordJus from './pages/jus/TableauDeBord';
 import Reporting from './pages/jus/Reporting';
 import Tresorerie from './pages/jus/Tresorerie';
 import Utilisateurs from './pages/jus/Utilisateurs';
@@ -145,7 +142,14 @@ createRoot(document.getElementById('root')!).render(
             </Route>
 
             <Route element={<JusLayout />}>
-              <Route path="/jus/commercial" element={<Commercial />} />
+              <Route path="/jus" element={<TableauDeBordJus />} />
+              {/* Alias historiques (raccourci du hub, anciens favoris) — même
+                  tableau de bord unique, pas quatre écrans par domaine. */}
+              <Route path="/jus/direction" element={<TableauDeBordJus />} />
+              <Route path="/jus/production" element={<TableauDeBordJus />} />
+              <Route path="/jus/commercial" element={<TableauDeBordJus />} />
+              <Route path="/jus/finance" element={<TableauDeBordJus />} />
+
               <Route path="/jus/commercial/prospection" element={<Prospection />} />
               <Route path="/jus/commercial/clients" element={<ClientsCommercial />} />
               <Route path="/jus/commercial/ventes" element={<Ventes />} />
@@ -153,7 +157,6 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/jus/commercial/factures" element={<Factures />} />
               <Route path="/jus/commercial/paiements" element={<Paiements />} />
 
-              <Route path="/jus/production" element={<Production />} />
               <Route path="/jus/production/producteurs" element={<Producteurs />} />
               <Route path="/jus/production/cueillettes" element={<Cueillettes />} />
               <Route path="/jus/production/articles" element={<Articles />} />
@@ -163,10 +166,8 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/jus/production/bouteilles" element={<Bouteilles />} />
               <Route path="/jus/production/inventaires" element={<Inventaires />} />
 
-              <Route path="/jus/finance" element={<Finance />} />
               <Route path="/jus/finance/tresorerie" element={<Tresorerie />} />
 
-              <Route path="/jus/direction" element={<Direction />} />
               <Route path="/jus/direction/utilisateurs" element={<Utilisateurs />} />
 
               <Route path="/jus/reporting" element={<Reporting />} />

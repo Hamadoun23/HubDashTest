@@ -1,10 +1,10 @@
 import { Citrus, ShoppingCart, Users, Wine } from 'lucide-react';
-import { Card } from '../../components/ui-light/Card';
-import { CircularProgress } from '../../components/ui-light/CircularProgress';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../components/ui-light/PageHeader';
-import { StatTile } from '../../components/ui-light/StatTile';
-import { Badge, TableVirtus } from '../../components/ui-light/Table';
+import { Card } from '../../components/ui/Card';
+import { CircularProgress } from '../../components/ui/CircularProgress';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { StatTile } from '../../components/ui/StatTile';
+import { Badge, TableVirtus } from '../../components/ui/Table';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerUtilisateursJus, listerVentes, obtenirSummary } from '../../lib/api/jus';
 
@@ -26,7 +26,7 @@ export default function Direction() {
 
   return (
     <div>
-      <PageHeader icon={Citrus} titre="Jus d'orange — Direction" sousTitre="Vue d'ensemble" accent="#eb6834" />
+      <PageHeader icon={Citrus} titre="Jus d'orange — Direction" sousTitre="Vue d'ensemble" />
       <div className="mb-4 grid grid-cols-4 gap-4">
         <StatTile icon={Users} valeur={listeUtilisateurs.length > 0 ? actifs : '—'} libelle="Utilisateurs actifs" teinte="#a78bfa" />
         <StatTile icon={ShoppingCart} valeur={`${kpi.ca_total} F`} libelle="Chiffre d'affaires" teinte="#34d399" />
@@ -37,14 +37,14 @@ export default function Direction() {
       <Card className="mb-4 flex items-center gap-4">
         <CircularProgress progress={tauxActifs} size={64} strokeWidth={6} gradientId="jus-direction-utilisateurs-gradient" />
         <div>
-          <p className="text-sm font-semibold text-slate-900">{Math.round(tauxActifs)}% des comptes sont actifs</p>
-          <p className="text-xs text-slate-500">
+          <p className="text-sm font-semibold text-white">{Math.round(tauxActifs)}% des comptes sont actifs</p>
+          <p className="text-xs text-muted">
             {actifs} actif(s) sur {listeUtilisateurs.length} utilisateur(s) de l'application Jus d'orange
           </p>
         </div>
       </Card>
 
-      <h2 className="mb-3 text-sm font-bold text-slate-900">Activité récente — ventes</h2>
+      <h2 className="mb-3 text-sm font-bold text-white">Activité récente — ventes</h2>
       {ventes.erreur ? (
         <EtatErreur message={ventes.erreur} recharger={ventes.recharger} />
       ) : (

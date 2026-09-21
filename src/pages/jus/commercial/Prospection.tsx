@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { History, Map, UserCheck } from 'lucide-react';
-import { EtatChargement, EtatErreur } from '../../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../../components/ui-light/FormulaireEtHistorique';
-import { Badge } from '../../../components/ui-light/Table';
+import { EtatChargement, EtatErreur } from '../../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../../components/ui/FormulaireEtHistorique';
+import { Badge } from '../../../components/ui/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import {
   convertirClient,
@@ -47,11 +47,11 @@ function PanneauVisites({ point, fermer, surConversion }: { point: PointVente; f
   }
 
   return (
-    <div className="mt-4 rounded-2xl border border-slate-300 bg-slate-50 p-4">
+    <div className="mt-4 rounded-2xl border border-border bg-surface2 p-4">
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-slate-900">Visites — {point.nom}</p>
-          <p className="text-xs text-slate-500">{point.nb_visites} visite(s) · dernière le {point.derniere_visite ?? '—'}</p>
+          <p className="text-sm font-semibold text-white">Visites — {point.nom}</p>
+          <p className="text-xs text-muted">{point.nb_visites} visite(s) · dernière le {point.derniere_visite ?? '—'}</p>
         </div>
         <div className="flex items-center gap-2">
           {point.statut !== 'CLIENT' && point.statut !== 'PARTENAIRE' && (
@@ -59,53 +59,53 @@ function PanneauVisites({ point, fermer, surConversion }: { point: PointVente; f
               type="button"
               onClick={convertir}
               disabled={conversion.enCours}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-900 hover:border-jus-primary disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-xs font-semibold text-white hover:border-accent disabled:opacity-50"
             >
               <UserCheck size={13} /> Convertir en client
             </button>
           )}
-          <button type="button" onClick={fermer} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <button type="button" onClick={fermer} className="text-xs font-semibold text-muted hover:text-white">
             Fermer
           </button>
         </div>
       </div>
-      {conversion.erreur ? <p className="mb-2 text-xs font-semibold text-rose-600">{conversion.erreur}</p> : null}
+      {conversion.erreur ? <p className="mb-2 text-xs font-semibold text-red-400">{conversion.erreur}</p> : null}
 
-      <form onSubmit={envoyer} className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-slate-300 bg-slate-50 p-3">
+      <form onSubmit={envoyer} className="mb-4 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface2 p-3">
         <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-500">Constat</label>
+          <label className="mb-1 block text-xs font-semibold text-muted">Constat</label>
           <input
             value={statutConstate}
             onChange={(e) => setStatutConstate(e.target.value)}
             placeholder="Intéressé, absent..."
-            className="w-40 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+            className="w-40 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-500">Compte-rendu</label>
+          <label className="mb-1 block text-xs font-semibold text-muted">Compte-rendu</label>
           <input
             value={compteRendu}
             onChange={(e) => setCompteRendu(e.target.value)}
-            className="w-56 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+            className="w-56 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-500">Prochaine relance</label>
+          <label className="mb-1 block text-xs font-semibold text-muted">Prochaine relance</label>
           <input
             type="date"
             value={dateRelance}
             onChange={(e) => setDateRelance(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+            className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={creation.enCours}
-          className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+          className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
         >
           {creation.enCours ? 'Envoi...' : 'Enregistrer la visite'}
         </button>
-        {creation.erreur ? <p className="text-xs font-semibold text-rose-600">{creation.erreur}</p> : null}
+        {creation.erreur ? <p className="text-xs font-semibold text-red-400">{creation.erreur}</p> : null}
       </form>
 
       {visites.chargement ? (
@@ -113,15 +113,15 @@ function PanneauVisites({ point, fermer, surConversion }: { point: PointVente; f
       ) : visites.erreur ? (
         <EtatErreur message={visites.erreur} recharger={visites.recharger} />
       ) : (visites.donnees ?? []).length === 0 ? (
-        <p className="text-xs text-slate-500">Aucune visite enregistrée pour ce point de vente.</p>
+        <p className="text-xs text-muted">Aucune visite enregistrée pour ce point de vente.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {(visites.donnees ?? []).map((v) => (
-            <li key={v.id} className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs">
-              <p className="font-semibold text-slate-900">
+            <li key={v.id} className="rounded-lg border border-border bg-surface2 px-3 py-2 text-xs">
+              <p className="font-semibold text-white">
                 {v.date_visite} {v.statut_constate ? `· ${v.statut_constate}` : ''}
               </p>
-              {v.compte_rendu ? <p className="mt-0.5 text-slate-500">{v.compte_rendu}</p> : null}
+              {v.compte_rendu ? <p className="mt-0.5 text-muted">{v.compte_rendu}</p> : null}
             </li>
           ))}
         </ul>
@@ -210,15 +210,14 @@ export default function Prospection() {
   ) : (
     <div>
       {idEnEdition !== null && (
-        <div className="mb-3 flex items-center justify-between rounded-xl border border-jus-primary/30 bg-jus-primary/10 px-3 py-2 text-xs text-jus-primaryDark">
+        <div className="mb-3 flex items-center justify-between rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-xs text-accent2">
           <span>Modification du point de vente en cours</span>
-          <button type="button" onClick={reinitialiser} className="font-semibold text-slate-900 hover:text-jus-primaryDark">
+          <button type="button" onClick={reinitialiser} className="font-semibold text-white hover:text-accent2">
             Annuler la modification
           </button>
         </div>
       )}
       <FormulaireEtHistorique
-        accent="#eb6834"
         icon={Map}
         titre="Prospection"
         sousTitre="Nouveaux points de vente à prospecter"
@@ -252,14 +251,14 @@ export default function Prospection() {
                 setLatitude(String(p.latitude));
                 setLongitude(String(p.longitude));
               }}
-              className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
+              className="text-xs font-semibold text-accent2 hover:text-white"
             >
               Modifier
             </button>
             <button
               type="button"
               onClick={() => setPointVisites(pointVisites?.id === p.id ? null : p)}
-              className="flex items-center gap-1 text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
+              className="flex items-center gap-1 text-xs font-semibold text-accent2 hover:text-white"
             >
               <History size={12} /> Visites
             </button>
@@ -267,14 +266,14 @@ export default function Prospection() {
               type="button"
               onClick={() => supprimer(p.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
+              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
             >
               Supprimer
             </button>
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
 
       {pointVisites && (
         <PanneauVisites

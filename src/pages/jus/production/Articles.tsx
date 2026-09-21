@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Boxes } from 'lucide-react';
-import { EtatErreur } from '../../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../../components/ui-light/FormulaireEtHistorique';
-import { Badge } from '../../../components/ui-light/Table';
+import { EtatErreur } from '../../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../../components/ui/FormulaireEtHistorique';
+import { Badge } from '../../../components/ui/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { actualiserArticle, listerArticles, modifierArticle, obtenirOptions, supprimerArticle } from '../../../lib/api/jus';
 
@@ -66,7 +66,6 @@ export default function Articles() {
   ) : (
     <div>
       <FormulaireEtHistorique
-        accent="#eb6834"
         icon={Boxes}
         titre="Articles / Stock"
         sousTitre="Actualiser le stock d'un article"
@@ -99,7 +98,7 @@ export default function Articles() {
                 setPrix33(a.prix_33cl !== null ? String(a.prix_33cl) : '');
                 setPrix1l(a.prix_1l !== null ? String(a.prix_1l) : '');
               }}
-              className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
+              className="text-xs font-semibold text-accent2 hover:text-white"
             >
               Modifier
             </button>
@@ -107,53 +106,53 @@ export default function Articles() {
               type="button"
               onClick={() => supprimer(a.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
+              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
             >
               Supprimer
             </button>
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-2 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-2 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
 
       {idEnEdition !== null && (
-        <form onSubmit={enregistrerModification} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-300 bg-slate-50 p-4">
+        <form onSubmit={enregistrerModification} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface2 p-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Seuil d'alerte</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Seuil d'alerte</label>
             <input
               value={seuilAlerte}
               onChange={(e) => setSeuilAlerte(e.target.value)}
               required
-              className="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="w-28 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Prix 33cl</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Prix 33cl</label>
             <input
               value={prix33}
               onChange={(e) => setPrix33(e.target.value)}
-              className="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="w-28 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Prix 1L</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Prix 1L</label>
             <input
               value={prix1l}
               onChange={(e) => setPrix1l(e.target.value)}
-              className="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="w-28 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={modification.enCours}
-            className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+            className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
           >
             {modification.enCours ? 'Envoi...' : 'Mettre à jour'}
           </button>
-          <button type="button" onClick={annulerEdition} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <button type="button" onClick={annulerEdition} className="text-xs font-semibold text-muted hover:text-white">
             Annuler la modification
           </button>
-          {modification.erreur ? <p className="text-xs font-semibold text-rose-600">{modification.erreur}</p> : null}
+          {modification.erreur ? <p className="text-xs font-semibold text-red-400">{modification.erreur}</p> : null}
         </form>
       )}
     </div>

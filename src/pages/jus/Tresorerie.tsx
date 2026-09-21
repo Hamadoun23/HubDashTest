@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Landmark } from 'lucide-react';
-import { Card } from '../../components/ui-light/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../components/ui-light/PageHeader';
-import { Badge, TableVirtus } from '../../components/ui-light/Table';
+import { Card } from '../../components/ui/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
+import { PageHeader } from '../../components/ui/PageHeader';
+import { Badge, TableVirtus } from '../../components/ui/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerTresorerie, gererEcartTresorerie, obtenirOptions, obtenirRapprochement, supprimerTresorerie } from '../../lib/api/jus';
 
@@ -59,25 +59,25 @@ export default function Tresorerie() {
 
   return (
     <div>
-      <PageHeader icon={Landmark} titre="Trésorerie" sousTitre="Rapprochement des encaissements" accent="#eb6834" />
+      <PageHeader icon={Landmark} titre="Trésorerie" sousTitre="Rapprochement des encaissements" />
 
       <div className="mb-4 grid grid-cols-4 gap-4">
-        <Card><p className="text-xs text-slate-500">Total commercial</p><p className="mt-1 text-lg font-bold text-slate-900">{totaux.total_commercial} F</p></Card>
-        <Card><p className="text-xs text-slate-500">Total reçu</p><p className="mt-1 text-lg font-bold text-slate-900">{totaux.total_recu} F</p></Card>
-        <Card><p className="text-xs text-slate-500">Écart global</p><p className="mt-1 text-lg font-bold text-slate-900">{totaux.ecart_global} F</p></Card>
-        <Card><p className="text-xs text-slate-500">Écarts non traités</p><p className="mt-1 text-lg font-bold text-slate-900">{totaux.nb_ecarts_non_traites}</p></Card>
+        <Card><p className="text-xs text-muted">Total commercial</p><p className="mt-1 text-lg font-bold text-white">{totaux.total_commercial} F</p></Card>
+        <Card><p className="text-xs text-muted">Total reçu</p><p className="mt-1 text-lg font-bold text-white">{totaux.total_recu} F</p></Card>
+        <Card><p className="text-xs text-muted">Écart global</p><p className="mt-1 text-lg font-bold text-white">{totaux.ecart_global} F</p></Card>
+        <Card><p className="text-xs text-muted">Écarts non traités</p><p className="mt-1 text-lg font-bold text-white">{totaux.nb_ecarts_non_traites}</p></Card>
       </div>
 
       <Card className="mb-4">
-        <h2 className="text-sm font-bold text-slate-900">Déclarer une réception de paiement</h2>
+        <h2 className="text-sm font-bold text-white">Déclarer une réception de paiement</h2>
         <form onSubmit={envoyer} className="mt-3 flex flex-wrap items-end gap-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Paiement</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Paiement</label>
             <select
               value={paiementId}
               onChange={(e) => setPaiementId(e.target.value)}
               required
-              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             >
               <option value="">Sélectionner...</option>
               {(options.donnees?.paiements_sans_reception ?? []).map((p) => (
@@ -88,29 +88,29 @@ export default function Tresorerie() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Montant reçu</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Montant reçu</label>
             <input
               value={montantRecu}
               onChange={(e) => setMontantRecu(e.target.value)}
               required
-              className="w-32 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="w-32 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Date</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Date</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
-          <button type="submit" disabled={creation.enCours} className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60">
+          <button type="submit" disabled={creation.enCours} className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60">
             {creation.enCours ? 'Envoi...' : 'Enregistrer'}
           </button>
         </form>
-        {creation.erreur ? <p className="mt-2 text-xs font-semibold text-rose-600">{creation.erreur}</p> : null}
+        {creation.erreur ? <p className="mt-2 text-xs font-semibold text-red-400">{creation.erreur}</p> : null}
       </Card>
 
       <TableVirtus
@@ -130,18 +130,18 @@ export default function Tresorerie() {
                     value={observation}
                     onChange={(e) => setObservation(e.target.value)}
                     placeholder="Explication..."
-                    className="w-32 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900"
+                    className="w-32 rounded-lg border border-border bg-surface2 px-2 py-1 text-xs text-white"
                   />
                   <button
                     onClick={() => traiterEcart(l.reception_id!)}
                     disabled={gestionEcart.enCours}
-                    className="rounded-lg bg-jus-primary px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
+                    className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
                   >
                     Valider
                   </button>
                 </div>
               ) : (
-                <button onClick={() => setEcartEnCours(l.reception_id!)} className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary">
+                <button onClick={() => setEcartEnCours(l.reception_id!)} className="text-xs font-semibold text-accent2 hover:text-white">
                   Traiter l'écart →
                 </button>
               )
@@ -151,7 +151,7 @@ export default function Tresorerie() {
                 type="button"
                 onClick={() => supprimer(l.reception_id!)}
                 disabled={suppression.enCours}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
+                className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
               >
                 Supprimer
               </button>
@@ -159,7 +159,7 @@ export default function Tresorerie() {
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
     </div>
   );
 }

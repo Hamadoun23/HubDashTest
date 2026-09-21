@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ReceiptText } from 'lucide-react';
-import { EtatChargement, EtatErreur } from '../../../components/ui-light/EtatRequete';
-import { PageHeader } from '../../../components/ui-light/PageHeader';
-import { Badge, TableVirtus } from '../../../components/ui-light/Table';
+import { EtatChargement, EtatErreur } from '../../../components/ui/EtatRequete';
+import { PageHeader } from '../../../components/ui/PageHeader';
+import { Badge, TableVirtus } from '../../../components/ui/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { listerFactures, modifierFacture, payerFacture, supprimerFacture, type ModePaie } from '../../../lib/api/jus';
 
@@ -57,7 +57,7 @@ export default function Factures() {
 
   return (
     <div>
-      <PageHeader icon={ReceiptText} titre="Factures" sousTitre="Facturation client" accent="#eb6834" />
+      <PageHeader icon={ReceiptText} titre="Factures" sousTitre="Facturation client" />
       <TableVirtus
         colonnes={['Référence', 'Client', 'Montant', 'Reste', 'Échéance', 'Statut', '']}
         lignes={(factures.donnees ?? []).map((f) => [
@@ -75,12 +75,12 @@ export default function Factures() {
                     value={montant}
                     onChange={(e) => setMontant(e.target.value)}
                     placeholder="Montant"
-                    className="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900"
+                    className="w-20 rounded-lg border border-border bg-surface2 px-2 py-1 text-xs text-white"
                   />
                   <select
                     value={mode}
                     onChange={(e) => setMode(e.target.value as ModePaie)}
-                    className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900"
+                    className="rounded-lg border border-border bg-surface2 px-2 py-1 text-xs text-white"
                   >
                     <option value="ESPECE">Espèces</option>
                     <option value="CHEQUE">Chèque</option>
@@ -90,13 +90,13 @@ export default function Factures() {
                   <button
                     onClick={() => payer(f.id)}
                     disabled={paiement.enCours}
-                    className="rounded-lg bg-jus-primary px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
+                    className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
                   >
                     Valider
                   </button>
                 </div>
               ) : (
-                <button onClick={() => setEnPaiement(f.id)} className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary">
+                <button onClick={() => setEnPaiement(f.id)} className="text-xs font-semibold text-accent2 hover:text-white">
                   Enregistrer un paiement →
                 </button>
               ))}
@@ -107,7 +107,7 @@ export default function Factures() {
                 setMontantFacture(String(f.montant));
                 setEcheance(f.date_echeance);
               }}
-              className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
+              className="text-xs font-semibold text-accent2 hover:text-white"
             >
               Modifier
             </button>
@@ -115,7 +115,7 @@ export default function Factures() {
               type="button"
               onClick={() => supprimer(f.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
+              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
             >
               Supprimer
             </button>
@@ -123,41 +123,41 @@ export default function Factures() {
         ])}
       />
       {(paiement.erreur || suppression.erreur) ? (
-        <p className="mt-2 text-xs font-semibold text-rose-600">{paiement.erreur ?? suppression.erreur}</p>
+        <p className="mt-2 text-xs font-semibold text-red-400">{paiement.erreur ?? suppression.erreur}</p>
       ) : null}
 
       {idEnEdition !== null && (
-        <form onSubmit={enregistrerModification} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-300 bg-slate-50 p-4">
+        <form onSubmit={enregistrerModification} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface2 p-4">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Montant</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Montant</label>
             <input
               value={montantFacture}
               onChange={(e) => setMontantFacture(e.target.value)}
               required
-              className="w-32 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="w-32 rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Échéance</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Échéance</label>
             <input
               type="date"
               value={echeance}
               onChange={(e) => setEcheance(e.target.value)}
               required
-              className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={modification.enCours}
-            className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+            className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
           >
             {modification.enCours ? 'Envoi...' : 'Mettre à jour'}
           </button>
-          <button type="button" onClick={annulerEdition} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <button type="button" onClick={annulerEdition} className="text-xs font-semibold text-muted hover:text-white">
             Annuler la modification
           </button>
-          {modification.erreur ? <p className="text-xs font-semibold text-rose-600">{modification.erreur}</p> : null}
+          {modification.erreur ? <p className="text-xs font-semibold text-red-400">{modification.erreur}</p> : null}
         </form>
       )}
     </div>

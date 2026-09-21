@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ClipboardList } from 'lucide-react';
-import { EtatErreur } from '../../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../../components/ui-light/FormulaireEtHistorique';
-import { Badge } from '../../../components/ui-light/Table';
+import { EtatErreur } from '../../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../../components/ui/FormulaireEtHistorique';
+import { Badge } from '../../../components/ui/Table';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { ajouterObservationInventaire, creerInventaire, listerInventaires, obtenirOptions, supprimerInventaire } from '../../../lib/api/jus';
 
@@ -52,7 +52,6 @@ export default function Inventaires() {
   ) : (
     <div>
       <FormulaireEtHistorique
-        accent="#eb6834"
         icon={ClipboardList}
         titre="Inventaires"
         sousTitre="Comptages physiques"
@@ -84,7 +83,7 @@ export default function Inventaires() {
                 setIdEnObservation(i.id);
                 setObservation(i.observation);
               }}
-              className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
+              className="text-xs font-semibold text-accent2 hover:text-white"
             >
               Observation
             </button>
@@ -92,36 +91,36 @@ export default function Inventaires() {
               type="button"
               onClick={() => supprimer(i.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
+              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
             >
               Supprimer
             </button>
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
 
       {idEnObservation !== null && (
-        <form onSubmit={enregistrerObservation} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-300 bg-slate-50 p-4">
+        <form onSubmit={enregistrerObservation} className="mt-4 flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface2 p-4">
           <div className="flex-1">
-            <label className="mb-1 block text-xs font-semibold text-slate-500">Observation</label>
+            <label className="mb-1 block text-xs font-semibold text-muted">Observation</label>
             <input
               value={observation}
               onChange={(e) => setObservation(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-jus-primary focus:outline-none"
+              className="w-full rounded-lg border border-border bg-surface2 px-2.5 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={observationAction.enCours}
-            className="rounded-xl bg-jus-primary px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
+            className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-60"
           >
             {observationAction.enCours ? 'Envoi...' : 'Enregistrer'}
           </button>
-          <button type="button" onClick={() => setIdEnObservation(null)} className="text-xs font-semibold text-slate-500 hover:text-slate-900">
+          <button type="button" onClick={() => setIdEnObservation(null)} className="text-xs font-semibold text-muted hover:text-white">
             Annuler
           </button>
-          {observationAction.erreur ? <p className="text-xs font-semibold text-rose-600">{observationAction.erreur}</p> : null}
+          {observationAction.erreur ? <p className="text-xs font-semibold text-red-400">{observationAction.erreur}</p> : null}
         </form>
       )}
     </div>

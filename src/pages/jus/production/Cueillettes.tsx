@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Sprout } from 'lucide-react';
-import { EtatErreur } from '../../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../../components/ui-light/FormulaireEtHistorique';
+import { EtatErreur } from '../../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../../components/ui/FormulaireEtHistorique';
 import { useAction, useApi } from '../../../lib/hooks/useApi';
 import { creerCueillette, listerCueillettes, listerProducteurs, modifierCueillette, supprimerCueillette } from '../../../lib/api/jus';
 
@@ -57,15 +57,14 @@ export default function Cueillettes() {
   ) : (
     <div>
       {idEnEdition !== null && (
-        <div className="mb-3 flex items-center justify-between rounded-xl border border-jus-primary/30 bg-jus-primary/10 px-3 py-2 text-xs text-jus-primaryDark">
+        <div className="mb-3 flex items-center justify-between rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-xs text-accent2">
           <span>Modification de la cueillette en cours</span>
-          <button type="button" onClick={reinitialiser} className="font-semibold text-slate-900 hover:text-jus-primaryDark">
+          <button type="button" onClick={reinitialiser} className="font-semibold text-white hover:text-accent2">
             Annuler la modification
           </button>
         </div>
       )}
       <FormulaireEtHistorique
-        accent="#eb6834"
         icon={Sprout}
         titre="Cueillettes"
         sousTitre="Enregistrer une cueillette"
@@ -101,7 +100,7 @@ export default function Cueillettes() {
                 setQteTotal(String(c.qte_total));
                 setQteBon(String(c.qte_bon));
               }}
-              className="text-xs font-semibold text-jus-primaryDark hover:text-jus-primary"
+              className="text-xs font-semibold text-accent2 hover:text-white"
             >
               Modifier
             </button>
@@ -109,14 +108,14 @@ export default function Cueillettes() {
               type="button"
               onClick={() => supprimer(c.id)}
               disabled={suppression.enCours}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-500 disabled:opacity-50"
+              className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
             >
               Supprimer
             </button>
           </div>,
         ])}
       />
-      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-rose-600">{suppression.erreur}</p> : null}
+      {suppression.erreur ? <p className="mt-3 text-xs font-semibold text-red-400">{suppression.erreur}</p> : null}
     </div>
   );
 }

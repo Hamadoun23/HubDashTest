@@ -737,6 +737,23 @@ export function obtenirSummary() {
   return apiFetch<KpiSummary>('/jus/reporting/summary/');
 }
 
+/** Rôles Django (groupes) de la personne connectée à JusOrange — `Direction`,
+ * `ResProd`, `Commercial`, `Finance`. Un superuser/staff reçoit les quatre
+ * (voir `_user_payload` côté serveur) : c'est le compte utilisé jusqu'ici
+ * pour tester, d'où le menu qui affichait tout sans distinction. */
+export type ProfilJus = {
+  id: number;
+  username: string;
+  email: string;
+  is_staff: boolean;
+  is_superuser: boolean;
+  roles: string[];
+};
+
+export function monProfilJus() {
+  return apiFetch<ProfilJus>('/jus/auth/me/');
+}
+
 export type ModuleReporting = 'recolte' | 'appro' | 'fabrication' | 'emballage' | 'entrepot' | 'distribution';
 
 /** La forme du reste de la réponse est libre selon le module (voir rapport
