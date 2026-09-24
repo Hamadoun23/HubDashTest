@@ -17,15 +17,27 @@ export function useApi<T>(fetcher: () => Promise<T>, deps: unknown[] = []) {
   const [erreur, setErreur] = useState<string | null>(null);
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
+  const idAppelRef = useRef(0);
 
   const recharger = useCallback(() => {
+    // Une requête plus ancienne (ex. "tous les clients") peut résoudre APRÈS
+    // une plus récente (ex. un client filtré, réponse plus légère) si les deps
+    // changent vite — sans ce garde, elle écraserait le résultat à jour avec
+    // des données périmées.
+    const idAppel = ++idAppelRef.current;
     setChargement(true);
     setErreur(null);
     fetcherRef
       .current()
-      .then((resultat) => setDonnees(resultat))
-      .catch((e) => setErreur(messageErreur(e)))
-      .finally(() => setChargement(false));
+      .then((resultat) => {
+        if (idAppel === idAppelRef.current) setDonnees(resultat);
+      })
+      .catch((e) => {
+        if (idAppel === idAppelRef.current) setErreur(messageErreur(e));
+      })
+      .finally(() => {
+        if (idAppel === idAppelRef.current) setChargement(false);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 

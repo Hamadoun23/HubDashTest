@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Boxes,
   Building2,
   Calendar,
@@ -181,6 +182,7 @@ export const NAVIGATION: NavGroup[] = [
       { label: 'Idées de contenu', href: '/planning/idees-contenu', icon: Lightbulb },
       { label: 'Tournages', href: '/planning/tournages', icon: Video },
       { label: 'Publications', href: '/planning/publications', icon: Megaphone },
+      { label: 'Statistiques', href: '/planning/statistiques', icon: BarChart3 },
     ],
   },
   {

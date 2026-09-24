@@ -32,6 +32,7 @@ export function FormulaireEtHistorique({
   texteAction = 'Nouvelle demande',
   enEdition = false,
   onFermer,
+  onRowClick,
 }: {
   icon: LucideIcon;
   titre: string;
@@ -49,6 +50,8 @@ export function FormulaireEtHistorique({
   enEdition?: boolean;
   /** Appelé à la fermeture (croix ou après envoi réussi) — le parent y remet ses champs à zéro / annule son édition. */
   onFermer?: () => void;
+  /** Rend chaque ligne de l'historique cliquable (ex. ouvrir une fiche de détail). */
+  onRowClick?: (index: number) => void;
 }) {
   const [ouvertManuel, setOuvertManuel] = useState(false);
   const ouvert = ouvertManuel || enEdition;
@@ -85,7 +88,7 @@ export function FormulaireEtHistorique({
       {lignesHistorique.length === 0 ? (
         <p className="rounded-3xl border border-border bg-surface p-8 text-center text-sm text-muted">Rien pour le moment.</p>
       ) : (
-        <TableVirtus colonnes={colonnesHistorique} lignes={lignesHistorique} />
+        <TableVirtus colonnes={colonnesHistorique} lignes={lignesHistorique} onRowClick={onRowClick} />
       )}
 
       {ouvert ? (

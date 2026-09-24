@@ -3,18 +3,35 @@
 Regroupe ici ce qui, cote Laravel, vivait disperse dans
 `DashboardController`, `ShootingController`, `PublicationController` et
 `ClientController` : construction du calendrier, verification de date,
-export CSV et generation des rapports HTML-en-.doc.
+export CSV et generation des rapports (PDF, mise en page dans le theme
+sombre "Virtus" du hub, motif GDA en fond de page).
 """
 
 from __future__ import annotations
 
+import base64
 import csv
 import io
 from datetime import date, datetime, timedelta
+from pathlib import Path
 
 from django.utils import timezone
+from weasyprint import HTML
 
 from .models import JOURS_FR, Publication, Shooting, jour_semaine_fr
+
+_ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+
+
+def _image_base64(nom_fichier: str, mime: str) -> str:
+    """Encode une image de `planning/assets/` en data URI — evite toute
+    dependance a un chemin de fichier resolu par WeasyPrint au rendu."""
+    donnees = (_ASSETS_DIR / nom_fichier).read_bytes()
+    return f"data:{mime};base64,{base64.b64encode(donnees).decode('ascii')}"
+
+
+def _pdf_depuis_html(html: str) -> bytes:
+    return HTML(string=html).write_pdf()
 
 MOIS_FR = [
     "", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -162,22 +179,124 @@ def generer_csv_calendrier(semaines, nom_mois: str, annee: int, titre: str, incl
     return tampon.getvalue().encode("utf-8")
 
 
-_STYLE_RAPPORT = """
-        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-        h1 { color: #FF6A3A; border-bottom: 3px solid #FF6A3A; padding-bottom: 10px; }
-        h2 { color: #303030; margin-top: 30px; border-bottom: 2px solid #303030; padding-bottom: 5px; }
-        h3 { color: #FF6A3A; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th { background-color: #FF6A3A; color: white; padding: 12px; text-align: left; }
-        td { border: 1px solid #ddd; padding: 10px; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .status-completed { color: #28a745; font-weight: bold; }
-        .status-pending { color: #ffc107; font-weight: bold; }
-        .status-cancelled { color: #6c757d; font-weight: bold; }
-        .stat-box { background: #f8f9fa; padding: 15px; margin: 15px 0; border-left: 4px solid #FF6A3A; }
-        .client-section { page-break-after: always; margin-bottom: 40px; }
-        .summary { background: #fffbf0; padding: 20px; margin: 20px 0; border: 1px solid #ffc107; }
-"""
+def _style_rapport(motif_data_uri: str) -> str:
+    """Theme sombre "Virtus" du hub, decline en CSS imprimable : motif GDA en
+    fond de chaque page (`@page background-image`, seul endroit ou WeasyPrint
+    applique un fond repete sur tout le document), cartes translucides,
+    accent orange — la meme identite visuelle que le reste de l'app plutot
+    qu'un document Word par defaut."""
+    return f"""
+        @page {{
+            size: A4;
+            margin: 0;
+            background-image:
+                linear-gradient(160deg, rgba(20, 13, 8, 0.55), rgba(38, 22, 10, 0.5)),
+                url('{motif_data_uri}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }}
+        * {{ box-sizing: border-box; }}
+        body {{
+            font-family: 'Liberation Sans', Arial, sans-serif;
+            color: #f3ede6;
+            margin: 0;
+            padding: 28px 34px 40px;
+            line-height: 1.55;
+            font-size: 12.5px;
+        }}
+        .en-tete {{
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 16px;
+            margin-bottom: 22px;
+            border-bottom: 2px solid rgba(255, 138, 76, 0.4);
+        }}
+        .en-tete .logo {{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 6px;
+            flex-shrink: 0;
+        }}
+        .en-tete .logo img {{ width: 100%; height: 100%; object-fit: contain; }}
+        .en-tete .kicker {{
+            display: inline-block;
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: #ff8a4c;
+            background: rgba(255, 138, 76, 0.15);
+            padding: 3px 10px;
+            border-radius: 999px;
+            margin-bottom: 6px;
+        }}
+        h1 {{ color: #ffffff; margin: 0; font-size: 22px; font-weight: 800; }}
+        .meta {{
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+            font-size: 11.5px;
+            color: #cbbfb2;
+        }}
+        .meta strong {{ color: #f3ede6; }}
+        h2 {{
+            color: #ffffff;
+            font-size: 16px;
+            margin: 0 0 14px;
+            padding: 10px 14px;
+            background: linear-gradient(90deg, rgba(255, 106, 58, 0.35), rgba(255, 106, 58, 0.05));
+            border-left: 4px solid #ff6a3a;
+            border-radius: 6px;
+        }}
+        h3 {{ color: #ff8a4c; font-size: 13px; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.4px; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 6px 0 16px; font-size: 11px; }}
+        th {{
+            background: rgba(255, 138, 76, 0.18);
+            color: #ffcdae;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 138, 76, 0.35);
+        }}
+        td {{ padding: 7px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }}
+        tr:nth-child(even) td {{ background: rgba(255, 255, 255, 0.03); }}
+        .status-completed {{ color: #4ade80; font-weight: 700; }}
+        .status-pending {{ color: #facc15; font-weight: 700; }}
+        .status-cancelled {{ color: #9ca3af; font-weight: 700; }}
+        .stat-box {{ background: rgba(255, 255, 255, 0.04); padding: 14px; margin: 14px 0; border-left: 4px solid #ff6a3a; border-radius: 6px; }}
+        .client-section {{
+            page-break-after: always;
+            margin-bottom: 24px;
+            background: rgba(20, 14, 9, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px 20px;
+        }}
+        .client-section:last-child {{ page-break-after: avoid; }}
+        /* Flexbox plutot que CSS Grid : le support de `grid-column: span` par
+        WeasyPrint est trop partiel pour garder le <h3> sur sa propre ligne. */
+        .summary {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 24px;
+            background: rgba(255, 138, 76, 0.1);
+            padding: 16px;
+            margin: 14px 0 18px;
+            border: 1px solid rgba(255, 138, 76, 0.25);
+            border-radius: 10px;
+        }}
+        .summary h3 {{ flex: 1 1 100%; margin: 0 0 4px; }}
+        .summary p {{ flex: 1 1 42%; margin: 0; font-size: 11.5px; }}
+        .summary strong {{ color: #ffcdae; }}
+    """
 
 
 def _echapper(texte: str) -> str:
@@ -255,7 +374,17 @@ def _section_client_html(client, tournages, publications, regles, avec_descripti
     return "".join(html_parts)
 
 
-def generer_rapport_client_html(client, type_periode: str, mois: int, annee: int) -> tuple[str, str]:
+def _en_tete_html(kicker: str, titre: str, lignes_meta: list[str]) -> str:
+    logo = _image_base64("logo-gda.png", "image/png")
+    meta = "".join(f"<span>{ligne}</span>" for ligne in lignes_meta)
+    return (
+        f'<div class="en-tete"><div class="logo"><img src="{logo}" alt="GDA" /></div>'
+        f'<div><span class="kicker">{_echapper(kicker)}</span><h1>{_echapper(titre)}</h1></div></div>'
+        f'<div class="meta">{meta}</div>'
+    )
+
+
+def generer_rapport_client_pdf(client, type_periode: str, mois: int, annee: int) -> tuple[bytes, str]:
     """`ClientController::generateReport` — un client, mois ou annee complete."""
     maintenant = timezone.now()
 
@@ -271,26 +400,30 @@ def generer_rapport_client_html(client, type_periode: str, mois: int, annee: int
     publications = list(client.publications.filter(date__date__gte=debut, date__date__lte=fin).order_by("date"))
     regles = list(client.regles.all())
 
-    titre = f"Planning - {client.nom_entreprise} - {libelle_periode}"
+    titre = client.nom_entreprise
+    entete = _en_tete_html(
+        "Planning",
+        titre,
+        [f"<strong>Période :</strong> {libelle_periode}", f"<strong>Généré le</strong> {maintenant:%d/%m/%Y à %H:%M}"],
+    )
     corps = _section_client_html(client, tournages, publications, regles, avec_description=True)
+    motif = _image_base64("motif-orange.jpg", "image/jpeg")
 
     html = (
         f"<!DOCTYPE html><html><head><meta charset='UTF-8'><title>{_echapper(titre)}</title>"
-        f"<style>{_STYLE_RAPPORT}</style></head><body>"
-        f"<h1>{_echapper(titre)}</h1>"
-        f"<p><strong>Date de génération :</strong> {maintenant:%d/%m/%Y à %H:%M}</p>{corps}</body></html>"
+        f"<style>{_style_rapport(motif)}</style></head><body>{entete}{corps}</body></html>"
     )
 
     slug = client.nom_entreprise.replace(" ", "_")
     if type_periode == "annual":
-        nom_fichier = f"planning_{slug}_{annee}.doc"
+        nom_fichier = f"planning_{slug}_{annee}.pdf"
     else:
-        nom_fichier = f"planning_{slug}_{MOIS_FR[mois]}_{annee}.doc"
+        nom_fichier = f"planning_{slug}_{MOIS_FR[mois]}_{annee}.pdf"
 
-    return html, nom_fichier
+    return _pdf_depuis_html(html), nom_fichier
 
 
-def generer_rapport_global_html(clients, periode: str, client_unique=None) -> tuple[str, str]:
+def generer_rapport_global_pdf(clients, periode: str, client_unique=None) -> tuple[bytes, str]:
     """`DashboardController::generateReport` — tous les clients ou un seul, periode libre."""
     maintenant = timezone.now()
     aujourd_hui = timezone.localdate()
@@ -311,10 +444,15 @@ def generer_rapport_global_html(clients, periode: str, client_unique=None) -> tu
         ) - timedelta(days=1)
         libelle, slug_periode = "Mensuel", "mensuel"
 
-    if client_unique is not None:
-        titre = f"Rapport {libelle} - {client_unique.nom_entreprise}"
-    else:
-        titre = f"Rapport {libelle} - Tous les Clients"
+    titre = client_unique.nom_entreprise if client_unique is not None else "Tous les clients"
+    entete = _en_tete_html(
+        f"Rapport {libelle.lower()}",
+        titre,
+        [
+            f"<strong>Période :</strong> du {debut:%d/%m/%Y} au {fin:%d/%m/%Y}",
+            f"<strong>Généré le</strong> {maintenant:%d/%m/%Y à %H:%M}",
+        ],
+    )
 
     corps = ""
     for client in clients:
@@ -323,18 +461,15 @@ def generer_rapport_global_html(clients, periode: str, client_unique=None) -> tu
         regles = list(client.regles.all())
         corps += _section_client_html(client, tournages, publications, regles, avec_description=False)
 
+    motif = _image_base64("motif-orange.jpg", "image/jpeg")
     html = (
         f"<!DOCTYPE html><html><head><meta charset='UTF-8'><title>{_echapper(titre)}</title>"
-        f"<style>{_STYLE_RAPPORT}</style></head><body>"
-        f"<h1>{_echapper(titre)}</h1>"
-        f"<p><strong>Date de génération :</strong> {maintenant:%d/%m/%Y à %H:%M}</p>"
-        f"<p><strong>Période :</strong> {libelle} (du {debut:%d/%m/%Y} au {fin:%d/%m/%Y})</p>"
-        f"{corps}</body></html>"
+        f"<style>{_style_rapport(motif)}</style></head><body>{entete}{corps}</body></html>"
     )
 
     if client_unique is not None:
-        nom_fichier = f"rapport_{slug_periode}_{client_unique.nom_entreprise.replace(' ', '_')}_{aujourd_hui:%Y-%m-%d}.doc"
+        nom_fichier = f"rapport_{slug_periode}_{client_unique.nom_entreprise.replace(' ', '_')}_{aujourd_hui:%Y-%m-%d}.pdf"
     else:
-        nom_fichier = f"rapport_{slug_periode}_tous_clients_{aujourd_hui:%Y-%m-%d}.doc"
+        nom_fichier = f"rapport_{slug_periode}_tous_clients_{aujourd_hui:%Y-%m-%d}.pdf"
 
-    return html, nom_fichier
+    return _pdf_depuis_html(html), nom_fichier

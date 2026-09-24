@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import { Card } from '../../components/ui-light/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { ChevronLeft, ChevronRight, Download, Megaphone, Video } from 'lucide-react';
+import { Card } from '../../components/ui/Card';
+import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
 import { useApi } from '../../lib/hooks/useApi';
 import {
   LIBELLES_STATUT,
@@ -10,6 +10,7 @@ import {
   tableauDeBord,
   type StatutEvenement,
 } from '../../lib/api/planning';
+import { ModaleJour } from './ModaleJour';
 
 const JOURS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 const MOIS = [
@@ -27,9 +28,13 @@ const COULEUR_STATUT: Record<StatutEvenement, string> = {
 
 const maintenant = new Date();
 
-export function CalendrierPlanning() {
+export function CalendrierPlanning({ clientId, clientNom }: { clientId?: string; clientNom?: string | null } = {}) {
   const [periode, setPeriode] = useState({ mois: maintenant.getMonth() + 1, annee: maintenant.getFullYear() });
-  const { donnees, chargement, erreur, recharger } = useApi(() => tableauDeBord(periode.mois, periode.annee), [periode.mois, periode.annee]);
+  const [jourOuvert, setJourOuvert] = useState<string | null>(null);
+  const { donnees, chargement, erreur, recharger } = useApi(
+    () => tableauDeBord(periode.mois, periode.annee, clientId),
+    [periode.mois, periode.annee, clientId],
+  );
 
   const changerMois = (delta: number) => {
     setPeriode((p) => {
@@ -44,31 +49,34 @@ export function CalendrierPlanning() {
   if (erreur) return <EtatErreur message={erreur} recharger={recharger} />;
   if (!donnees) return null;
 
+  const jourSelectionne = jourOuvert ? donnees.calendrier.flat().find((j) => j.date === jourOuvert) ?? null : null;
+
   return (
+    <>
     <Card className="!p-0 overflow-hidden">
       <div className="flex items-center justify-between p-5 pb-0">
-        <h2 className="text-base font-bold text-slate-900">
-          Planning global — {MOIS[periode.mois - 1]} {periode.annee}
+        <h2 className="text-base font-bold text-white">
+          {clientNom ? `Planning — ${clientNom}` : 'Planning global'} — {MOIS[periode.mois - 1]} {periode.annee}
         </h2>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => exporterTournagesCsv(periode.mois, periode.annee)}
             title="Exporter les tournages"
-            className="flex h-7 items-center gap-1 rounded-full bg-slate-100 px-2.5 text-[11px] font-semibold text-slate-500 hover:text-slate-900"
+            className="flex h-7 items-center gap-1 rounded-full bg-surface2 px-2.5 text-[11px] font-semibold text-muted hover:text-white"
           >
             <Download size={12} /> CSV
           </button>
           <button
             onClick={() => changerMois(-1)}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface2"
           >
-            <ChevronLeft size={14} className="text-slate-700" />
+            <ChevronLeft size={14} className="text-white" />
           </button>
           <button
             onClick={() => changerMois(1)}
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface2"
           >
-            <ChevronRight size={14} className="text-slate-700" />
+            <ChevronRight size={14} className="text-white" />
           </button>
         </div>
       </div>
@@ -78,7 +86,7 @@ export function CalendrierPlanning() {
           <thead>
             <tr>
               {JOURS.map((jour) => (
-                <th key={jour} className="pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th key={jour} className="pb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                   {jour}
                 </th>
               ))}
@@ -90,11 +98,12 @@ export function CalendrierPlanning() {
                 {semaine.map((jour, ci) => (
                   <td
                     key={ci}
-                    className={`h-24 w-[14.2%] rounded-xl border border-slate-200 p-1.5 align-top ${
-                      jour.est_mois_courant ? 'bg-slate-50' : 'bg-transparent opacity-40'
+                    onClick={() => setJourOuvert(jour.date)}
+                    className={`h-24 w-[14.2%] cursor-pointer rounded-xl border border-border p-1.5 align-top hover:border-accent/40 ${
+                      jour.est_mois_courant ? 'bg-surface2' : 'bg-transparent opacity-40'
                     }`}
                   >
-                    <span className="text-[11px] font-semibold text-slate-500">{Number(jour.date.split('-')[2])}</span>
+                    <span className="text-[11px] font-semibold text-muted">{Number(jour.date.split('-')[2])}</span>
                     <div className="mt-1 space-y-1">
                       {jour.tournages.map((t) => (
                         <div
@@ -125,7 +134,14 @@ export function CalendrierPlanning() {
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-slate-200 p-5 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center gap-4 border-t border-border p-5 text-[11px] text-muted">
+        <span className="flex items-center gap-1.5">
+          <Video size={12} className="text-accent2" /> Tournage
+        </span>
+        <span className="flex items-center gap-1.5">
+          <Megaphone size={12} className="text-accent2" /> Publication
+        </span>
+        <span className="h-4 w-px bg-border" />
         {(Object.entries(LIBELLES_STATUT) as [StatutEvenement, string][]).map(([statut, libelle]) => (
           <span key={statut} className="flex items-center gap-1.5">
             <span className="h-2 w-2 rounded-full" style={{ background: COULEUR_STATUT[statut] }} /> {libelle}
@@ -133,11 +149,15 @@ export function CalendrierPlanning() {
         ))}
         <button
           onClick={() => exporterPublicationsCsv(periode.mois, periode.annee)}
-          className="ml-auto flex items-center gap-1 font-semibold text-planning-o3 hover:text-[#c93a15]"
+          className="ml-auto flex items-center gap-1 font-semibold text-accent2 hover:text-white"
         >
           <Download size={12} /> Exporter les publications
         </button>
       </div>
     </Card>
+    {jourSelectionne && (
+      <ModaleJour jour={jourSelectionne} onFermer={() => setJourOuvert(null)} onChange={recharger} afficherClient />
+    )}
+    </>
   );
 }

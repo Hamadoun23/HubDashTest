@@ -5,6 +5,8 @@ django-filter>=24.2
 # Compte unique de GDA Hub : verification du jeton RS256 signe par identity.
 PyJWT>=2.8
 cryptography>=42.0
+# Rapports PDF (mise en page CSS complete, fonds de page, degrades).
+weasyprint>=62.0
 
 # Production
 gunicorn>=22.0

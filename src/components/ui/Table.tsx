@@ -17,8 +17,8 @@ export function TableVirtus({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border">
-              {colonnes.map((colonne) => (
-                <th key={colonne} className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+              {colonnes.map((colonne, index) => (
+                <th key={index} className="whitespace-nowrap px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
                   {colonne}
                 </th>
               ))}

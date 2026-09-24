@@ -11,9 +11,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# libpq5 pour psycopg, curl pour les sondes de vie.
+# libpq5 pour psycopg, curl pour les sondes de vie, le reste pour WeasyPrint
+# (rendu PDF des rapports : Pango/Cairo font le texte et les degrades,
+# fonts-liberation une police lisible sans dependre de fonts systeme absentes).
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl libpq5 \
+    && apt-get install -y --no-install-recommends \
+        curl libpq5 \
+        libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf-2.0-0 libcairo2 \
+        libffi8 shared-mime-info fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./requirements.txt

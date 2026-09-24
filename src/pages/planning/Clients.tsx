@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Users } from 'lucide-react';
-import { EtatErreur } from '../../components/ui-light/EtatRequete';
-import { FormulaireEtHistorique } from '../../components/ui-light/FormulaireEtHistorique';
+import { useNavigate } from 'react-router-dom';
+import { EtatErreur } from '../../components/ui/EtatRequete';
+import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerClient, listerClients } from '../../lib/api/planning';
 
 export default function Clients() {
+  const navigate = useNavigate();
   const clients = useApi(listerClients, []);
   const creation = useAction(creerClient);
   const [nom, setNom] = useState('');
@@ -17,6 +19,8 @@ export default function Clients() {
     clients.recharger();
   }
 
+  const liste = clients.donnees ?? [];
+
   return clients.erreur ? (
     <EtatErreur message={clients.erreur} recharger={clients.recharger} />
   ) : (
@@ -24,14 +28,15 @@ export default function Clients() {
       icon={Users}
       titre="Clients"
       sousTitre="Comptes suivis par Planning"
-      accent="#e8481b"
+      texteAction="Nouveau client"
       onSubmit={envoyer}
       envoiEnCours={creation.enCours}
       erreurEnvoi={creation.erreur}
       texteBouton="Ajouter le client"
       champs={[{ label: 'Nom de l’entreprise', placeholder: 'Supermarché Azar', valeur: nom, onChange: setNom, requis: true }]}
       colonnesHistorique={['Nom', 'Tournages', 'Publications']}
-      lignesHistorique={(clients.donnees ?? []).map((c) => [c.nom_entreprise, c.tournages_count, c.publications_count])}
+      lignesHistorique={liste.map((c) => [c.nom_entreprise, c.tournages_count, c.publications_count])}
+      onRowClick={(index) => navigate(`/planning/clients/${liste[index].id}`)}
     />
   );
 }

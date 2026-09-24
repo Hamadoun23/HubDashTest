@@ -61,8 +61,10 @@ import Fabrication from './pages/jus/reporting/Fabrication';
 import Recolte from './pages/jus/reporting/Recolte';
 
 import Clients from './pages/planning/Clients';
+import DetailClientPlanning from './pages/planning/DetailClient';
 import IdeesContenu from './pages/planning/IdeesContenu';
 import Publications from './pages/planning/Publications';
+import Statistiques from './pages/planning/Statistiques';
 import TableauDeBordPlanning from './pages/planning/TableauDeBord';
 import Tournages from './pages/planning/Tournages';
 
@@ -196,9 +198,11 @@ createRoot(document.getElementById('root')!).render(
             <Route element={<PlanningLayout />}>
               <Route path="/planning" element={<TableauDeBordPlanning />} />
               <Route path="/planning/clients" element={<Clients />} />
+              <Route path="/planning/clients/:id" element={<DetailClientPlanning />} />
               <Route path="/planning/idees-contenu" element={<IdeesContenu />} />
               <Route path="/planning/tournages" element={<Tournages />} />
               <Route path="/planning/publications" element={<Publications />} />
+              <Route path="/planning/statistiques" element={<Statistiques />} />
             </Route>
           </Route>
         </Routes>

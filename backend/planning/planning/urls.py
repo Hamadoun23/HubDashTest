@@ -14,5 +14,6 @@ urlpatterns = [
     path("tableau-de-bord/", views.TableauDeBordVue.as_view(), name="tableau-de-bord"),
     path("tableau-de-bord/rapport/", views.RapportGlobalVue.as_view(), name="rapport-global"),
     path("tableau-de-bord/export/", views.ExportGlobalVue.as_view(), name="export-global"),
+    path("statistiques/", views.StatistiquesVue.as_view(), name="statistiques"),
     path("", include(routeur.urls)),
 ]

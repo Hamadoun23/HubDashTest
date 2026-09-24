@@ -53,21 +53,84 @@ export type JourCalendrier = {
   avertissement?: string | null;
 };
 
+export type StatsClient = {
+  total_shootings: number;
+  pending_shootings: number;
+  completed_shootings: number;
+  cancelled_shootings: number;
+  non_realises_shootings: number;
+  total_publications: number;
+  pending_publications: number;
+  completed_publications: number;
+  cancelled_publications: number;
+  non_realises_publications: number;
+  publication_rules: number;
+};
+
+export type RegleClient = { id: number; client: number; day_of_week: string };
+
+export type RapportClient = {
+  id: number;
+  client: number;
+  report_type: 'monthly' | 'annual';
+  report_type_libelle: string;
+  report_date: string;
+  file_url: string;
+  original_filename: string;
+  file_size: number;
+  uploaded_at: string;
+};
+
 export type CalendrierClient = {
   client: ClientPlanning;
   mois: number;
   annee: number;
   calendrier: JourCalendrier[][];
-  stats: Record<string, number | Record<string, unknown>>;
+  stats: StatsClient;
   tournages_a_venir: Tournage[];
   publications_a_venir: Publication[];
   tournages_recents: Tournage[];
   publications_recentes: Publication[];
+  rapports_mensuels: RapportClient[];
+  rapports_annuels: RapportClient[];
   lecture_seule: boolean;
 };
 
 export function calendrierClient(clientId: number, mois: number, annee: number) {
   return apiFetch<CalendrierClient>(`/planning/clients/${clientId}/calendrier/${requete({ month: mois, year: annee })}`);
+}
+
+export function reglesClient(clientId: number) {
+  return apiFetch<RegleClient[] | { results: RegleClient[] }>(
+    `/planning/regles-publication/${requete({ client: clientId })}`,
+  ).then((d) => (Array.isArray(d) ? d : d.results));
+}
+
+export function genererRapportPlanning(clientId: number, typePeriode: 'monthly' | 'annual', mois: number, annee: number) {
+  const nomFichier = typePeriode === 'annual' ? `planning-annuel-${annee}.pdf` : `planning-${annee}-${String(mois).padStart(2, '0')}.pdf`;
+  return telechargerFichier(
+    `/planning/clients/${clientId}/rapport-genere/${requete({ type: typePeriode, month: mois, year: annee })}`,
+    nomFichier,
+  );
+}
+
+export function telechargerRapportClient(clientId: number, rapport: RapportClient) {
+  return telechargerFichier(`/planning/clients/${clientId}/rapports/${rapport.id}/`, rapport.original_filename);
+}
+
+export function uploaderRapportClient(
+  clientId: number,
+  payload: { report_type: 'monthly' | 'annual'; report_date: string; file: File },
+) {
+  const donnees = new FormData();
+  donnees.append('report_type', payload.report_type);
+  donnees.append('report_date', payload.report_date);
+  donnees.append('file', payload.file);
+  return apiFetch<RapportClient>(`/planning/clients/${clientId}/rapports/`, { method: 'POST', corps: donnees });
+}
+
+export function supprimerRapportClient(clientId: number, rapportId: number) {
+  return apiFetch<void>(`/planning/clients/${clientId}/rapports/${rapportId}/`, { method: 'DELETE' });
 }
 
 // --- Idées de contenu ------------------------------------------------------
@@ -80,6 +143,14 @@ export function listerIdees(recherche = '') {
 
 export function creerIdee(titre: string, type: string) {
   return apiFetch<IdeeContenu>('/planning/idees-contenu/', { method: 'POST', corps: { titre, type } });
+}
+
+export function modifierIdee(id: number, titre: string, type: string) {
+  return apiFetch<IdeeContenu>(`/planning/idees-contenu/${id}/`, { method: 'PATCH', corps: { titre, type } });
+}
+
+export function supprimerIdee(id: number) {
+  return apiFetch<void>(`/planning/idees-contenu/${id}/`, { method: 'DELETE' });
 }
 
 // --- Tournages ---------------------------------------------------------------
@@ -111,12 +182,28 @@ export function listerTournages(recherche = '') {
   return liste<Tournage>(`/planning/tournages/${requete({ search: recherche })}`);
 }
 
+export function obtenirTournage(id: number) {
+  return apiFetch<Tournage>(`/planning/tournages/${id}/`);
+}
+
+export type CalendrierMoisReponse = { mois: number; annee: number; calendrier: JourCalendrier[][] };
+
+/** `ShootingController::index` — calendrier du mois, non paginé (contrairement
+ * à `listerTournages()`, plafonnée à 50 résultats par le backend). */
+export function calendrierTournages(mois: number, annee: number, clientId?: string) {
+  return apiFetch<CalendrierMoisReponse>(`/planning/tournages/calendrier/${requete({ month: mois, year: annee, client_id: clientId })}`);
+}
+
 export function creerTournage(payload: NouveauTournage) {
   return apiFetch<Tournage>('/planning/tournages/', { method: 'POST', corps: payload });
 }
 
 export function modifierTournage(id: number, payload: Partial<NouveauTournage>) {
   return apiFetch<Tournage>(`/planning/tournages/${id}/`, { method: 'PATCH', corps: payload });
+}
+
+export function supprimerTournage(id: number) {
+  return apiFetch<void>(`/planning/tournages/${id}/`, { method: 'DELETE' });
 }
 
 export function changerStatutTournage(id: number, statut: StatutEvenement, status_reason?: string, reschedule_date?: string) {
@@ -166,12 +253,27 @@ export function listerPublications(recherche = '') {
   return liste<Publication>(`/planning/publications/${requete({ search: recherche })}`);
 }
 
+export function obtenirPublication(id: number) {
+  return apiFetch<Publication>(`/planning/publications/${id}/`);
+}
+
+/** `PublicationController::index` — calendrier du mois, non paginé (contrairement
+ * à `listerPublications()`, plafonnée à 50 résultats par le backend — avec
+ * 512 publications au total, le calendrier raterait celles du mois affiché). */
+export function calendrierPublications(mois: number, annee: number, clientId?: string) {
+  return apiFetch<CalendrierMoisReponse>(`/planning/publications/calendrier/${requete({ month: mois, year: annee, client_id: clientId })}`);
+}
+
 export function creerPublication(payload: NouvellePublication) {
   return apiFetch<ReponseAvecAvertissements<Publication>>('/planning/publications/', { method: 'POST', corps: payload });
 }
 
 export function modifierPublication(id: number, payload: Partial<NouvellePublication>) {
   return apiFetch<ReponseAvecAvertissements<Publication>>(`/planning/publications/${id}/`, { method: 'PATCH', corps: payload });
+}
+
+export function supprimerPublication(id: number) {
+  return apiFetch<void>(`/planning/publications/${id}/`, { method: 'DELETE' });
 }
 
 export function verifierDatePublication(clientId: number, date: string, exclureId?: number) {
@@ -187,6 +289,14 @@ export function changerStatutPublication(id: number, statut: StatutEvenement, st
   });
 }
 
+/** Distinct du statut "Reprogrammé" (qui déplace l'événement en place) :
+ * ceci crée un nouvel événement à la nouvelle date et marque l'ancien
+ * `cancelled` — comportement d'origine (`reschedule()` Laravel), utile pour
+ * garder une trace de l'annulation plutôt que de la masquer. */
+export function reprogrammerPublication(id: number, new_date: string) {
+  return apiFetch<Publication>(`/planning/publications/${id}/reprogrammer/`, { method: 'POST', corps: { new_date } });
+}
+
 // --- Tableau de bord (calendrier global, tous clients) -----------------------
 
 export type TableauDeBordPlanningDonnees = {
@@ -198,10 +308,27 @@ export type TableauDeBordPlanningDonnees = {
   publications_en_retard: Publication[];
   tournages_a_venir: Tournage[];
   publications_a_venir: Publication[];
+  tournages_prochains: Tournage[];
+  publications_prochains: Publication[];
 };
 
-export function tableauDeBord(mois: number, annee: number) {
-  return apiFetch<TableauDeBordPlanningDonnees>(`/planning/tableau-de-bord/${requete({ month: mois, year: annee })}`);
+export function tableauDeBord(mois: number, annee: number, clientId?: string) {
+  return apiFetch<TableauDeBordPlanningDonnees>(
+    `/planning/tableau-de-bord/${requete({ month: mois, year: annee, client_id: clientId && clientId !== 'all' ? clientId : undefined })}`,
+  );
+}
+
+export type PeriodeRapport = 'weekly' | 'monthly' | 'annual';
+
+/** `DashboardController::generateReport` — rapport global (tous clients ou un
+ * seul), sur une période hebdo/mensuelle/annuelle. */
+export function genererRapportGlobal(periode: PeriodeRapport, clientId: string) {
+  const libelles: Record<PeriodeRapport, string> = { weekly: 'hebdo', monthly: 'mensuel', annual: 'annuel' };
+  const suffixe = clientId === 'all' ? 'tous-clients' : `client-${clientId}`;
+  return telechargerFichier(
+    `/planning/tableau-de-bord/rapport/${requete({ period: periode, client_id: clientId })}`,
+    `rapport-${libelles[periode]}-${suffixe}.pdf`,
+  );
 }
 
 /** Téléchargement d'un fichier protégé par jeton (CSV/PDF/DOC) : `fetch` direct
@@ -231,4 +358,34 @@ export function exporterPublicationsCsv(mois: number, annee: number) {
     `/planning/publications/export/${requete({ month: mois, year: annee })}`,
     `publications-${annee}-${mois}.csv`,
   );
+}
+
+// --- Statistiques (contenu réalisé) --------------------------------------
+
+export type PointStatSemaine = { debut: string; fin: string; tournages: number; publications: number };
+export type PointStatMois = { mois: number; annee: number; tournages: number; publications: number };
+export type PointStatAnnee = { annee: number; tournages: number; publications: number };
+export type PointStatClient = {
+  client: string;
+  tournages: number;
+  publications: number;
+  tournages_non_realises: number;
+  publications_non_realisees: number;
+};
+
+export type CompteParStatut = Record<StatutEvenement, number>;
+export type PointStatTypeIdee = { type: string; total: number; realisees: number };
+
+export type StatistiquesDonnees = {
+  par_semaine: PointStatSemaine[];
+  par_mois: PointStatMois[];
+  par_annee: PointStatAnnee[];
+  par_client: PointStatClient[];
+  statuts: { tournages: CompteParStatut; publications: CompteParStatut };
+  idees: { total: number; realisees: number; par_type: PointStatTypeIdee[] };
+  clients: { total: number; actifs: number };
+};
+
+export function statistiques(clientId?: string) {
+  return apiFetch<StatistiquesDonnees>(`/planning/statistiques/${requete({ client_id: clientId })}`);
 }

@@ -3,25 +3,17 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../lib/navigation';
 import { useAuth } from '../lib/auth/AuthContext';
+import { Avatar } from '../components/ui/Avatar';
 
 /**
- * Identité visuelle propre de Planning : dégradé orange en entête et barre
- * horizontale à onglets, reprise de frontend/src/planning/composants/
- * navigation.tsx du dépôt GdaHub (source : DocsERP/Planning-main, Laravel).
- * Voir retrogradeAppmetier.md.
+ * Planning reprend l'habillage sombre "Virtus" du hub, au même titre que
+ * RH & Finance et Jus d'orange (voir RhLayout.tsx) — demande explicite :
+ * même motif, mêmes surfaces translucides plutôt que le bandeau dégradé
+ * clair propre restauré précédemment. Chantiers garde pour l'instant le
+ * sien.
  */
 function estActif(chemin: string, href: string) {
   return chemin === href || chemin.startsWith(`${href}/`);
-}
-
-function initiales(nom: string) {
-  return nom
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((mot) => mot[0])
-    .join('')
-    .toUpperCase();
 }
 
 const ONGLETS = NAVIGATION.find((g) => g.app === 'planning')!.items;
@@ -35,64 +27,22 @@ export default function PlanningLayout() {
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
 
   return (
-    <div className="min-h-screen bg-[#fbf7f4] text-slate-900">
-      <header
-        className="sticky top-0 z-40 shadow-[0_2px_16px_rgba(0,0,0,0.12)]"
-        style={{ background: 'linear-gradient(135deg, #ff8a5c 0%, #ff6a3a 45%, #e8481b 100%)' }}
-      >
-        <div className="flex h-16 items-center gap-3 px-4 md:px-8">
-          <Link to="/planning" className="flex shrink-0 items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-white/15 text-white">
-              <Clapperboard size={18} />
-            </span>
-            <span className="hidden leading-tight text-white sm:block">
-              <span className="block text-sm font-bold">GDA Media Planning</span>
-              <span className="block text-[11px] font-medium text-white/80">Gestion des plannings</span>
-            </span>
-          </Link>
-
-          <div className="flex-1" />
-
-          <Link
-            to="/"
-            title="Revenir à GDA Hub"
-            className="hidden shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/75 transition hover:bg-white/10 hover:text-white sm:inline-flex"
-          >
-            <span aria-hidden>&larr;</span>
-            GDA Hub
-          </Link>
-
-          <div className="relative shrink-0">
-            <button
-              onClick={() => setMenuOuvert((v) => !v)}
-              className="flex items-center gap-2.5 rounded-full border border-white/25 bg-white/10 py-1 pl-1 pr-3.5 transition hover:border-white/35 hover:bg-white/20"
-            >
-              <span className="flex size-8 items-center justify-center rounded-full bg-white text-xs font-bold text-planning-o3">
-                {initiales(nomAffiche)}
-              </span>
-              <span className="hidden text-sm font-medium text-white sm:block">{nomAffiche}</span>
-            </button>
-
-            {menuOuvert && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setMenuOuvert(false)} />
-                <div className="absolute right-0 z-20 mt-2 min-w-[200px] rounded-[10px] border border-slate-200 bg-white p-1.5 shadow-[0_10px_28px_rgba(0,0,0,0.18)]">
-                  <button
-                    onClick={() => {
-                      deconnecter();
-                      navigate('/connexion');
-                    }}
-                    className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-semibold text-planning-o3 hover:bg-orange-50"
-                  >
-                    <LogOut size={14} /> Se déconnecter
-                  </button>
-                </div>
-              </>
-            )}
+    <div
+      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
+      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
+    >
+      <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-surface backdrop-blur-xl md:flex">
+        <div className="flex h-16 items-center gap-2 border-b border-border px-5">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-black">
+            <Clapperboard size={18} />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <p className="truncate font-semibold text-white">GDA Media Planning</p>
+            <p className="truncate text-xs text-muted">Gestion des plannings</p>
           </div>
         </div>
 
-        <nav className="flex gap-1 overflow-x-auto border-t border-white/15 px-2 pb-0 md:px-6">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
           {ONGLETS.map((onglet) => {
             const Icon = onglet.icon;
             const actif = estActif(pathname, onglet.href);
@@ -100,8 +50,8 @@ export default function PlanningLayout() {
               <Link
                 key={onglet.href}
                 to={onglet.href}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-t-lg px-3.5 py-2.5 text-sm font-semibold transition md:py-3 ${
-                  actif ? 'bg-[#fbf7f4] text-planning-o3' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
                 }`}
               >
                 <Icon size={15} className="shrink-0" />
@@ -110,11 +60,77 @@ export default function PlanningLayout() {
             );
           })}
         </nav>
-      </header>
 
-      <main className="px-4 py-6 md:px-8">
-        <Outlet />
-      </main>
+        <div className="border-t border-border p-4">
+          <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
+            <Avatar label={nomAffiche} size={36} />
+            <div className="flex-1 overflow-hidden text-left">
+              <p className="truncate text-sm font-semibold text-white">{nomAffiche}</p>
+            </div>
+            <button
+              onClick={() => {
+                deconnecter();
+                navigate('/connexion');
+              }}
+              title="Se déconnecter"
+              className="shrink-0 rounded-lg p-1.5 text-muted hover:bg-surface hover:text-white"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-surface/40 px-4 backdrop-blur-md sm:justify-end sm:px-8">
+          <Link to="/planning" className="shrink-0 font-display text-base font-bold text-white md:hidden">
+            GDA Media Planning
+          </Link>
+
+          <Link
+            to="/"
+            title="Revenir à GDA Hub"
+            className="hidden items-center gap-1.5 rounded-full border border-border bg-surface2 px-3 py-1.5 text-xs font-semibold text-muted backdrop-blur-sm transition hover:text-white sm:inline-flex"
+          >
+            <span aria-hidden>&larr;</span>
+            GDA Hub
+          </Link>
+
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setMenuOuvert((v) => !v)}
+              className="flex items-center gap-2.5 rounded-full border border-border bg-surface2 py-1.5 pl-1.5 pr-3 backdrop-blur-sm transition hover:bg-surface"
+            >
+              <Avatar label={nomAffiche} size={28} />
+              <span className="hidden text-sm font-medium text-white sm:block">{nomAffiche}</span>
+            </button>
+
+            {menuOuvert && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOuvert(false)} />
+                <div className="absolute right-0 z-20 mt-1 w-52 rounded-xl border border-border bg-surface p-1.5 shadow-lg backdrop-blur-xl">
+                  <button
+                    onClick={() => {
+                      deconnecter();
+                      navigate('/connexion');
+                    }}
+                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-red-400 hover:bg-red-500/10"
+                  >
+                    <LogOut size={14} />
+                    Déconnexion
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto px-4 py-5 lg:px-8 lg:py-6">
+          <div className="mx-auto max-w-[1400px]">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

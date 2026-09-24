@@ -2,6 +2,7 @@ import unicodedata
 from datetime import date, timedelta
 from urllib.parse import quote
 
+from django.db.models import Q
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -30,6 +31,16 @@ from .serializers import (
     PublicationSerializer,
     ShootingSerializer,
 )
+
+
+def parse_datetime_aware(brute):
+    """`parse_datetime` renvoie un datetime naïf si la chaîne n'a pas d'offset —
+    on le rend conscient du fuseau pour éviter un TypeError au premier `is_overdue()`
+    (`self.date < timezone.now()`) une fois la valeur relue depuis la base."""
+    dt = parse_datetime(brute) if brute else None
+    if dt is not None and timezone.is_naive(dt):
+        dt = timezone.make_aware(dt)
+    return dt
 
 
 def parametres_mois(requete):
@@ -73,8 +84,8 @@ def entete_telechargement(nom_fichier: str) -> str:
     return f"attachment; filename=\"{ascii_repli}\"; filename*=UTF-8''{quote(nom_fichier)}"
 
 
-def reponse_doc(html: str, nom_fichier: str) -> HttpResponse:
-    reponse = HttpResponse(html, content_type="application/msword")
+def reponse_pdf(pdf: bytes, nom_fichier: str) -> HttpResponse:
+    reponse = HttpResponse(pdf, content_type="application/pdf")
     reponse["Content-Disposition"] = entete_telechargement(nom_fichier)
     return reponse
 
@@ -174,12 +185,12 @@ class ClientPlanningViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="rapport-genere")
     def rapport_genere(self, requete, pk=None):
-        """`ClientController::generateReport` — planning HTML-en-.doc, mensuel ou annuel."""
+        """`ClientController::generateReport` — planning en PDF, mensuel ou annuel."""
         client = self.get_object()
         type_periode = requete.query_params.get("type", "monthly")
         mois, annee = parametres_mois(requete)
-        html, nom_fichier = services.generer_rapport_client_html(client, type_periode, mois, annee)
-        return reponse_doc(html, nom_fichier)
+        pdf, nom_fichier = services.generer_rapport_client_pdf(client, type_periode, mois, annee)
+        return reponse_pdf(pdf, nom_fichier)
 
     @action(detail=True, methods=["get", "post"], url_path="rapports")
     def rapports(self, requete, pk=None):
@@ -274,6 +285,9 @@ class ShootingViewSet(viewsets.ModelViewSet):
         mois, annee = parametres_mois(requete)
         debut, fin = bornes_mois(mois, annee)
         tournages = self.get_queryset().filter(date__date__gte=debut, date__date__lte=fin)
+        client_id = requete.query_params.get("client_id")
+        if client_id and client_id != "all":
+            tournages = tournages.filter(client_id=client_id)
         grille = services.construire_grille_calendrier(annee, mois, tournages=tournages)
         return Response({"mois": mois, "annee": annee, "calendrier": serialiser_grille(grille)})
 
@@ -307,7 +321,7 @@ class ShootingViewSet(viewsets.ModelViewSet):
             nouvelle_date_brute = requete.data.get("reschedule_date")
             if not nouvelle_date_brute:
                 return Response({"reschedule_date": "La nouvelle date est obligatoire pour reprogrammer un tournage."}, status=400)
-            nouvelle_date = parse_datetime(nouvelle_date_brute)
+            nouvelle_date = parse_datetime_aware(nouvelle_date_brute)
             if nouvelle_date is None or nouvelle_date.date() < timezone.localdate():
                 return Response({"reschedule_date": "La nouvelle date doit être aujourd'hui ou dans le futur."}, status=400)
             ancienne_date = tournage.date.strftime("%d/%m/%Y %H:%M")
@@ -329,7 +343,7 @@ class ShootingViewSet(viewsets.ModelViewSet):
         nouvelle_date_brute = requete.data.get("new_date")
         if not nouvelle_date_brute:
             return Response({"new_date": "La nouvelle date est obligatoire."}, status=400)
-        nouvelle_date = parse_datetime(nouvelle_date_brute)
+        nouvelle_date = parse_datetime_aware(nouvelle_date_brute)
         if nouvelle_date is None:
             return Response({"new_date": "La nouvelle date doit être une date valide."}, status=400)
 
@@ -360,6 +374,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
         mois, annee = parametres_mois(requete)
         debut, fin = bornes_mois(mois, annee)
         publications = self.get_queryset().filter(date__date__gte=debut, date__date__lte=fin)
+        client_id = requete.query_params.get("client_id")
+        if client_id and client_id != "all":
+            publications = publications.filter(client_id=client_id)
         grille = services.construire_grille_calendrier(annee, mois, publications=publications)
         return Response({"mois": mois, "annee": annee, "calendrier": serialiser_grille(grille)})
 
@@ -429,7 +446,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
             nouvelle_date_brute = requete.data.get("reschedule_date")
             if not nouvelle_date_brute:
                 return Response({"reschedule_date": "La nouvelle date est obligatoire pour reprogrammer une publication."}, status=400)
-            nouvelle_date = parse_datetime(nouvelle_date_brute)
+            nouvelle_date = parse_datetime_aware(nouvelle_date_brute)
             if nouvelle_date is None:
                 return Response({"reschedule_date": "La date doit être une date valide."}, status=400)
             ancienne_date = publication.date.strftime("%d/%m/%Y %H:%M")
@@ -451,7 +468,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
         nouvelle_date_brute = requete.data.get("new_date")
         if not nouvelle_date_brute:
             return Response({"new_date": "La nouvelle date est obligatoire."}, status=400)
-        nouvelle_date = parse_datetime(nouvelle_date_brute)
+        nouvelle_date = parse_datetime_aware(nouvelle_date_brute)
         if nouvelle_date is None:
             return Response({"new_date": "La nouvelle date doit être une date valide."}, status=400)
 
@@ -474,6 +491,8 @@ class TableauDeBordVue(APIView):
         mois, annee = parametres_mois(requete)
         debut, fin = bornes_mois(mois, annee)
         maintenant = timezone.now()
+        client_id = requete.query_params.get("client_id")
+        client_id = client_id if client_id and client_id != "all" else None
 
         tournages_mois = Shooting.objects.select_related("client").prefetch_related("content_ideas").filter(
             date__date__gte=debut, date__date__lte=fin
@@ -481,26 +500,50 @@ class TableauDeBordVue(APIView):
         publications_mois = Publication.objects.select_related("client", "content_idea", "shooting").filter(
             date__date__gte=debut, date__date__lte=fin
         )
-        grille = services.construire_grille_calendrier(annee, mois, tournages_mois, publications_mois)
-
-        tournages_retard = Shooting.objects.select_related("client").filter(
-            status="pending", date__lt=maintenant
-        ).order_by("date")
+        tournages_retard = Shooting.objects.select_related("client").filter(status="pending", date__lt=maintenant)
         publications_retard = Publication.objects.select_related("client", "content_idea").filter(
             status="pending", date__lt=maintenant
-        ).order_by("date")
+        )
         horizon = maintenant + timedelta(days=3)
         tournages_a_venir = Shooting.objects.select_related("client").filter(
             status="pending", date__gte=maintenant, date__lte=horizon
-        ).order_by("date")
+        )
         publications_a_venir = Publication.objects.select_related("client", "content_idea").filter(
             status="pending", date__gte=maintenant, date__lte=horizon
-        ).order_by("date")
+        )
+        shootings_this_month = Shooting.objects.filter(date__year=annee, date__month=mois)
+        publications_this_month = Publication.objects.filter(date__year=annee, date__month=mois)
+        # "Prochains tournages/publications" du tableau de bord : les 5 plus
+        # proches en attente, sans se limiter aux 3 jours des alertes ci-dessus.
+        tournages_prochains = Shooting.objects.select_related("client").filter(status="pending", date__gte=maintenant)
+        publications_prochains = Publication.objects.select_related("client", "content_idea").filter(
+            status="pending", date__gte=maintenant
+        )
+
+        if client_id:
+            tournages_mois = tournages_mois.filter(client_id=client_id)
+            publications_mois = publications_mois.filter(client_id=client_id)
+            tournages_retard = tournages_retard.filter(client_id=client_id)
+            publications_retard = publications_retard.filter(client_id=client_id)
+            tournages_a_venir = tournages_a_venir.filter(client_id=client_id)
+            publications_a_venir = publications_a_venir.filter(client_id=client_id)
+            shootings_this_month = shootings_this_month.filter(client_id=client_id)
+            publications_this_month = publications_this_month.filter(client_id=client_id)
+            tournages_prochains = tournages_prochains.filter(client_id=client_id)
+            publications_prochains = publications_prochains.filter(client_id=client_id)
+
+        grille = services.construire_grille_calendrier(annee, mois, tournages_mois, publications_mois)
+        tournages_retard = tournages_retard.order_by("date")
+        publications_retard = publications_retard.order_by("date")
+        tournages_a_venir = tournages_a_venir.order_by("date")
+        publications_a_venir = publications_a_venir.order_by("date")
+        tournages_prochains = tournages_prochains.order_by("date")[:5]
+        publications_prochains = publications_prochains.order_by("date")[:5]
 
         stats = {
             "clients_count": ClientPlanning.objects.count(),
-            "shootings_this_month": Shooting.objects.filter(date__year=annee, date__month=mois).count(),
-            "publications_this_month": Publication.objects.filter(date__year=annee, date__month=mois).count(),
+            "shootings_this_month": shootings_this_month.count(),
+            "publications_this_month": publications_this_month.count(),
         }
 
         return Response(
@@ -513,6 +556,8 @@ class TableauDeBordVue(APIView):
                 "publications_en_retard": PublicationSerializer(publications_retard, many=True).data,
                 "tournages_a_venir": ShootingSerializer(tournages_a_venir, many=True).data,
                 "publications_a_venir": PublicationSerializer(publications_a_venir, many=True).data,
+                "tournages_prochains": ShootingSerializer(tournages_prochains, many=True).data,
+                "publications_prochains": PublicationSerializer(publications_prochains, many=True).data,
             }
         )
 
@@ -530,12 +575,12 @@ class RapportGlobalVue(APIView):
 
         if client_id and client_id != "all":
             client = get_object_or_404(ClientPlanning, pk=client_id)
-            html, nom_fichier = services.generer_rapport_global_html([client], periode, client_unique=client)
+            pdf, nom_fichier = services.generer_rapport_global_pdf([client], periode, client_unique=client)
         else:
             clients = ClientPlanning.objects.all().order_by("nom_entreprise")
-            html, nom_fichier = services.generer_rapport_global_html(clients, periode)
+            pdf, nom_fichier = services.generer_rapport_global_pdf(clients, periode)
 
-        return reponse_doc(html, nom_fichier)
+        return reponse_pdf(pdf, nom_fichier)
 
 
 class ExportGlobalVue(APIView):
@@ -559,3 +604,126 @@ class ExportGlobalVue(APIView):
         )
         nom = f"calendrier_{services.MOIS_FR[mois]}_{annee}.csv"
         return reponse_csv(contenu, nom)
+
+
+class StatistiquesVue(APIView):
+    """Contenu "réalisé" (statut `completed`) — tournages + publications,
+    regroupés par semaine, par mois, par année et par client. N'existait pas
+    cote Laravel (seule une comparaison calendrier cote-a-cote existait) ;
+    construit pour répondre au besoin d'un vrai tableau de bord analytique."""
+
+    permission_classes = [ReserveEquipe]
+
+    def get(self, requete):
+        client_id = requete.query_params.get("client_id")
+        client_id = client_id if client_id and client_id != "all" else None
+
+        tournages_ok = Shooting.objects.filter(status="completed")
+        publications_ok = Publication.objects.filter(status="completed")
+        if client_id:
+            tournages_ok = tournages_ok.filter(client_id=client_id)
+            publications_ok = publications_ok.filter(client_id=client_id)
+        maintenant = timezone.now()
+
+        par_semaine = []
+        lundi_courant = maintenant.date() - timedelta(days=maintenant.weekday())
+        for i in range(11, -1, -1):
+            debut = lundi_courant - timedelta(weeks=i)
+            fin = debut + timedelta(days=6)
+            par_semaine.append(
+                {
+                    "debut": debut.isoformat(),
+                    "fin": fin.isoformat(),
+                    "tournages": tournages_ok.filter(date__date__gte=debut, date__date__lte=fin).count(),
+                    "publications": publications_ok.filter(date__date__gte=debut, date__date__lte=fin).count(),
+                }
+            )
+
+        par_mois = []
+        for i in range(11, -1, -1):
+            total = maintenant.month - 1 - i
+            annee = maintenant.year + (total // 12)
+            mois = (total % 12) + 1
+            par_mois.append(
+                {
+                    "mois": mois,
+                    "annee": annee,
+                    "tournages": tournages_ok.filter(date__year=annee, date__month=mois).count(),
+                    "publications": publications_ok.filter(date__year=annee, date__month=mois).count(),
+                }
+            )
+
+        annees_tournages = set(d.year for d in tournages_ok.dates("date", "year"))
+        annees_publications = set(d.year for d in publications_ok.dates("date", "year"))
+        par_annee = []
+        for annee in sorted(annees_tournages | annees_publications):
+            par_annee.append(
+                {
+                    "annee": annee,
+                    "tournages": tournages_ok.filter(date__year=annee).count(),
+                    "publications": publications_ok.filter(date__year=annee).count(),
+                }
+            )
+
+        tournages_non_ok = Shooting.objects.exclude(status="completed")
+        publications_non_ok = Publication.objects.exclude(status="completed")
+
+        par_client = []
+        for client in ClientPlanning.objects.all().order_by("nom_entreprise"):
+            par_client.append(
+                {
+                    "client": client.nom_entreprise,
+                    "tournages": tournages_ok.filter(client=client).count(),
+                    "publications": publications_ok.filter(client=client).count(),
+                    "tournages_non_realises": tournages_non_ok.filter(client=client).count(),
+                    "publications_non_realisees": publications_non_ok.filter(client=client).count(),
+                }
+            )
+
+        statuts_possibles = ["pending", "completed", "not_realized", "cancelled", "rescheduled"]
+        tournages_tous = Shooting.objects.filter(client_id=client_id) if client_id else Shooting.objects.all()
+        publications_toutes = Publication.objects.filter(client_id=client_id) if client_id else Publication.objects.all()
+        statuts = {
+            "tournages": {s: tournages_tous.filter(status=s).count() for s in statuts_possibles},
+            "publications": {s: publications_toutes.filter(status=s).count() for s in statuts_possibles},
+        }
+
+        if client_id:
+            idees_realisees_q = Q(tournages__status="completed", tournages__client_id=client_id) | Q(
+                publications__status="completed", publications__client_id=client_id
+            )
+        else:
+            idees_realisees_q = Q(tournages__status="completed") | Q(publications__status="completed")
+        par_type_idees = []
+        for valeur, _libelle in ContentIdea.TYPE_CHOICES:
+            idees_du_type = ContentIdea.objects.filter(type=valeur)
+            par_type_idees.append(
+                {
+                    "type": valeur,
+                    "total": idees_du_type.count(),
+                    "realisees": idees_du_type.filter(idees_realisees_q).distinct().count(),
+                }
+            )
+        idees = {
+            "total": ContentIdea.objects.count(),
+            "realisees": ContentIdea.objects.filter(idees_realisees_q).distinct().count(),
+            "par_type": par_type_idees,
+        }
+
+        clients_actifs_q = Q(tournages__isnull=False) | Q(publications__isnull=False)
+        clients_stats = {
+            "total": ClientPlanning.objects.count(),
+            "actifs": ClientPlanning.objects.filter(clients_actifs_q).distinct().count(),
+        }
+
+        return Response(
+            {
+                "par_semaine": par_semaine,
+                "par_mois": par_mois,
+                "par_annee": par_annee,
+                "par_client": par_client,
+                "statuts": statuts,
+                "idees": idees,
+                "clients": clients_stats,
+            }
+        )
