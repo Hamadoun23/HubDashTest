@@ -16,6 +16,7 @@ import {
   type StatutEvenement,
 } from '../../lib/api/planning';
 import { nomEvenement, type EvenementAffiche } from './evenementUtils';
+import { usePermissionsPlanning } from './permissions';
 import { BoutonReprogrammer, SelecteurStatut } from './SelecteurStatut';
 
 const TONE: Record<StatutEvenement, 'success' | 'warning' | 'danger' | 'neutral'> = {
@@ -42,12 +43,17 @@ export function DetailEvenementModale({
 }) {
   const [suppressionEnCours, setSuppressionEnCours] = useState(false);
   const navigate = useNavigate();
+  const { peutEcrire } = usePermissionsPlanning();
   const statutTournage = useAction(changerStatutTournage);
   const statutPublication = useAction(changerStatutPublication);
   const reproTournage = useAction(reprogrammerTournage);
   const reproPublication = useAction(reprogrammerPublication);
 
   function modifier() {
+    // Ferme cette modale avant de naviguer : sinon elle reste ouverte derriere
+    // le formulaire d'edition (meme page, juste un `?edit=` en plus) et son
+    // overlay plein ecran bloque tous les clics sur le formulaire.
+    onFermer();
     navigate(item.type === 'tournage' ? `/planning/tournages?edit=${item.evenement.id}` : `/planning/publications?edit=${item.evenement.id}`);
   }
 
@@ -132,44 +138,48 @@ export function DetailEvenementModale({
           )}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-muted">Statut :</span>
-          {type === 'tournage' ? (
-            <SelecteurStatut
-              statutActuel={evenement.status}
-              enCours={statutTournage.enCours}
-              onChanger={(valeur, raison, rescheduleDate) =>
-                changerStatutTournage(evenement.id, valeur, raison, rescheduleDate).then(() => onChange())
-              }
-            />
-          ) : (
-            <SelecteurStatut
-              statutActuel={evenement.status}
-              enCours={statutPublication.enCours}
-              onChanger={(valeur, raison, rescheduleDate) =>
-                changerStatutPublication(evenement.id, valeur, raison, rescheduleDate).then(() => onChange())
-              }
-            />
-          )}
-          {type === 'tournage' ? (
-            <BoutonReprogrammer enCours={reproTournage.enCours} onReprogrammer={(d) => reprogrammerTournage(evenement.id, d).then(() => onChange())} />
-          ) : (
-            <BoutonReprogrammer enCours={reproPublication.enCours} onReprogrammer={(d) => reprogrammerPublication(evenement.id, d).then(() => onChange())} />
-          )}
-        </div>
+        {peutEcrire && (
+          <>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-muted">Statut :</span>
+              {type === 'tournage' ? (
+                <SelecteurStatut
+                  statutActuel={evenement.status}
+                  enCours={statutTournage.enCours}
+                  onChanger={(valeur, raison, rescheduleDate) =>
+                    changerStatutTournage(evenement.id, valeur, raison, rescheduleDate).then(() => onChange())
+                  }
+                />
+              ) : (
+                <SelecteurStatut
+                  statutActuel={evenement.status}
+                  enCours={statutPublication.enCours}
+                  onChanger={(valeur, raison, rescheduleDate) =>
+                    changerStatutPublication(evenement.id, valeur, raison, rescheduleDate).then(() => onChange())
+                  }
+                />
+              )}
+              {type === 'tournage' ? (
+                <BoutonReprogrammer enCours={reproTournage.enCours} onReprogrammer={(d) => reprogrammerTournage(evenement.id, d).then(() => onChange())} />
+              ) : (
+                <BoutonReprogrammer enCours={reproPublication.enCours} onReprogrammer={(d) => reprogrammerPublication(evenement.id, d).then(() => onChange())} />
+              )}
+            </div>
 
-        <div className="mt-4 flex justify-between border-t border-border pt-3">
-          <button onClick={modifier} className="flex items-center gap-1.5 rounded-xl border border-border bg-surface2 px-3 py-2 text-xs font-bold text-white">
-            <Pencil size={13} /> Modifier
-          </button>
-          <button
-            onClick={supprimer}
-            disabled={suppressionEnCours}
-            className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-400 disabled:opacity-50"
-          >
-            <Trash2 size={13} /> Supprimer
-          </button>
-        </div>
+            <div className="mt-4 flex justify-between border-t border-border pt-3">
+              <button onClick={modifier} className="flex items-center gap-1.5 rounded-xl border border-border bg-surface2 px-3 py-2 text-xs font-bold text-white">
+                <Pencil size={13} /> Modifier
+              </button>
+              <button
+                onClick={supprimer}
+                disabled={suppressionEnCours}
+                className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-400 disabled:opacity-50"
+              >
+                <Trash2 size={13} /> Supprimer
+              </button>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );
@@ -189,7 +199,11 @@ export function ModaleJour({
   onChange: () => void;
   afficherClient?: boolean;
 }) {
-  const [selection, setSelection] = useState<EvenementAffiche | null>(null);
+  // On ne garde qu'un identifiant, pas l'objet — l'événement affiché est
+  // recalculé à chaque rendu depuis `jour` (frais après un `onChange`), sinon
+  // un changement de statut ou une reprogrammation reste invisible tant que
+  // la vue détail n'est pas refermée puis rouverte.
+  const [selectionId, setSelectionId] = useState<{ type: 'tournage' | 'publication'; id: number } | null>(null);
 
   const dateLibelle = new Date(jour.date + 'T00:00:00').toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -198,16 +212,23 @@ export function ModaleJour({
     year: 'numeric',
   });
 
-  if (selection) {
-    return (
-      <DetailEvenementModale item={selection} onFermer={onFermer} onChange={onChange} onRetour={() => setSelection(null)} />
-    );
-  }
-
   const evenements: EvenementAffiche[] = [
     ...jour.tournages.map((t) => ({ type: 'tournage' as const, evenement: t })),
     ...jour.publications.map((p) => ({ type: 'publication' as const, evenement: p })),
   ];
+
+  const selection = selectionId ? evenements.find((e) => e.type === selectionId.type && e.evenement.id === selectionId.id) ?? null : null;
+
+  if (selectionId) {
+    if (!selection) {
+      // L'événement a disparu de ce jour (supprimé, ou reprogrammé ailleurs) — retour à la liste.
+      setSelectionId(null);
+      return null;
+    }
+    return (
+      <DetailEvenementModale item={selection} onFermer={onFermer} onChange={onChange} onRetour={() => setSelectionId(null)} />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -228,7 +249,7 @@ export function ModaleJour({
               return (
                 <button
                   key={`${item.type}-${item.evenement.id}`}
-                  onClick={() => setSelection(item)}
+                  onClick={() => setSelectionId({ type: item.type, id: item.evenement.id })}
                   className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface2 p-3 text-left hover:border-accent/40"
                 >
                   <div className="flex items-center gap-2.5 overflow-hidden">

@@ -23,9 +23,12 @@ import { DualTrendChart } from '../components/ui/DualTrendChart';
 import { PageHeader } from '../components/ui/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { Badge } from '../components/ui/Table';
+import { ResumePlanning } from '../components/ResumePlanning';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useApi } from '../lib/hooks/useApi';
 import { demandesAValider, mesDemandes, monSolde } from '../lib/api/rh';
+import { listerClients } from '../lib/api/planning';
+import { usePermissionsPlanning } from './planning/permissions';
 
 const MOIS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
@@ -38,6 +41,13 @@ export default function Accueil() {
   const [ongletTout, setOngletTout] = useState<'taches' | 'controle' | 'historique'>('taches');
 
   const accesRh = applications.some((a) => a.chemin.startsWith('/rh'));
+  const accesPlanning = applications.some((a) => a.chemin.startsWith('/planning'));
+  const { estClient: estClientPlanning } = usePermissionsPlanning();
+  const monClientPlanning = useApi(
+    () => (accesPlanning && estClientPlanning ? listerClients() : Promise.resolve([])),
+    [accesPlanning, estClientPlanning],
+  );
+  const nomAffiche = monClientPlanning.donnees?.[0]?.nom_entreprise ?? identite?.nom_complet.split(' ')[0];
   const solde = useApi(() => (accesRh ? monSolde(annee) : Promise.resolve(null)), [accesRh, annee]);
   const dossiers = useApi(() => (accesRh ? demandesAValider() : Promise.resolve([])), [accesRh]);
   const demandes = useApi(() => (accesRh ? mesDemandes() : Promise.resolve([])), [accesRh]);
@@ -76,11 +86,13 @@ export default function Accueil() {
     <div>
       <PageHeader
         icon={ListChecks}
-        titre={identite ? `Bonjour ${identite.nom_complet.split(' ')[0]}` : 'Tableau de bord'}
+        titre={identite ? `Bonjour ${nomAffiche}` : 'Tableau de bord'}
         sousTitre="Ce qui vous concerne aujourd'hui"
       />
 
-      {!accesRh ? (
+      {!accesRh && accesPlanning ? (
+        <ResumePlanning />
+      ) : !accesRh ? (
         <Card className="py-10 text-center text-sm text-muted">
           Votre tableau de bord personnel apparaîtra ici une fois rattaché à une application du hub.
         </Card>

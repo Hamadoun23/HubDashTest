@@ -1,9 +1,12 @@
-import { Clapperboard, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { Building2, Calendar, Clapperboard, FileText, ListChecks, LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../lib/navigation';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
+import { useApi } from '../lib/hooks/useApi';
+import { listerClients } from '../lib/api/planning';
+import { usePermissionsPlanning } from '../pages/planning/permissions';
 
 /**
  * Planning reprend l'habillage sombre "Virtus" du hub, au même titre que
@@ -19,10 +22,40 @@ function estActif(chemin: string, href: string) {
 const ONGLETS = NAVIGATION.find((g) => g.app === 'planning')!.items;
 
 export default function PlanningLayout() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
+  const { estClient } = usePermissionsPlanning();
+  // Un compte client ne voit que son propre ClientPlanning — le backend filtre
+  // déjà `listerClients()` à cette seule ligne pour ce rôle (voir
+  // `ClientPlanningViewSet.get_queryset`), donc pas besoin d'un endpoint dédié.
+  const monClient = useApi(listerClients, []);
+  const monClientId = estClient ? monClient.donnees?.[0]?.id : undefined;
+  const monClientNom = estClient ? monClient.donnees?.[0]?.nom_entreprise : undefined;
+
+  useEffect(() => {
+    if (!estClient || !monClientId) return;
+    const monEspace = `/planning/clients/${monClientId}`;
+    // Un compte client n'a qu'un seul espace : toute autre route de Planning
+    // (accueil, liste des clients, calendriers d'équipe...) le renvoie dessus.
+    if (pathname !== monEspace) {
+      navigate(monEspace, { replace: true });
+    }
+  }, [estClient, monClientId, pathname, navigate]);
+
+  // Un compte client ne peut charger qu'une seule page (`/planning/clients/{id}`,
+  // voir la redirection ci-dessus) — ces entrées pointent donc vers des ancres
+  // de cette même page plutôt que vers des routes distinctes (qui lui seraient
+  // de toute façon fermées par `ReserveEquipe` côté backend).
+  const sectionsClient = monClientId
+    ? [
+        { hash: '', label: monClientNom ?? 'Vue d’ensemble', icon: Building2 },
+        { hash: '#calendrier', label: 'Calendrier', icon: Calendar },
+        { hash: '#evenements', label: 'Tournages & publications', icon: ListChecks },
+        { hash: '#rapports', label: 'Rapports', icon: FileText },
+      ]
+    : [];
 
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
 
@@ -43,22 +76,39 @@ export default function PlanningLayout() {
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
-          {ONGLETS.map((onglet) => {
-            const Icon = onglet.icon;
-            const actif = estActif(pathname, onglet.href);
-            return (
-              <Link
-                key={onglet.href}
-                to={onglet.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
-                }`}
-              >
-                <Icon size={15} className="shrink-0" />
-                {onglet.label}
-              </Link>
-            );
-          })}
+          {estClient
+            ? sectionsClient.map((section) => {
+                const Icon = section.icon;
+                const actif = pathname === `/planning/clients/${monClientId}` && hash === section.hash;
+                return (
+                  <Link
+                    key={section.hash || 'accueil'}
+                    to={`/planning/clients/${monClientId}${section.hash}`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
+                    }`}
+                  >
+                    <Icon size={15} className="shrink-0" />
+                    {section.label}
+                  </Link>
+                );
+              })
+            : ONGLETS.map((onglet) => {
+                const Icon = onglet.icon;
+                const actif = estActif(pathname, onglet.href);
+                return (
+                  <Link
+                    key={onglet.href}
+                    to={onglet.href}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
+                    }`}
+                  >
+                    <Icon size={15} className="shrink-0" />
+                    {onglet.label}
+                  </Link>
+                );
+              })}
         </nav>
 
         <div className="border-t border-border p-4">
@@ -66,6 +116,7 @@ export default function PlanningLayout() {
             <Avatar label={nomAffiche} size={36} />
             <div className="flex-1 overflow-hidden text-left">
               <p className="truncate text-sm font-semibold text-white">{nomAffiche}</p>
+              {estClient && monClientNom && <p className="truncate text-xs text-muted">{monClientNom}</p>}
             </div>
             <button
               onClick={() => {

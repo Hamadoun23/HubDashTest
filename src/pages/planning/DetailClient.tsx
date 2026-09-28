@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -14,7 +14,7 @@ import {
   Upload,
   Video,
 } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -23,9 +23,11 @@ import { useAction, useApi } from '../../lib/hooks/useApi';
 import {
   LIBELLES_STATUT,
   calendrierClient,
+  creerRegle,
   genererRapportPlanning,
   reglesClient,
   supprimerRapportClient,
+  supprimerRegle,
   telechargerRapportClient,
   uploaderRapportClient,
   type RapportClient,
@@ -33,10 +35,12 @@ import {
 } from '../../lib/api/planning';
 import { nomEvenement, type EvenementAffiche } from './evenementUtils';
 import { ModaleJour } from './ModaleJour';
+import { usePermissionsPlanning } from './permissions';
 
 const maintenant = new Date();
 
 const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+const JOURS_SEMAINE = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 
 const COULEUR_STATUT: Record<StatutEvenement, string> = {
   pending: '#facc15',
@@ -174,6 +178,7 @@ function ListeRapports({
   clientId: number;
   onChange: () => void;
 }) {
+  const { peutEcrire } = usePermissionsPlanning();
   const suppression = useAction(supprimerRapportClient);
 
   async function supprimer(rapportId: number) {
@@ -187,7 +192,7 @@ function ListeRapports({
       <h3 className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
         {titre} <span className="rounded-full bg-surface2 px-2 py-0.5 text-[10px] text-white">{rapports.length}</span>
       </h3>
-      <FormulaireUploadRapport type={type} clientId={clientId} onTelecharge={onChange} />
+      {peutEcrire && <FormulaireUploadRapport type={type} clientId={clientId} onTelecharge={onChange} />}
       {rapports.length === 0 ? (
         <p className="rounded-xl border border-border bg-surface2 p-4 text-center text-xs text-muted">Aucun rapport téléversé.</p>
       ) : (
@@ -212,14 +217,16 @@ function ListeRapports({
                 >
                   <Download size={14} />
                 </button>
-                <button
-                  onClick={() => supprimer(r.id)}
-                  disabled={suppression.enCours}
-                  title="Supprimer"
-                  className="rounded-lg border border-border p-1.5 text-muted hover:text-red-400 disabled:opacity-50"
-                >
-                  <Trash2 size={14} />
-                </button>
+                {peutEcrire && (
+                  <button
+                    onClick={() => supprimer(r.id)}
+                    disabled={suppression.enCours}
+                    title="Supprimer"
+                    className="rounded-lg border border-border p-1.5 text-muted hover:text-red-400 disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -231,13 +238,36 @@ function ListeRapports({
 
 export default function DetailClient() {
   const { id } = useParams();
+  const { hash } = useLocation();
   const clientId = Number(id);
+  const { peutEcrire, estClient } = usePermissionsPlanning();
   const [periode, setPeriode] = useState({ mois: maintenant.getMonth() + 1, annee: maintenant.getFullYear() });
   const [genereEnCours, setGenereEnCours] = useState<'monthly' | 'annual' | null>(null);
   const [jourOuvert, setJourOuvert] = useState<string | null>(null);
 
   const donnees = useApi(() => calendrierClient(clientId, periode.mois, periode.annee), [clientId, periode.mois, periode.annee]);
-  const regles = useApi(() => reglesClient(clientId), [clientId]);
+  // `/regles-publication/` est réservé à l'équipe (ReserveEquipe) — un compte
+  // client y recevrait systématiquement un 403, inutile de l'appeler pour lui.
+  const regles = useApi(() => (estClient ? Promise.resolve([]) : reglesClient(clientId)), [clientId, estClient]);
+  const [reglesEnCours, setReglesEnCours] = useState(false);
+
+  useEffect(() => {
+    if (!hash || !donnees.donnees) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [hash, donnees.donnees]);
+
+  async function toggleRegle(jour: string, regleId: number | undefined) {
+    if (!peutEcrire) return;
+    setReglesEnCours(true);
+    try {
+      if (regleId) await supprimerRegle(regleId);
+      else await creerRegle(clientId, jour);
+      regles.recharger();
+      donnees.recharger();
+    } finally {
+      setReglesEnCours(false);
+    }
+  }
 
   function changerMois(delta: number) {
     setPeriode((p) => {
@@ -276,9 +306,11 @@ export default function DetailClient() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link to="/planning/clients" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-white">
-        <ArrowLeft size={14} /> Retour à la liste
-      </Link>
+      {!estClient && (
+        <Link to="/planning/clients" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted hover:text-white">
+          <ArrowLeft size={14} /> Retour à la liste
+        </Link>
+      )}
 
       <PageHeader
         icon={Building2}
@@ -334,22 +366,41 @@ export default function DetailClient() {
             <AlertTriangle size={15} className="text-accent2" />
           </span>
           <p className="font-display text-2xl font-bold tabular-nums text-white">{stats.publication_rules}</p>
-          <p className="text-xs font-semibold text-white">Règles de publication</p>
-          {regles.donnees && regles.donnees.length > 0 ? (
-            <div className="flex flex-wrap gap-1.5">
-              {regles.donnees.map((r) => (
-                <span key={r.id} className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-semibold text-accent2">
-                  {r.day_of_week.charAt(0).toUpperCase() + r.day_of_week.slice(1)}
-                </span>
-              ))}
-            </div>
+          <p className="text-xs font-semibold text-white">Jours non recommandés</p>
+          {estClient ? (
+            <p className="text-[11px] text-muted">
+              {stats.publication_rules > 0
+                ? `${stats.publication_rules} jour(s) sans publication configuré(s) par votre équipe.`
+                : 'Aucun jour restreint pour le moment.'}
+            </p>
           ) : (
-            <p className="text-xs text-muted">Aucune règle — aucun jour non recommandé.</p>
+            <>
+              <p className="text-[11px] text-muted">
+                {peutEcrire ? 'Cliquez pour interdire/autoriser une publication ce jour-là' : 'Lecture seule — seul un administrateur peut modifier ces règles.'}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {JOURS_SEMAINE.map((jour) => {
+                  const regle = regles.donnees?.find((r) => r.day_of_week === jour);
+                  return (
+                    <button
+                      key={jour}
+                      disabled={reglesEnCours || !peutEcrire}
+                      onClick={() => toggleRegle(jour, regle?.id)}
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors disabled:opacity-70 ${
+                        regle ? 'bg-accent2/20 text-accent2' : 'bg-surface2 text-muted hover:text-white'
+                      } ${!peutEcrire ? 'cursor-default hover:!text-inherit' : ''}`}
+                    >
+                      {jour.slice(0, 3)}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
         </Card>
       </div>
 
-      <Card className="!p-0 overflow-hidden">
+      <Card id="calendrier" className="!p-0 overflow-hidden scroll-mt-20">
         <div className="flex items-center justify-between p-5 pb-0">
           <h2 className="text-base font-bold text-white">
             Planning — {MOIS[periode.mois - 1]} {periode.annee}
@@ -431,12 +482,12 @@ export default function DetailClient() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div id="evenements" className="grid scroll-mt-20 grid-cols-1 gap-4 lg:grid-cols-2">
         <ListeEvenements titre="Tournages et publications à venir (30 prochains jours)" items={aVenir} />
         <ListeEvenements titre="Activité récente (30 derniers jours)" items={recents} />
       </div>
 
-      <Card>
+      <Card id="rapports" className="scroll-mt-20">
         <h2 className="mb-3 text-sm font-bold text-white">Rapports de reporting</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <ListeRapports titre="Mensuels" type="monthly" rapports={rapports_mensuels} clientId={clientId} onChange={donnees.recharger} />

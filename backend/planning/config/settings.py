@@ -104,7 +104,11 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 50,
+    # 1000 et non 50 : plusieurs menus deroulants (idee liee, tournage lie...)
+    # consomment la premiere page de listerTournages()/listerPublications()
+    # sans jamais paginer plus loin — 512 publications existent deja avec les
+    # donnees importees de prod, largement au-dessus de l'ancien plafond de 50.
+    "PAGE_SIZE": 1000,
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",

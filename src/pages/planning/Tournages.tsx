@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronDown, ChevronLeft, ChevronRight, Plus, User, Video, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Download, Plus, User, Video, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { EtatErreur } from '../../components/ui/EtatRequete';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -9,14 +9,16 @@ import {
   LIBELLES_STATUT,
   calendrierTournages,
   creerTournage,
+  exporterTournagesCsv,
   listerClients,
   listerIdees,
-  listerTournages,
   modifierTournage,
   obtenirTournage,
   type StatutEvenement,
+  type Tournage,
 } from '../../lib/api/planning';
 import { ModaleJour } from './ModaleJour';
+import { usePermissionsPlanning } from './permissions';
 
 const CHAMP = 'w-full rounded-xl border border-border bg-surface2 px-3 py-2 text-sm text-white placeholder:text-muted focus:border-accent focus:outline-none';
 const LABEL = 'mb-1.5 block text-xs font-semibold text-muted';
@@ -33,9 +35,9 @@ const COULEUR_STATUT: Record<StatutEvenement, string> = {
 };
 
 export default function Tournages() {
+  const { peutEcrire } = usePermissionsPlanning();
   const clients = useApi(listerClients, []);
   const idees = useApi(listerIdees, []);
-  const tournages = useApi(listerTournages, []);
   const creation = useAction(creerTournage);
   const modification = useAction(modifierTournage);
 
@@ -57,7 +59,6 @@ export default function Tournages() {
   );
 
   function rechargerTout() {
-    tournages.recharger();
     calendrier.recharger();
   }
 
@@ -80,7 +81,7 @@ export default function Tournages() {
     setOuvert(true);
   }
 
-  function ouvrirEdition(t: NonNullable<typeof tournages.donnees>[number]) {
+  function ouvrirEdition(t: Tournage) {
     setIdEnEdition(t.id);
     setClientId(String(t.client));
     setDate(t.date.slice(0, 16));
@@ -110,9 +111,10 @@ export default function Tournages() {
     const editId = searchParams.get('edit');
     if (!editId) return;
     setSearchParams({}, { replace: true });
+    if (!peutEcrire) return;
     obtenirTournage(Number(editId)).then(ouvrirEdition).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, peutEcrire]);
 
   async function envoyer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -127,7 +129,7 @@ export default function Tournages() {
     rechargerTout();
   }
 
-  if (tournages.erreur) return <EtatErreur message={tournages.erreur} recharger={tournages.recharger} />;
+  if (calendrier.erreur) return <EtatErreur message={calendrier.erreur} recharger={calendrier.recharger} />;
 
   const erreurForm = creation.erreur ?? modification.erreur;
   const enCoursForm = creation.enCours || modification.enCours;
@@ -148,9 +150,11 @@ export default function Tournages() {
         titre="Tournages"
         sousTitre="Planifiés et à confirmer"
         action={
-          <button onClick={ouvrirCreation} className="flex items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2 text-xs font-bold text-black">
-            <Plus size={14} /> Nouveau tournage
-          </button>
+          peutEcrire ? (
+            <button onClick={ouvrirCreation} className="flex items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2 text-xs font-bold text-black">
+              <Plus size={14} /> Nouveau tournage
+            </button>
+          ) : undefined
         }
       />
 
@@ -160,6 +164,13 @@ export default function Tournages() {
             Planning de tournage — {MOIS[periode.mois - 1]} {periode.annee}
           </h2>
           <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => exporterTournagesCsv(periode.mois, periode.annee)}
+              title="Exporter en CSV"
+              className="flex h-7 items-center gap-1 rounded-full bg-surface2 px-2.5 text-[11px] font-semibold text-muted hover:text-white"
+            >
+              <Download size={12} /> CSV
+            </button>
             <button onClick={() => changerMois(-1)} className="flex h-7 w-7 items-center justify-center rounded-full bg-surface2">
               <ChevronLeft size={14} className="text-white" />
             </button>
@@ -216,7 +227,7 @@ export default function Tournages() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-[11px] font-semibold text-muted">{Number(jour.date.split('-')[2])}</span>
-                        {jour.est_mois_courant && (
+                        {jour.est_mois_courant && peutEcrire && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();

@@ -45,6 +45,14 @@ export function creerClient(nom_entreprise: string) {
   return apiFetch<ClientPlanning>('/planning/clients/', { method: 'POST', corps: { nom_entreprise } });
 }
 
+export function modifierClient(id: number, nom_entreprise: string) {
+  return apiFetch<ClientPlanning>(`/planning/clients/${id}/`, { method: 'PATCH', corps: { nom_entreprise } });
+}
+
+export function supprimerClient(id: number) {
+  return apiFetch<void>(`/planning/clients/${id}/`, { method: 'DELETE' });
+}
+
 export type JourCalendrier = {
   date: string;
   est_mois_courant: boolean;
@@ -104,6 +112,14 @@ export function reglesClient(clientId: number) {
   return apiFetch<RegleClient[] | { results: RegleClient[] }>(
     `/planning/regles-publication/${requete({ client: clientId })}`,
   ).then((d) => (Array.isArray(d) ? d : d.results));
+}
+
+export function creerRegle(clientId: number, jour: string) {
+  return apiFetch<RegleClient>('/planning/regles-publication/', { method: 'POST', corps: { client: clientId, day_of_week: jour } });
+}
+
+export function supprimerRegle(id: number) {
+  return apiFetch<void>(`/planning/regles-publication/${id}/`, { method: 'DELETE' });
 }
 
 export function genererRapportPlanning(clientId: number, typePeriode: 'monthly' | 'annual', mois: number, annee: number) {

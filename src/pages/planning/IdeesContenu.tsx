@@ -7,6 +7,7 @@ import { StatTile } from '../../components/ui/StatTile';
 import { TableVirtus } from '../../components/ui/Table';
 import { useAction, useApi } from '../../lib/hooks/useApi';
 import { creerIdee, listerIdees, modifierIdee, supprimerIdee, type IdeeContenu } from '../../lib/api/planning';
+import { usePermissionsPlanning } from './permissions';
 
 const TYPES = ['vidéo', 'image', 'texte'];
 
@@ -16,6 +17,7 @@ const CHAMP = 'w-full rounded-xl border border-border bg-surface2 px-3 py-2 text
 const LABEL = 'mb-1.5 block text-xs font-semibold text-muted';
 
 export default function IdeesContenu() {
+  const { peutEcrire } = usePermissionsPlanning();
   const idees = useApi(listerIdees, []);
   const creation = useAction(creerIdee);
   const modification = useAction(modifierIdee);
@@ -77,9 +79,11 @@ export default function IdeesContenu() {
         titre="Idées de contenu"
         sousTitre="Ce qui se prépare pour vos clients"
         action={
-          <button onClick={ouvrirCreation} className="flex items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2 text-xs font-bold text-black">
-            <Plus size={14} /> Nouvelle idée
-          </button>
+          peutEcrire ? (
+            <button onClick={ouvrirCreation} className="flex items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2 text-xs font-bold text-black">
+              <Plus size={14} /> Nouvelle idée
+            </button>
+          ) : undefined
         }
       />
 
@@ -122,22 +126,24 @@ export default function IdeesContenu() {
         <p className="rounded-3xl border border-border bg-surface p-8 text-center text-sm text-muted">Aucune idée pour le moment.</p>
       ) : (
         <TableVirtus
-          colonnes={['Idée', 'Type', 'Créée le', '', '']}
-          lignes={listeFiltree.map((idee) => [
-            idee.titre,
-            <span className="capitalize">{idee.type}</span>,
-            new Date(idee.created_at).toLocaleDateString('fr-FR'),
-            <button onClick={() => ouvrirEdition(idee)} className="flex items-center gap-1 text-xs font-semibold text-accent2 hover:text-white">
-              <Pencil size={13} /> Modifier
-            </button>,
-            <button
-              onClick={() => supprimer(idee)}
-              disabled={suppressionEnCoursId === idee.id}
-              className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
-            >
-              <Trash2 size={13} /> Supprimer
-            </button>,
-          ])}
+          colonnes={peutEcrire ? ['Idée', 'Type', 'Créée le', '', ''] : ['Idée', 'Type', 'Créée le']}
+          lignes={listeFiltree.map((idee) => {
+            const base = [idee.titre, <span className="capitalize">{idee.type}</span>, new Date(idee.created_at).toLocaleDateString('fr-FR')];
+            if (!peutEcrire) return base;
+            return [
+              ...base,
+              <button onClick={() => ouvrirEdition(idee)} className="flex items-center gap-1 text-xs font-semibold text-accent2 hover:text-white">
+                <Pencil size={13} /> Modifier
+              </button>,
+              <button
+                onClick={() => supprimer(idee)}
+                disabled={suppressionEnCoursId === idee.id}
+                className="flex items-center gap-1 text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50"
+              >
+                <Trash2 size={13} /> Supprimer
+              </button>,
+            ];
+          })}
         />
       )}
 

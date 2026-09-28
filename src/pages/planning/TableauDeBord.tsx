@@ -208,7 +208,10 @@ export default function TableauDeBordPlanning() {
     [clientId],
   );
   const [voirTout, setVoirTout] = useState(false);
-  const [voirDetail, setVoirDetail] = useState<EvenementAffiche | null>(null);
+  // Identifiant seulement : l'événement affiché est recalculé depuis les
+  // données fraîches à chaque rendu, sinon un changement de statut ou une
+  // reprogrammation reste invisible tant qu'on n'a pas fermé/rouvert la vue.
+  const [voirDetailId, setVoirDetailId] = useState<{ type: 'tournage' | 'publication'; id: number } | null>(null);
   const clientNom = clientId === 'all' ? null : clients.donnees?.find((c) => String(c.id) === clientId)?.nom_entreprise ?? null;
 
   const donnees = bord.donnees;
@@ -327,7 +330,7 @@ export default function TableauDeBordPlanning() {
                   <CarteProchainEvenement
                     key={t.id}
                     item={{ type: 'tournage', evenement: t }}
-                    onVoir={() => setVoirDetail({ type: 'tournage', evenement: t })}
+                    onVoir={() => setVoirDetailId({ type: 'tournage', id: t.id })}
                   />
                 ))}
               </div>
@@ -344,7 +347,7 @@ export default function TableauDeBordPlanning() {
                   <CarteProchainEvenement
                     key={p.id}
                     item={{ type: 'publication', evenement: p }}
-                    onVoir={() => setVoirDetail({ type: 'publication', evenement: p })}
+                    onVoir={() => setVoirDetailId({ type: 'publication', id: p.id })}
                   />
                 ))}
               </div>
@@ -353,9 +356,14 @@ export default function TableauDeBordPlanning() {
         </div>
       )}
 
-      {voirDetail && (
-        <DetailEvenementModale item={voirDetail} onFermer={() => setVoirDetail(null)} onChange={bord.recharger} />
-      )}
+      {voirDetailId && donnees && (() => {
+        const voirDetail: EvenementAffiche | undefined =
+          voirDetailId.type === 'tournage'
+            ? donnees.tournages_prochains.filter((t) => t.id === voirDetailId.id).map((t) => ({ type: 'tournage' as const, evenement: t }))[0]
+            : donnees.publications_prochains.filter((p) => p.id === voirDetailId.id).map((p) => ({ type: 'publication' as const, evenement: p }))[0];
+        if (!voirDetail) return null;
+        return <DetailEvenementModale item={voirDetail} onFermer={() => setVoirDetailId(null)} onChange={bord.recharger} />;
+      })()}
     </div>
   );
 }
