@@ -225,6 +225,5 @@ class DashboardChartSerializer(serializers.Serializer):
     """Forme des donnees de graphiques renvoyees par `DashboardViewSet`."""
 
     status_counts = serializers.DictField(child=serializers.IntegerField())
-    progress_by_phase = serializers.ListField(child=serializers.DictField())
-    progress_by_subphase = serializers.ListField(child=serializers.DictField())
-    activities_chart = serializers.ListField(child=serializers.DictField())
+    subphases = serializers.ListField(child=serializers.DictField())
+    activities = serializers.ListField(child=serializers.DictField())

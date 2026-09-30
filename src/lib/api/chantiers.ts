@@ -82,6 +82,11 @@ export function supprimerProjet(id: number) {
   return apiFetch<void>(`/chantiers/projets/${id}/`, { method: 'DELETE' });
 }
 
+/** `order` doit contenir TOUS les projets visibles, dans le nouvel ordre. */
+export function reordonnerProjets(order: number[]) {
+  return apiFetch<{ ok: boolean }>('/chantiers/projets/reorder/', { method: 'POST', corps: { order } });
+}
+
 // --- Structure du projet (phases → sous-phases → tâches) ---------------------
 
 export type Phase = { id: number; name: string; sort_order: number; hidden_from_partner: boolean };
@@ -108,6 +113,20 @@ export function creerPhase(payload: NouvellePhase) {
   return apiFetch<Phase>('/chantiers/phases/', { method: 'POST', corps: payload });
 }
 
+export function modifierPhase(id: number, payload: Partial<NouvellePhase>) {
+  return apiFetch<Phase>(`/chantiers/phases/${id}/`, { method: 'PATCH', corps: payload });
+}
+
+export function supprimerPhase(id: number) {
+  return apiFetch<void>(`/chantiers/phases/${id}/`, { method: 'DELETE' });
+}
+
+/** `order` doit contenir TOUS les ids de phases du projet, dans le nouvel ordre —
+ * le backend rejette un sous-ensemble (cf. `apply_sort_order`). */
+export function reordonnerPhases(projetId: number, order: number[]) {
+  return apiFetch<{ ok: boolean }>('/chantiers/phases/reorder/', { method: 'POST', corps: { project_id: projetId, order } });
+}
+
 export async function listerSousPhases(phaseId: number) {
   const page = await apiFetch<Page<SousPhase>>(`/chantiers/sous-phases/${requete({ phase: phaseId })}`);
   return resultats(page);
@@ -115,6 +134,18 @@ export async function listerSousPhases(phaseId: number) {
 
 export function creerSousPhase(payload: NouvelleSousPhase) {
   return apiFetch<SousPhase>('/chantiers/sous-phases/', { method: 'POST', corps: payload });
+}
+
+export function modifierSousPhase(id: number, payload: Partial<NouvelleSousPhase>) {
+  return apiFetch<SousPhase>(`/chantiers/sous-phases/${id}/`, { method: 'PATCH', corps: payload });
+}
+
+export function supprimerSousPhase(id: number) {
+  return apiFetch<void>(`/chantiers/sous-phases/${id}/`, { method: 'DELETE' });
+}
+
+export function reordonnerSousPhases(phaseId: number, order: number[]) {
+  return apiFetch<{ ok: boolean }>('/chantiers/sous-phases/reorder/', { method: 'POST', corps: { phase_id: phaseId, order } });
 }
 
 // --- Tâches --------------------------------------------------------------------
@@ -168,6 +199,22 @@ export async function listerTaches(chantierId: number, params: { sous_phase?: nu
 
 export function creerTache(chantierId: number, payload: NouvelleTache) {
   return apiFetch<Tache>('/chantiers/taches/', { method: 'POST', corps: payload, entetes: enteteProjet(chantierId) });
+}
+
+export function modifierTache(chantierId: number, id: number, payload: Partial<NouvelleTache>) {
+  return apiFetch<Tache>(`/chantiers/taches/${id}/`, { method: 'PATCH', corps: payload, entetes: enteteProjet(chantierId) });
+}
+
+export function supprimerTache(chantierId: number, id: number) {
+  return apiFetch<void>(`/chantiers/taches/${id}/`, { method: 'DELETE', entetes: enteteProjet(chantierId) });
+}
+
+export function reordonnerTaches(chantierId: number, sousPhaseId: number, order: number[]) {
+  return apiFetch<{ ok: boolean }>('/chantiers/taches/reorder/', {
+    method: 'POST',
+    corps: { sous_phase_id: sousPhaseId, order },
+    entetes: enteteProjet(chantierId),
+  });
 }
 
 export function obtenirTacheDetailComplete(id: number) {
@@ -273,31 +320,6 @@ export function supprimerPhotos(chantierId: number, ids: number[]) {
   });
 }
 
-// --- Journal d'activité -----------------------------------------------------------
-
-export type EntreeJournal = {
-  id: number;
-  action: string;
-  description: string;
-  user_name: string;
-  project_id: number;
-  ip_address: string | null;
-  created_at: string;
-};
-
-export type JournalReponse = {
-  logs: EntreeJournal[];
-  meta: { current_page: number; last_page: number; per_page: number; total: number };
-  filters: { actions: string[] };
-};
-
-export function listerJournal(
-  chantierId: number,
-  params: { action?: string; q?: string; from?: string; to?: string; page?: number; per_page?: number } = {},
-) {
-  return apiFetch<JournalReponse>(`/chantiers/activity-logs/${requete({ ...params, project_id: chantierId })}`);
-}
-
 // --- Rapports ----------------------------------------------------------------------
 
 export type Rapport = {
@@ -356,17 +378,21 @@ export function genererRapport(chantierId: number, payload: ParametresGeneration
 /** Le PDF est un fichier binaire protégé par le jeton d'accès : impossible de
  * l'obtenir via un simple lien `<a href>`. On le récupère nous-mêmes en blob
  * puis on déclenche le téléchargement via un lien objet temporaire. */
-export async function telechargerRapportPdf(id: number, nomFichier = `rapport-${id}.pdf`): Promise<void> {
+async function blobRapportPdf(id: number, langue: 'fr' | 'en', titre?: string): Promise<Blob> {
   const jeton = jetonAcces();
-  const reponse = await fetch(`${BASE_URL}/chantiers/rapports/${id}/pdf/`, {
+  const reponse = await fetch(`${BASE_URL}/chantiers/rapports/${id}/pdf/${requete({ lang: langue, titre })}`, {
     headers: jeton ? { Authorization: `Bearer ${jeton}` } : {},
   });
-
   if (!reponse.ok) {
     throw new ApiError('Impossible de télécharger le rapport PDF', reponse.status, null);
   }
+  return reponse.blob();
+}
 
-  const blob = await reponse.blob();
+/** Télécharge le PDF comme un fichier — jamais de nouvel onglet, que les
+ * navigateurs bloquent après une attente réseau. */
+export async function telechargerRapportPdf(id: number, nomFichier = `rapport-${id}.pdf`, langue: 'fr' | 'en' = 'fr', titre?: string): Promise<void> {
+  const blob = await blobRapportPdf(id, langue, titre);
   const url = URL.createObjectURL(blob);
   const lien = document.createElement('a');
   lien.href = url;
@@ -374,7 +400,8 @@ export async function telechargerRapportPdf(id: number, nomFichier = `rapport-${
   document.body.appendChild(lien);
   lien.click();
   lien.remove();
-  URL.revokeObjectURL(url);
+  // Laisse le temps au navigateur de démarrer le téléchargement avant de libérer le blob.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 // --- Météo (proxy Open-Meteo) ------------------------------------------------------
@@ -391,18 +418,113 @@ export function obtenirMeteo(lat: number, lon: number) {
   return apiFetch<Meteo>(`/chantiers/weather/${requete({ lat, lon, endpoint: 'forecast' })}`);
 }
 
+/** Relevé léger (température + code courants) pour le widget d'en-tête —
+ * distinct de `obtenirMeteo` (prévisions complètes de la page Météo). */
+export function obtenirMeteoActuelle(lat: number, lon: number) {
+  return apiFetch<Meteo>(`/chantiers/weather/${requete({ lat, lon, endpoint: 'nav' })}`);
+}
+
+export type CreneauMeteo = {
+  dt_txt: string;
+  time: string;
+  temp: number;
+  feels_like: number;
+  humidity: number;
+  description: string;
+  weather_main: string;
+  icon: string;
+  wind_ms: number;
+  wind_kmh: number;
+  wind_gust_kmh: number | null;
+  pop_percent: number;
+  rain_mm: number;
+};
+
+export type AlerteMeteo = { types: string[]; severity: 'high' | 'medium' | 'info'; time: string; date: string; message: string };
+
+/** Même forme que `WeatherService::forecastForDecisions` (Laravel). */
+export type PrevisionsDecision = {
+  ok: boolean;
+  fetched_at: string;
+  current: { temp: number | null; description: string; icon: string } | null;
+  stats: { temp_min: number; temp_max: number; wind_max_kmh: number; pop_max: number; alert_count: number };
+  thresholds: { wind_ms: number; wind_kmh: number; rain_pop_percent: number; rain_mm: number };
+  alerts: AlerteMeteo[];
+  days: { date: string; slots: CreneauMeteo[] }[];
+};
+
+export function obtenirPrevisionsDecision(lat: number, lon: number) {
+  return apiFetch<PrevisionsDecision>(`/chantiers/weather/${requete({ lat, lon, endpoint: 'decisions' })}`);
+}
+
+export type LieuGeocode = { name: string; latitude: number; longitude: number; country?: string; admin1?: string };
+
+export function geocoderVille(ville: string) {
+  return apiFetch<{ results: LieuGeocode[] }>(`/chantiers/weather/${requete({ endpoint: 'geocode', city: ville })}`);
+}
+
 // --- Tableau de bord -----------------------------------------------------------------
+
+export type ActiviteRecente = {
+  task_id: number;
+  ts: string;
+  time: string;
+  task_name: string;
+  action: string;
+  progress: number;
+  user: string;
+  status: string;
+  status_label: string;
+};
+
+export type ActiviteGraphique = {
+  phase: string;
+  subphase: string;
+  activity: string;
+  progress: number;
+  status: string;
+  status_label: string;
+  partner_hidden?: boolean;
+};
+
+export type GraphiquesTableauDeBord = {
+  status_counts: Record<string, number>;
+  subphases: { phase: string; subphase: string; avg_progress: number; task_count: number }[];
+  activities: ActiviteGraphique[];
+};
 
 export type Dashboard = {
   project: { id: number; name: string; client: string };
   overall_progress: number;
   stats: { total: number; done: number; in_progress: number; not_started: number; cancelled: number };
   status_counts: Record<string, number>;
-  progress_by_phase: { phase: string; progress: number; task_count: number }[];
-  activities: unknown[];
-  recent_activity: unknown[];
+  progress_by_phase: { phase: string; progress: number; task_count: number; partner_hidden?: boolean }[];
+  activities: { id: number; phase: string; subphase: string; activity: string; progress: number; status: string }[];
+  recent_activity: ActiviteRecente[];
+  charts: GraphiquesTableauDeBord;
 };
 
 export function obtenirTableauDeBord(chantierId: number) {
   return apiFetch<Dashboard>('/chantiers/dashboard/', { entetes: enteteProjet(chantierId) });
+}
+
+/** Le classeur est un fichier binaire protégé par le jeton — même schéma que
+ * `telechargerRapportPdf` (blob + lien objet temporaire). */
+export async function exporterTableauDeBordExcel(chantierId: number, nomFichier = 'dashboard-chantier.xlsx'): Promise<void> {
+  const jeton = jetonAcces();
+  const reponse = await fetch(`${BASE_URL}/chantiers/dashboard/export/`, {
+    headers: { ...(jeton ? { Authorization: `Bearer ${jeton}` } : {}), ...enteteProjet(chantierId) },
+  });
+  if (!reponse.ok) {
+    throw new ApiError("Impossible d'exporter le tableau de bord", reponse.status, null);
+  }
+  const blob = await reponse.blob();
+  const url = URL.createObjectURL(blob);
+  const lien = document.createElement('a');
+  lien.href = url;
+  lien.download = nomFichier;
+  document.body.appendChild(lien);
+  lien.click();
+  lien.remove();
+  URL.revokeObjectURL(url);
 }

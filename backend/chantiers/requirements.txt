@@ -11,6 +11,8 @@ Pillow>=10.0
 # Exports.
 openpyxl>=3.1
 reportlab>=4.2
+# Rapport PDF leger (HTML/CSS -> PDF, barres en CSS, vignettes JPEG compressees).
+weasyprint>=62.0
 
 # Production
 gunicorn>=22.0

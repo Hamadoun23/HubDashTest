@@ -25,13 +25,28 @@ x-postgres: &postgres
 x-django: &django
   restart: unless-stopped
   environment: &env-django
-    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-developpement-local-non-secret}
-    DJANGO_DEBUG: "True"
+    # Obligatoires en production : le demarrage echoue si elles manquent,
+    # plutot que de tourner avec une cle connue de tous (voir .env.production.example).
+    DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Definir DJANGO_SECRET_KEY dans .env}
+    # Jamais True en production : les pages d'erreur detaillees exposent le
+    # code, les requetes et les reglages.
+    DJANGO_DEBUG: "False"
     DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0,gateway,identity,financerh,jusorange,campagnes,chantiers,planning,hub.gdamali.net,www.hub.gdamali.net
     DJANGO_TIME_ZONE: Africa/Bamako
     GDAHUB_JWKS_URL: http://identity:8000/.well-known/jwks.json
     GDAHUB_JETON_EMETTEUR: gdahub-identity
     GDAHUB_JETON_AUDIENCE: gdahub
+    # La connexion et les droits passent uniquement par le hub : les services
+    # qui avaient leur propre connexion (FinanceRH, Jus d'orange) n'acceptent
+    # plus que le jeton d'identity, et exigent l'habilitation correspondante.
+    GDAHUB_AUTH_SEULE: "True"
+    # Cle partagee entre les services et identity pour demander une
+    # notification (route interne, jamais exposee par la passerelle).
+    GDAHUB_CLE_INTERNE: ${GDAHUB_CLE_INTERNE:?Definir GDAHUB_CLE_INTERNE dans .env}
+    GDAHUB_URL_IDENTITY: http://identity:8000
+    # Le HTTPS est assure par le nginx de l'hote : pas de redirection a ce
+    # niveau (elle bouclerait sur les appels internes, en http).
+    DJANGO_SSL_REDIRECT: "False"
 
 services:
   # --- Les bases : une par application ------------------------------------
@@ -42,7 +57,7 @@ services:
     container_name: gdahub-db-identity
     environment:
       POSTGRES_USER: gdahub
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: identity
     volumes: ["donnees-identity:/var/lib/postgresql/data"]
 
@@ -51,7 +66,7 @@ services:
     container_name: gdahub-db-financerh
     environment:
       POSTGRES_USER: financerh
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: financerh
     volumes: ["donnees-financerh:/var/lib/postgresql/data"]
 
@@ -61,7 +76,7 @@ services:
     container_name: gdahub-db-jusorange
     environment:
       POSTGRES_USER: jusorange
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: jusorange
     volumes: ["donnees-jusorange:/var/lib/postgresql/data"]
 
@@ -70,7 +85,7 @@ services:
     container_name: gdahub-db-chantiers
     environment:
       POSTGRES_USER: chantiers
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: chantiers
     volumes: ["donnees-chantiers:/var/lib/postgresql/data"]
 
@@ -79,7 +94,7 @@ services:
     container_name: gdahub-db-planning
     environment:
       POSTGRES_USER: planning
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: planning
     volumes: ["donnees-planning:/var/lib/postgresql/data"]
 
@@ -88,7 +103,7 @@ services:
     container_name: gdahub-db-campagnes
     environment:
       POSTGRES_USER: campagnes
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gdahub-local}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}
       POSTGRES_DB: campagnes
     volumes: ["donnees-campagnes:/var/lib/postgresql/data"]
 
@@ -107,7 +122,7 @@ services:
       GDAHUB_APPLICATION: hub
       GDAHUB_ADMIN_MOT_DE_PASSE: "1234"
       GDAHUB_MOT_DE_PASSE_INITIAL: "1234"
-      DATABASE_URL: postgres://gdahub:${POSTGRES_PASSWORD:-gdahub-local}@db-identity:5432/identity
+      DATABASE_URL: postgres://gdahub:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-identity:5432/identity
       CSRF_TRUSTED_ORIGINS: http://hub.gdamali.net,https://hub.gdamali.net,http://www.hub.gdamali.net,https://www.hub.gdamali.net
       MEDIA_URL: /media/hub/
     volumes:
@@ -129,7 +144,7 @@ services:
       identity: {condition: service_started}
     environment:
       <<: *env-django
-      DATABASE_URL: postgres://financerh:${POSTGRES_PASSWORD:-gdahub-local}@db-financerh:5432/financerh
+      DATABASE_URL: postgres://financerh:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-financerh:5432/financerh
       MEDIA_URL: /media/rh/
     volumes:
       - ./backend/financerh:/app
@@ -147,7 +162,7 @@ services:
       identity: {condition: service_started}
     environment:
       <<: *env-django
-      DATABASE_URL: postgres://jusorange:${POSTGRES_PASSWORD:-gdahub-local}@db-jusorange:5432/jusorange
+      DATABASE_URL: postgres://jusorange:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-jusorange:5432/jusorange
       MEDIA_URL: /media/jus/
     volumes:
       - ./backend/jusorange:/app
@@ -164,7 +179,7 @@ services:
       identity: {condition: service_started}
     environment:
       <<: *env-django
-      DATABASE_URL: postgres://chantiers:${POSTGRES_PASSWORD:-gdahub-local}@db-chantiers:5432/chantiers
+      DATABASE_URL: postgres://chantiers:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-chantiers:5432/chantiers
       MEDIA_URL: /media/chantiers/
     volumes:
       - ./backend/chantiers:/app
@@ -181,7 +196,7 @@ services:
       identity: {condition: service_started}
     environment:
       <<: *env-django
-      DATABASE_URL: postgres://planning:${POSTGRES_PASSWORD:-gdahub-local}@db-planning:5432/planning
+      DATABASE_URL: postgres://planning:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-planning:5432/planning
       MEDIA_URL: /media/planning/
     volumes:
       - ./backend/planning:/app
@@ -199,11 +214,16 @@ services:
       identity: {condition: service_started}
     environment:
       <<: *env-django
-      DATABASE_URL: postgres://campagnes:${POSTGRES_PASSWORD:-gdahub-local}@db-campagnes:5432/campagnes
+      DATABASE_URL: postgres://campagnes:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-campagnes:5432/campagnes
       CHEMIN_BASE: /campagnes
       VITE_DEV: "False"
       SESSION_COOKIE_NAME: campagnes_sessionid
       CSRF_COOKIE_NAME: campagnes_csrftoken
+      # Sur « / » et non « /campagnes/ » : les pages de Campagnes sont servies
+      # par l'interface du hub (a la racine) et doivent lire ce cookie pour
+      # signer leurs ecritures (en-tete X-CSRFToken). Son nom est propre a
+      # Campagnes : aucun autre service ne l'ecrase.
+      CSRF_COOKIE_PATH: /
     volumes:
       - ./backend/campagnes:/app
       - media-campagnes-app:/app/media

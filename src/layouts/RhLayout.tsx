@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
 import { NAVIGATION } from '../lib/navigation';
+import { BoutonMenu, TiroirMobile } from '../components/TiroirMobile';
+import { ClocheNotifications } from '../components/notifications/ClocheNotifications';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
 
@@ -38,6 +40,8 @@ function estVisible(href: string, utilisateur: ReturnType<typeof useAuth>['utili
 }
 
 export default function RhLayout() {
+  const [menuMobile, setMenuMobile] = useState(false);
+  const fermerMenu = useCallback(() => setMenuMobile(false), []);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
@@ -46,11 +50,8 @@ export default function RhLayout() {
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
   const elementsVisibles = GROUPE.items.filter((item) => estVisible(item.href, utilisateur));
 
-  return (
-    <div
-      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
-      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
-    >
+  // Même barre latérale sur grand écran et dans le tiroir mobile.
+  const barreLaterale = (
       <aside className="hidden h-screen w-72 shrink-0 flex-col overflow-hidden border-r border-border bg-surface backdrop-blur-xl lg:flex">
         <div className="flex items-center gap-2 px-5 py-5">
           <Link to="/rh" className="flex items-center gap-2">
@@ -63,7 +64,7 @@ export default function RhLayout() {
             </div>
           </Link>
         </div>
-
+  
         <nav className="mt-2 flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
           {elementsVisibles.map((item) => {
             const Icon = item.icon;
@@ -82,7 +83,7 @@ export default function RhLayout() {
             );
           })}
         </nav>
-
+  
         <div className="border-t border-border p-3">
           <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
             <Link to="/rh/mon-espace" className="flex flex-1 items-center gap-3 overflow-hidden">
@@ -105,9 +106,21 @@ export default function RhLayout() {
           </div>
         </div>
       </aside>
+  );
+
+  return (
+    <div
+      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
+      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
+    >
+      {barreLaterale}
+      <TiroirMobile ouvert={menuMobile} onFermer={fermerMenu}>
+        {barreLaterale}
+      </TiroirMobile>
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between gap-3 border-b border-border bg-surface/40 px-4 py-4 backdrop-blur-md sm:justify-end sm:px-8">
+          <BoutonMenu onClick={() => setMenuMobile(true)} className="lg:hidden" />
           <Link to="/rh" className="shrink-0 font-display text-base font-bold text-white lg:hidden">
             GDA Hub
           </Link>
@@ -121,6 +134,8 @@ export default function RhLayout() {
               <span aria-hidden>&larr;</span>
               GDA Hub
             </Link>
+
+            <ClocheNotifications />
 
             <div className="relative">
               <button

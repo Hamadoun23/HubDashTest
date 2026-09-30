@@ -132,11 +132,18 @@ GDAHUB_JETON_AUDIENCE = os.environ.get('GDAHUB_JETON_AUDIENCE', 'gdahub')
 REST_FRAMEWORK = {
     # L'ordre compte : la classe du hub rend la main des qu'elle voit un jeton
     # qui n'est pas le sien, et les classes maison reprennent derriere elle.
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'accounts.hub.AuthentificationHub',
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
+    # Dans GDA Hub (GDAHUB_AUTH_SEULE), seul le jeton du hub est accepte :
+    # jetons et sessions propres a Jus d'orange ne passent pas par les
+    # habilitations du hub.
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        ['accounts.hub.AuthentificationHub']
+        if os.environ.get('GDAHUB_AUTH_SEULE', 'False').lower() in ('1', 'true', 'yes', 'oui')
+        else [
+            'accounts.hub.AuthentificationHub',
+            'rest_framework.authentication.TokenAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+        ]
+    ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],

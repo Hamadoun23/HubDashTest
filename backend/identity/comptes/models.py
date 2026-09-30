@@ -383,3 +383,52 @@ class JournalConnexion(models.Model):
     def __str__(self):
         etat = "reussie" if self.reussie else f"echouee ({self.motif})"
         return f"{self.identifiant_saisi} - {etat} - {self.date:%d/%m/%Y %H:%M}"
+
+
+class Notification(models.Model):
+    """Un message pour une personne, emis par le hub ou par une application.
+
+    Les applications n'ont pas acces aux comptes du hub : elles demandent a
+    identity de notifier (route interne, cf. `vues_notifications`), qui range
+    la notification ici et la pousse sur les appareils abonnes.
+    """
+
+    utilisateur = models.ForeignKey(
+        Utilisateur, on_delete=models.CASCADE, related_name="notifications"
+    )
+    #: Code de l'application d'origine (« campagnes », « rh »…, « hub »).
+    application = models.CharField("Application", max_length=32, default="hub")
+    titre = models.CharField("Titre", max_length=150)
+    message = models.CharField("Message", max_length=500, blank=True)
+    #: Adresse de l'interface a ouvrir (« /campagnes/mon-contrat »).
+    lien = models.CharField("Lien", max_length=300, blank=True)
+    cree_le = models.DateTimeField("Creee le", auto_now_add=True, db_index=True)
+    lue_le = models.DateTimeField("Lue le", null=True, blank=True)
+
+    class Meta:
+        db_table = "notification"
+        ordering = ["-cree_le", "-id"]
+        indexes = [models.Index(fields=["utilisateur", "lue_le"])]
+
+    def __str__(self) -> str:
+        return f"{self.utilisateur} — {self.titre}"
+
+
+class AbonnementPush(models.Model):
+    """Un appareil (navigateur, application installee) abonne aux notifications push."""
+
+    utilisateur = models.ForeignKey(
+        Utilisateur, on_delete=models.CASCADE, related_name="abonnements_push"
+    )
+    endpoint = models.URLField("Adresse du service push", max_length=1000, unique=True)
+    p256dh = models.CharField(max_length=200)
+    auth = models.CharField(max_length=100)
+    agent = models.CharField("Navigateur", max_length=300, blank=True)
+    cree_le = models.DateTimeField("Cree le", auto_now_add=True)
+
+    class Meta:
+        db_table = "abonnement_push"
+        ordering = ["-cree_le"]
+
+    def __str__(self) -> str:
+        return f"{self.utilisateur} — {self.agent[:40]}"

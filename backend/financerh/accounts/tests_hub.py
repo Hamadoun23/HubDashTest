@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from rest_framework import exceptions
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.test import APIRequestFactory
 
@@ -33,6 +34,8 @@ def _jeton(privee, identifiant, **surcharges):
         "aud": AUDIENCE,
         "iat": maintenant,
         "exp": maintenant + timedelta(minutes=15),
+        # Habilitation RH par defaut : c'est elle qui ouvre FinanceRH.
+        "habilitations": {"rh": ["salarie"]},
     }
     charge.update(surcharges)
     pem = privee.private_bytes(
@@ -124,6 +127,17 @@ class AuthentificationHubTest(TestCase):
         GDAHUB_JETON_EMETTEUR=EMETTEUR,
         GDAHUB_JETON_AUDIENCE=AUDIENCE,
     )
+    def test_sans_habilitation_l_agent_existant_est_refuse(self):
+        """Compte local present, mais le hub n'ouvre pas FinanceRH : refus."""
+        jeton = _jeton(self.privee, "hcisse@gdamali.net", habilitations={"daily": ["admin"]})
+        with self.assertRaises(exceptions.PermissionDenied):
+            hub.AuthentificationHub().authenticate(self._requete(jeton))
+
+    def test_une_habilitation_finance_suffit(self):
+        jeton = _jeton(self.privee, "hcisse@gdamali.net", habilitations={"finance": ["comptable"]})
+        agent, _ = hub.AuthentificationHub().authenticate(self._requete(jeton))
+        self.assertEqual(agent, self.agent)
+
     def test_un_compte_desactive_reste_ferme(self):
         self.agent.is_active = False
         self.agent.save(update_fields=["is_active"])

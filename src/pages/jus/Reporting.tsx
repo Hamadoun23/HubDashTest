@@ -32,7 +32,7 @@ export default function Reporting() {
     <div>
       <PageHeader icon={Boxes} titre="Jus d'orange — Reporting" sousTitre="Récolte, fabrication, distribution" />
 
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile icon={Sprout} valeur={`${kpi.recolte_total} kg`} libelle="Récolte totale" teinte="#4ade80" />
         <StatTile icon={Wine} valeur={kpi.bouteilles} libelle="Bouteilles" teinte="#a78bfa" />
         <StatTile icon={ShoppingCart} valeur={`${kpi.ca_total} F`} libelle="Chiffre d'affaires" teinte="#34d399" />

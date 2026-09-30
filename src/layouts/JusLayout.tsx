@@ -1,7 +1,9 @@
-import { Bell, Citrus, LogOut, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Citrus, LogOut, Search } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../lib/navigation';
+import { BoutonMenu, TiroirMobile } from '../components/TiroirMobile';
+import { ClocheNotifications } from '../components/notifications/ClocheNotifications';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useApi } from '../lib/hooks/useApi';
 import { monProfilJus } from '../lib/api/jus';
@@ -57,6 +59,8 @@ function itemVisible(sectionKey: string, href: string, roles: string[]) {
 }
 
 export default function JusLayout() {
+  const [menuMobile, setMenuMobile] = useState(false);
+  const fermerMenu = useCallback(() => setMenuMobile(false), []);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
@@ -71,11 +75,8 @@ export default function JusLayout() {
   })).filter((groupe) => groupe.items.length > 0);
 
 
-  return (
-    <div
-      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
-      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
-    >
+  // Même barre latérale sur grand écran et dans le tiroir mobile.
+  const barreLaterale = (
       <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-surface backdrop-blur-xl md:flex">
         <div className="flex h-16 items-center gap-2 border-b border-border px-5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-black">
@@ -86,7 +87,7 @@ export default function JusLayout() {
             <p className="truncate text-xs text-muted">Pilotage production</p>
           </div>
         </div>
-
+  
         <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
           {groupesVisibles.map((groupe) => (
             <div key={groupe.key}>
@@ -114,12 +115,24 @@ export default function JusLayout() {
             </div>
           ))}
         </nav>
-
+  
         <div className="border-t border-border p-4 text-xs text-muted">JusOrange · Campagne 2026</div>
       </aside>
+  );
+
+  return (
+    <div
+      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
+      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
+    >
+      {barreLaterale}
+      <TiroirMobile ouvert={menuMobile} onFermer={fermerMenu}>
+        {barreLaterale}
+      </TiroirMobile>
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-surface/40 px-4 backdrop-blur-md">
+          <BoutonMenu onClick={() => setMenuMobile(true)} className="md:hidden" />
           <Link
             to="/"
             title="Revenir à GDA Hub"
@@ -137,12 +150,7 @@ export default function JusLayout() {
             />
           </div>
 
-          <button className="relative shrink-0 rounded-lg border border-border bg-surface2 p-2 text-muted hover:text-white">
-            <Bell size={16} />
-            <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-black">
-              3
-            </span>
-          </button>
+          <ClocheNotifications />
 
           <div className="relative shrink-0">
             <button

@@ -1,7 +1,9 @@
 import { Building2, Calendar, Clapperboard, FileText, ListChecks, LogOut } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../lib/navigation';
+import { BoutonMenu, TiroirMobile } from '../components/TiroirMobile';
+import { ClocheNotifications } from '../components/notifications/ClocheNotifications';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
 import { useApi } from '../lib/hooks/useApi';
@@ -22,6 +24,8 @@ function estActif(chemin: string, href: string) {
 const ONGLETS = NAVIGATION.find((g) => g.app === 'planning')!.items;
 
 export default function PlanningLayout() {
+  const [menuMobile, setMenuMobile] = useState(false);
+  const fermerMenu = useCallback(() => setMenuMobile(false), []);
   const { pathname, hash } = useLocation();
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
@@ -59,11 +63,8 @@ export default function PlanningLayout() {
 
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
 
-  return (
-    <div
-      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
-      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
-    >
+  // Même barre latérale sur grand écran et dans le tiroir mobile.
+  const barreLaterale = (
       <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-border bg-surface backdrop-blur-xl md:flex">
         <div className="flex h-16 items-center gap-2 border-b border-border px-5">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-black">
@@ -74,7 +75,7 @@ export default function PlanningLayout() {
             <p className="truncate text-xs text-muted">Gestion des plannings</p>
           </div>
         </div>
-
+  
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
           {estClient
             ? sectionsClient.map((section) => {
@@ -110,7 +111,7 @@ export default function PlanningLayout() {
                 );
               })}
         </nav>
-
+  
         <div className="border-t border-border p-4">
           <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
             <Avatar label={nomAffiche} size={36} />
@@ -131,9 +132,21 @@ export default function PlanningLayout() {
           </div>
         </div>
       </aside>
+  );
+
+  return (
+    <div
+      className="flex h-screen w-full bg-cover bg-center bg-fixed text-white"
+      style={{ backgroundImage: "url('/motif-orange.jpg')" }}
+    >
+      {barreLaterale}
+      <TiroirMobile ouvert={menuMobile} onFermer={fermerMenu}>
+        {barreLaterale}
+      </TiroirMobile>
 
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-surface/40 px-4 backdrop-blur-md sm:justify-end sm:px-8">
+          <BoutonMenu onClick={() => setMenuMobile(true)} className="md:hidden" />
           <Link to="/planning" className="shrink-0 font-display text-base font-bold text-white md:hidden">
             GDA Media Planning
           </Link>
@@ -146,6 +159,8 @@ export default function PlanningLayout() {
             <span aria-hidden>&larr;</span>
             GDA Hub
           </Link>
+
+          <ClocheNotifications />
 
           <div className="relative shrink-0">
             <button

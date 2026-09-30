@@ -242,45 +242,101 @@ def save_daily_update(request, data: dict) -> MiseAJourJournaliere:
     return update
 
 
+LIBELLES_STATUT = {
+    "non_demarre": "Non démarré",
+    "en_cours": "En cours",
+    "termine": "Terminé",
+    "annule": "Annulé",
+}
+
+
+def _taches_ordonnees(project: Project, user) -> list:
+    """Taches visibles dans l'ordre de la structure (phase -> sous-phase ->
+    tache), comme `ProjectStatistics` cote Laravel — sans ce tri, l'ordre des
+    phases du tableau de bord dependait de celui des lignes en base."""
+    return list(
+        visible_tasks(project, user)
+        .select_related("sous_phase__phase")
+        .prefetch_related("mises_a_jour")
+        .order_by("sous_phase__phase__sort_order", "sous_phase__sort_order", "sort_order", "id")
+    )
+
+
+def _libelle_action(status: str, comment: str | None) -> str:
+    """Port de `ReportPresentation::dashboardRecentAction`."""
+    comment = (comment or "").strip()
+    if comment:
+        corps = comment if len(comment) <= 80 else comment[:80] + "…"
+        return ("Annulée · " if status == "annule" else "Commentaire · ") + corps
+    return "Progression mise à jour"
+
+
 def dashboard_data(project: Project, user) -> dict:
-    tasks = list(visible_tasks(project, user).prefetch_related("mises_a_jour"))
+    """Port de `App\\Support\\ProjectStatistics::build` (Laravel)."""
+    tasks = _taches_ordonnees(project, user)
     rows, statuses = [], Counter()
-    phase_rows = {}
-    recent = []
+    phase_rows: dict[int, dict] = {}
     for task in tasks:
         latest = task.latest_daily_update()
         progress = latest.progress if latest else 0
         status = latest.status if latest else "non_demarre"
         statuses[status] += 1
-        key = task.sous_phase.phase.name
-        phase_rows.setdefault(key, []).append(progress)
+        phase = task.sous_phase.phase
+        entree = phase_rows.setdefault(
+            phase.id, {"phase": phase.name, "values": [], "partner_hidden": phase.hidden_from_partner}
+        )
+        entree["values"].append(progress)
         rows.append(
             {
                 "id": task.id,
-                "phase": key,
+                "phase": phase.name,
                 "subphase": task.sous_phase.name,
                 "activity": task.activity,
                 "progress": progress,
                 "status": status,
             }
         )
-        if latest:
-            recent.append(
-                {
-                    "task_id": task.id,
-                    "task_name": task.activity,
-                    "progress": progress,
-                    "status": status,
-                    "comment": latest.comment,
-                    "date": latest.report_date,
-                    "user": latest.user_name,
-                }
-            )
     overall = round(sum(r["progress"] for r in rows) / len(rows)) if rows else 0
-    phases = [
-        {"phase": name, "progress": round(sum(values) / len(values)), "task_count": len(values)}
-        for name, values in phase_rows.items()
-    ]
+    phases = []
+    for entree in phase_rows.values():
+        ligne = {
+            "phase": entree["phase"],
+            "progress": round(sum(entree["values"]) / len(entree["values"])),
+            "task_count": len(entree["values"]),
+        }
+        if user.est_interne:
+            ligne["partner_hidden"] = entree["partner_hidden"]
+        phases.append(ligne)
+
+    # Activite recente : les 5 dernieres taches touchees (une ligne par tache),
+    # la plus recente en premier — meme regle que Laravel.
+    ids_visibles = {t.id for t in tasks}
+    recent, vus = [], set()
+    for maj in (
+        MiseAJourJournaliere.objects.filter(tache_id__in=ids_visibles)
+        .select_related("tache__sous_phase")
+        .order_by("-updated_at")[:150]
+    ):
+        if maj.tache_id in vus:
+            continue
+        vus.add(maj.tache_id)
+        heure = timezone.localtime(maj.updated_at)
+        recent.append(
+            {
+                "task_id": maj.tache_id,
+                "ts": heure.isoformat(),
+                "time": heure.strftime("%H:%M"),
+                "task_name": f"{maj.tache.sous_phase.name} — {maj.tache.activity}",
+                "action": _libelle_action(maj.status, maj.comment),
+                "progress": maj.progress,
+                "user": maj.user_name,
+                "status": maj.status,
+                "status_label": LIBELLES_STATUT.get(maj.status, maj.status),
+            }
+        )
+        if len(recent) == 5:
+            break
+
     return {
         "project": {"id": project.id, "name": project.name, "client": project.client},
         "overall_progress": overall,
@@ -294,18 +350,18 @@ def dashboard_data(project: Project, user) -> dict:
         "status_counts": dict(statuses),
         "progress_by_phase": phases,
         "activities": rows,
-        "recent_activity": sorted(recent, key=lambda x: str(x["date"]), reverse=True)[:20],
+        "recent_activity": recent,
     }
 
 
 def generate_charts_data(project: Project, user) -> dict:
-    """Donnees pour les graphiques du tableau de bord."""
-    tasks = list(visible_tasks(project, user).prefetch_related("mises_a_jour", "sous_phase__phase"))
+    """Series des graphiques du tableau de bord — cle `charts` de
+    `ProjectStatistics::build` (status_counts, subphases, activities)."""
+    tasks = _taches_ordonnees(project, user)
 
     status_counts = Counter()
-    phase_progress = {}
-    subphase_progress = {}
-    activities_data = []
+    subphases: dict[int, dict] = {}
+    activities = []
 
     for task in tasks:
         latest = task.latest_daily_update()
@@ -313,37 +369,32 @@ def generate_charts_data(project: Project, user) -> dict:
         status = latest.status if latest else "non_demarre"
         status_counts[status] += 1
 
-        phase_name = task.sous_phase.phase.name
-        phase_progress.setdefault(phase_name, []).append(progress)
+        sp = task.sous_phase
+        entree = subphases.setdefault(sp.id, {"phase": sp.phase.name, "subphase": sp.name, "values": []})
+        entree["values"].append(progress)
 
-        subphase_name = f"{phase_name} - {task.sous_phase.name}"
-        subphase_progress.setdefault(subphase_name, []).append(progress)
-
-        activities_data.append(
-            {
-                "activity": task.activity,
-                "phase": phase_name,
-                "subphase": task.sous_phase.name,
-                "progress": progress,
-                "status": status,
-                "start_day": task.start_day,
-                "duration_days": task.duration_days,
-            }
-        )
-
-    progress_by_phase = [
-        {"phase": phase, "progress": round(sum(values) / len(values)), "task_count": len(values)}
-        for phase, values in phase_progress.items()
-    ]
-    progress_by_subphase = [
-        {"subphase": subphase, "progress": round(sum(values) / len(values)), "task_count": len(values)}
-        for subphase, values in subphase_progress.items()
-    ]
-    activities_chart = sorted(activities_data, key=lambda x: x["progress"], reverse=True)[:20]
+        ligne = {
+            "phase": sp.phase.name,
+            "subphase": sp.name,
+            "activity": task.activity,
+            "progress": progress,
+            "status": status,
+            "status_label": LIBELLES_STATUT.get(status, status),
+        }
+        if user.est_interne:
+            ligne["partner_hidden"] = task.hidden_from_partner or sp.hidden_from_partner or sp.phase.hidden_from_partner
+        activities.append(ligne)
 
     return {
-        "status_counts": dict(status_counts),
-        "progress_by_phase": progress_by_phase,
-        "progress_by_subphase": progress_by_subphase,
-        "activities_chart": activities_chart,
+        "status_counts": {s: status_counts.get(s, 0) for s in ("non_demarre", "en_cours", "termine", "annule")},
+        "subphases": [
+            {
+                "phase": e["phase"],
+                "subphase": e["subphase"],
+                "avg_progress": round(sum(e["values"]) / len(e["values"])),
+                "task_count": len(e["values"]),
+            }
+            for e in subphases.values()
+        ],
+        "activities": activities,
     }

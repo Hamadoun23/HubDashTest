@@ -28,7 +28,7 @@ export default function Finance() {
   return (
     <div>
       <PageHeader icon={Landmark} titre="Jus d'orange — Finance" sousTitre="Vue d'ensemble financière" />
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile icon={Wallet} valeur={`${totaux.total_commercial} F`} libelle="Facturé (commercial)" teinte="#60a5fa" />
         <StatTile icon={TrendingUp} valeur={`${totaux.total_recu} F`} libelle="Reçu (trésorerie)" teinte="#34d399" />
         <StatTile icon={TrendingDown} valeur={`${totaux.ecart_global} F`} libelle="Écart global" teinte="#f87171" />

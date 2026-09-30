@@ -38,7 +38,7 @@ export default function Production() {
   return (
     <div>
       <PageHeader icon={FlaskConical} titre="Jus d'orange — Production" sousTitre="De la cueillette au conditionnement" />
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile icon={Sprout} valeur={`${kpi.recolte_total} kg`} libelle="Récolte totale" teinte="#4ade80" />
         <StatTile icon={Boxes} valeur={kpi.jus_stock} libelle="Stock de jus" teinte="#60a5fa" />
         <StatTile icon={Wine} valeur={kpi.bouteilles} libelle="Bouteilles en stock" teinte="#a78bfa" />

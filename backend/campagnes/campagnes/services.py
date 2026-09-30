@@ -371,7 +371,6 @@ def vers_props_inertia(request, detail, est_detail_direction):
         campagne.aide_versements.select_related("user").order_by("-semaine_debut")
     )
     signataires = list(campagne.signataires_contrat.all())
-    delai_expire = campagne.contrat_delai_expire()
 
     if campagne.toutes_agences:
         libelle_agences = "Toutes les agences"
@@ -443,7 +442,8 @@ def vers_props_inertia(request, detail, est_detail_direction):
                     "id": r.id,
                     "user_name": _nom(r.user),
                     "statut": r.statut,
-                    "verrou": delai_expire and r.statut == "en_attente",
+                    "verrou": campagne.contrat_delai_expire(r.created_at)
+                    and r.statut == "en_attente",
                     "repondu_at": r.repondu_at.strftime("%d/%m/%Y %H:%M")
                     if r.repondu_at
                     else None,

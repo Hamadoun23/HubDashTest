@@ -69,6 +69,12 @@ GDAHUB_DOSSIER_CLES = Path(os.environ.get("GDAHUB_DOSSIER_CLES", "/cles"))
 GDAHUB_JETON_EMETTEUR = os.environ.get("GDAHUB_JETON_EMETTEUR", "gdahub-identity")
 GDAHUB_JETON_AUDIENCE = os.environ.get("GDAHUB_JETON_AUDIENCE", "gdahub")
 GDAHUB_DUREE_ACCES = int(os.environ.get("GDAHUB_DUREE_ACCES", "900"))  # 15 min
+
+# Notifications push (Web Push) : contact annonce aux services push.
+GDAHUB_VAPID_CONTACT = os.environ.get("GDAHUB_VAPID_CONTACT", "mailto:support@gdamali.net")
+# Cle partagee par les services du hub pour demander une notification
+# (route interne). Vide : la route est fermee.
+GDAHUB_CLE_INTERNE = os.environ.get("GDAHUB_CLE_INTERNE", "")
 GDAHUB_DUREE_RAFRAICHISSEMENT = int(
     os.environ.get("GDAHUB_DUREE_RAFRAICHISSEMENT", "604800")
 )  # 7 jours

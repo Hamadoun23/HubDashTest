@@ -412,13 +412,10 @@ def users_create(request):
 
 def _corps(request):
     """
-    Corps de la requête, que la méthode soit POST ou PUT/PATCH.
-
-    Le frontend Inertia envoie les mises à jour en PUT. `request.POST` suffit
-    dans tous les cas : `core.middleware.CorpsJsonMiddleware` le remplit déjà
-    à partir du corps JSON ou form-urlencoded, quelle que soit la méthode —
-    reconstruire le corps ici à la main (`QueryDict(request.body)`) traiterait
-    un corps JSON comme une chaîne de requête et ne lirait plus aucun champ.
+    `CorpsJsonMiddleware` remplit déjà `request.POST` pour tout corps JSON,
+    quelle que soit la méthode (POST/PUT/PATCH/DELETE) — un second passage ici
+    via `QueryDict(request.body)` reparserait à tort le JSON brut comme une
+    chaîne de requête et viderait tous les champs sur les mises à jour PUT.
     """
     return request.POST
 

@@ -349,6 +349,7 @@ def _leader_et_ma_ligne(classement, user, mes_ventes_reelles):
         int(c["user_id"]): {
             "user_id": int(c["user_id"]),
             "user_name": c["user_name"],
+            "agence_nom": c.get("agence_nom"),
             "total_ventes": int(c["total_ventes"]),
         }
         for c in classement
@@ -356,6 +357,7 @@ def _leader_et_ma_ligne(classement, user, mes_ventes_reelles):
     par_user[int(user.id)] = {
         "user_id": int(user.id),
         "user_name": _nom(user),
+        "agence_nom": user.agence.nom if user.agence_id else None,
         "total_ventes": mes_ventes_reelles,
     }
 

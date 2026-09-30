@@ -33,7 +33,7 @@ def _ranger(lignes):
     """
     resultat = []
     rang = 1
-    for index, (user, total) in enumerate(lignes):
+    for index, (user, total, agence_nom) in enumerate(lignes):
         if index > 0 and total < lignes[index - 1][1]:
             rang = index + 1
         resultat.append(
@@ -41,6 +41,7 @@ def _ranger(lignes):
                 "rang": rang,
                 "user_id": int(user.id),
                 "user_name": user.nom_complet,
+                "agence_nom": agence_nom,
                 "total_ventes": int(total),
             }
         )
@@ -55,12 +56,13 @@ def _classement(queryset, relation, filtre):
     lignes = (
         queryset.annotate(total=Count(relation, filter=filtre))
         .order_by("-total", "id")
-        .values_list("id", "name", "prenom", "total")
+        .values_list("id", "name", "prenom", "agence__nom", "total")
     )
     # `values_list` évite de matérialiser des instances complètes ; on
     # reconstitue le minimum nécessaire au rendu.
     utilisateurs = [
-        (User(id=i, name=n, prenom=p), total) for i, n, p, total in lignes
+        (User(id=i, name=n, prenom=p), total, agence_nom)
+        for i, n, p, agence_nom, total in lignes
     ]
     return _ranger(utilisateurs)
 

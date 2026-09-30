@@ -442,7 +442,18 @@ class HabilitationViewSet(viewsets.ModelViewSet):
     filterset_fields = ["utilisateur", "application", "active"]
 
     def perform_create(self, serializer):
-        serializer.save(accordee_par_id=self.request.user.id)
+        habilitation = serializer.save(accordee_par_id=self.request.user.id)
+        # La personne apprend qu'une application lui est ouverte.
+        from comptes.notifications import notifier
+
+        app = habilitation.application
+        notifier(
+            [habilitation.utilisateur],
+            titre=f"Nouvel acces : {app.nom}",
+            message=f"L'application {app.nom} est maintenant disponible dans votre espace.",
+            lien=app.chemin or "/",
+            application="hub",
+        )
 
 
 class JournalConnexionViewSet(viewsets.ReadOnlyModelViewSet):

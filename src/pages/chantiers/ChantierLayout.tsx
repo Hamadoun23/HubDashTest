@@ -1,135 +1,190 @@
-import {
-  ArrowLeft,
-  Camera,
-  Cloud,
-  FileText,
-  HardHat,
-  History,
-  LayoutDashboard,
-  ListTree,
-  PencilLine,
-} from 'lucide-react';
-import { Link, NavLink, Outlet, useParams } from 'react-router-dom';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import '../../styles/gda-daily.css';
+import '../../styles/gda-daily-theme.css';
+import { useAuth } from '../../lib/auth/AuthContext';
+import { EtatChargement, EtatErreur } from './EtatsGda';
 import { useApi } from '../../lib/hooks/useApi';
-import { obtenirProjet, type Projet } from '../../lib/api/chantiers';
+import { listerProjets, obtenirProjet, obtenirTableauDeBord, type Dashboard, type Projet } from '../../lib/api/chantiers';
+import { CLE_DERNIER_CHANTIER } from './Accueil';
+import EnteteGda, { STYLE_COQUILLE, langueInitiale } from './EnteteGda';
 
-const ONGLETS = [
-  { label: 'Tableau de bord', suffixe: '', icon: LayoutDashboard, bout: true },
-  { label: 'Saisie du jour', suffixe: 'saisie', icon: PencilLine },
-  { label: 'Toutes les tâches', suffixe: 'taches', icon: ListTree },
-  { label: 'Galerie photos', suffixe: 'photos', icon: Camera },
-  { label: 'Structure', suffixe: 'structure', icon: HardHat },
-  { label: "Journal d'activité", suffixe: 'journal', icon: History },
-  { label: 'Prévisions météo', suffixe: 'meteo', icon: Cloud },
-  { label: 'Rapport', suffixe: 'rapport', icon: FileText },
-];
+const ROLES_INTERNES = ['admin', 'chef_chantier', 'ingenieur', 'controle_qualite'];
 
-const STATUTS_TERMINES = new Set(['termine']);
-
-export type ContexteChantier = { projet: Projet; recharger: () => void };
-
-/**
- * Pastille de statut aux couleurs propres à Chantiers (vert/bleu/rouge, pas
- * les tons génériques emerald/amber/rose du Badge partagé) — voir
- * retrogradeAppmetier.md.
- */
-const COULEURS_STATUT: Record<'vert' | 'bleu' | 'rouge' | 'neutre', string> = {
-  vert: '#1a7a42',
-  bleu: '#1a5c8a',
-  rouge: '#c01a1a',
-  neutre: '#381419',
+export type ContexteChantier = {
+  projet: Projet;
+  recharger: () => void;
+  tableau: Dashboard | null;
+  rechargerTableau: () => void;
+  estPartenaire: boolean;
+  langue: 'fr' | 'en';
 };
 
-export function StatutBadge({
-  ton,
-  children,
-}: {
-  ton: 'vert' | 'bleu' | 'rouge' | 'neutre';
-  children: React.ReactNode;
-}) {
-  const couleur = COULEURS_STATUT[ton];
-  return (
-    <span
-      className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-      style={{ background: `${couleur}1f`, color: couleur }}
-    >
-      {children}
-    </span>
-  );
+/** Partenaire externe (lecture seule), jamais un membre de l'équipe interne — même règle que `hub.UtilisateurHub`. */
+export function useEstPartenaire() {
+  const { identite, habilitations } = useAuth();
+  const roles = habilitations.daily ?? [];
+  return !identite?.est_superadmin && roles.includes('partenaire') && !roles.some((r) => ROLES_INTERNES.includes(r));
 }
 
+/**
+ * Coquille du chantier — reprise à l'identique de daily.gdamali.net :
+ * `partials/gda-header.blade.php`, `chantier/partials/sidebar.blade.php` et
+ * `public/css/gda.css` (copié, limité à `.gda-daily`, cf. styles/gda-daily.css).
+ */
 export default function ChantierLayout() {
   const { id } = useParams();
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
   const chantierId = Number(id);
   const idValide = id !== undefined && Number.isFinite(chantierId);
 
-  const { donnees: projet, chargement, erreur, recharger } = useApi(
-    () => obtenirProjet(chantierId),
-    [chantierId],
-  );
+  const [sidebarOuverte, setSidebarOuverte] = useState(false);
+  const [langue, setLangue] = useState(langueInitiale);
+  const estPartenaire = useEstPartenaire();
+
+  const { donnees: projet, chargement, erreur, recharger } = useApi(() => obtenirProjet(chantierId), [chantierId]);
+  // Rechargé à chaque changement de page : la progression de la sidebar suit
+  // les saisies faites ailleurs, comme `refreshSidebar()` côté Laravel.
+  const tableau = useApi(() => obtenirTableauDeBord(chantierId), [chantierId, pathname]);
+  const projets = useApi(listerProjets, []);
+
+  useEffect(() => {
+    if (projet) localStorage.setItem(CLE_DERNIER_CHANTIER, String(projet.id));
+  }, [projet]);
+
+  useEffect(() => {
+    setSidebarOuverte(false);
+  }, [pathname]);
+
+  const progression = tableau.donnees?.overall_progress ?? projet?.overall_progress ?? 0;
+  const derniereMaj = tableau.donnees?.recent_activity[0]?.time ?? '—';
+  const base = `/chantiers/${chantierId}`;
+  const classeNav = ({ isActive }: { isActive: boolean }) => `nav-item${isActive ? ' active' : ''}`;
 
   if (!idValide) {
     return (
-      <div>
-        <Link to="/chantiers" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-chantiers-terracotta">
-          <ArrowLeft size={14} />
-          Retour aux chantiers
-        </Link>
-        <p className="text-sm text-slate-500">Chantier introuvable.</p>
+      <div className="gda-daily" style={STYLE_COQUILLE}>
+        <main className="main main--solo gda-legacy">
+          <p>Chantier introuvable.</p>
+          <Link to="/chantiers/projets">Voir tous les projets →</Link>
+        </main>
       </div>
     );
   }
 
   return (
-    <div>
-      <Link to="/chantiers" className="mb-4 inline-flex items-center gap-1.5 text-xs font-semibold text-chantiers-terracotta">
-        <ArrowLeft size={14} />
-        Retour aux chantiers
-      </Link>
+    <div className={`gda-daily has-sidebar${sidebarOuverte ? ' sidebar-open' : ''}`} style={STYLE_COQUILLE}>
+      <EnteteGda
+        libelle={projet?.name ?? ''}
+        chantier
+        langue={langue}
+        onLangue={setLangue}
+        onMenu={() => setSidebarOuverte((v) => !v)}
+        menuOuvert={sidebarOuverte}
+      />
 
-      {chargement ? (
-        <EtatChargement texte="Chargement du chantier…" />
-      ) : erreur || !projet ? (
-        <EtatErreur message={erreur ?? 'Chantier introuvable'} recharger={recharger} />
-      ) : (
-        <>
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-chantiers-terracotta/20">
-                <HardHat size={18} className="text-chantiers-terracotta" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-chantiers-marron">{projet.name}</h1>
-                <p className="text-xs text-slate-500">{projet.client || `Chantier n°${projet.id}`}</p>
-              </div>
-            </div>
-            <StatutBadge ton={STATUTS_TERMINES.has(projet.status) ? 'vert' : 'bleu'}>{projet.status_display}</StatutBadge>
-          </div>
+      <div className={`sidebar-backdrop${sidebarOuverte ? ' is-visible' : ''}`} aria-hidden="true" onClick={() => setSidebarOuverte(false)} />
 
-          <div className="mb-5 flex flex-wrap gap-2">
-            {ONGLETS.map((onglet) => (
-              <NavLink
-                key={onglet.suffixe}
-                to={onglet.suffixe ? `/chantiers/${projet.id}/${onglet.suffixe}` : `/chantiers/${projet.id}`}
-                end={onglet.bout}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-colors ${
-                    isActive
-                      ? 'bg-chantiers-terracotta text-white shadow-sm'
-                      : 'border border-slate-200 bg-white text-slate-600 hover:border-chantiers-terracotta/40 hover:text-chantiers-terracotta'
-                  }`
-                }
-              >
-                <onglet.icon size={13} />
-                {onglet.label}
-              </NavLink>
+      {/* ===== SIDEBAR ===== */}
+      <nav className={`sidebar gda-legacy${sidebarOuverte ? ' is-open' : ''}`}>
+        <div className="sidebar-section">Navigation</div>
+        <NavLink to={base} end className={classeNav}>
+          <span className="nav-icon">◈</span> <span>Tableau de bord</span>
+        </NavLink>
+        <div className="sidebar-project-switch">
+          <label className="sidebar-project-caption" htmlFor="sidebar-project-select">
+            Projet actif
+          </label>
+          <select
+            className="sidebar-project-select"
+            id="sidebar-project-select"
+            aria-label="Changer de projet"
+            value={projet ? String(projet.id) : ''}
+            onChange={(e) => navigate(`/chantiers/${e.target.value}`)}
+          >
+            {!projets.donnees && <option value="">Chargement…</option>}
+            {(projets.donnees ?? []).map((p) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.name}
+              </option>
             ))}
-          </div>
+          </select>
+        </div>
+        {!estPartenaire && (
+          <NavLink to={`${base}/saisie`} className={classeNav}>
+            <span className="nav-icon">✎</span> <span>Saisie du jour</span>
+          </NavLink>
+        )}
+        <NavLink to={`${base}/taches`} className={classeNav}>
+          <span className="nav-icon">≡</span> <span>Toutes les tâches</span>
+        </NavLink>
+        {!estPartenaire && (
+          <NavLink to={`${base}/photos`} className={classeNav}>
+            <span className="nav-icon">◉</span> <span>Galerie photos</span>
+          </NavLink>
+        )}
+        <NavLink to={`${base}/rapport`} className={classeNav}>
+          <span className="nav-icon">◻</span> <span>Rapport PDF</span>
+        </NavLink>
 
-          <Outlet context={{ projet, recharger } satisfies ContexteChantier} />
-        </>
-      )}
+        <div className="sidebar-section sidebar-section--forecast">Prévisions</div>
+        <NavLink to={`${base}/meteo`} className={classeNav}>
+          <span className="nav-icon">⛅</span> <span>Prévisions météo</span>
+        </NavLink>
+
+        <Link to={base} className="nav-item nav-item--link">
+          <span className="nav-icon">⌂</span>
+          <span>Chantier</span>
+        </Link>
+        {!estPartenaire && (
+          <Link to="/chantiers/projets" className="nav-item nav-item--link">
+            <span className="nav-icon">▣</span>
+            <span>Projets</span>
+          </Link>
+        )}
+
+        <div style={{ padding: '16px 16px 0' }}>
+          <div className="sidebar-progress">
+            <div className="sp-label">Progression globale</div>
+            <div className="sp-num">{Math.round(progression)}%</div>
+            <div className="sp-bar">
+              <div className="sp-fill" style={{ width: `${progression}%` }} />
+            </div>
+          </div>
+        </div>
+
+        <div className="sidebar-footer">
+          <div style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+            {projet?.name ?? 'Chargement…'}
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+            <span>Mise à jour:</span> <span>{derniereMaj}</span>
+          </div>
+        </div>
+      </nav>
+
+      {/* ===== MAIN ===== */}
+      <main className="main">
+        {chargement ? (
+          <EtatChargement texte="Chargement du chantier…" />
+        ) : erreur || !projet ? (
+          <EtatErreur message={erreur ?? 'Chantier introuvable'} recharger={recharger} />
+        ) : (
+          <Outlet
+            context={
+              {
+                projet,
+                recharger,
+                tableau: tableau.donnees,
+                rechargerTableau: tableau.recharger,
+                estPartenaire,
+                langue,
+              } satisfies ContexteChantier
+            }
+          />
+        )}
+      </main>
     </div>
   );
 }

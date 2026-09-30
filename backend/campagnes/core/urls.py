@@ -20,6 +20,7 @@ urlpatterns = [
     # worker ne pilote que ce qui vit sous son propre dossier.
     path("sw.js", views.service_worker, name="pwa.sw"),
     path("sante", views.sante, name="sante"),
+    path("ziggy.json", views.table_routes, name="ziggy"),
     path("login", views.login, name="login"),
     path("logout", views.logout_store, name="logout"),
     path("password", adm.mot_de_passe_update, name="password.update"),
