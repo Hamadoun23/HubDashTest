@@ -140,6 +140,13 @@ globale, rapports) ; recette sécurité **82/82** ; tests unitaires identity 12,
 FinanceRH 82, Jus d'orange 75 : OK ; compte `recette.mobile@test.local` et ses
 comptes locaux **supprimés** ; README mis à jour (sections 3, 5 à 9).
 
+Enregistré dans git : branche **`hub-securite-pwa-campagnes`**, commit `e106ec5`,
+poussée sur GitHub (origin). **`main` n'est pas modifiée, rien n'est déployé.**
+Exclus du dépôt par `.gitignore` : `*.sql`, `BDM/`, `Bdm-main/`, `DailyGda-main/`,
+`Planning-main/`, `.claude/`. `testhub/` laissé non suivi (antérieur, statut à décider).
+Pour la mise en prod (sur demande seulement) : fusionner la branche dans `main`,
+puis sur le VPS `sh infra/securiser-production.sh` avant `up -d --build`.
+
 Reste :
 1. Tester en vrai les notifications push sur un téléphone (HTTPS de la prod).
 2. Capture mobile de Chantiers une fois la machine moins chargée (son en-tête
