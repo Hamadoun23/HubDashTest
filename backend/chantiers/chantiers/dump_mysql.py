@@ -8,7 +8,9 @@ le même, la correspondance se fait dans la commande d'import.
 """
 import re
 
-_ENTETE = re.compile(r"INSERT INTO `(\w+)` \(([^)]*)\) VALUES\s*", re.S)
+# La liste des colonnes est facultative : mysqldump l'omet, phpMyAdmin l'écrit.
+_ENTETE = re.compile(r"INSERT INTO `(\w+)`\s*(?:\(([^)]*)\))?\s*VALUES\s*", re.S)
+_CREATE = re.compile(r"CREATE TABLE `(\w+)` \((.*?)\n\)", re.S)
 _ECHAPPEMENTS = {"0": "\0", "b": "\b", "n": "\n", "r": "\r", "t": "\t", "Z": "\x1a", "\\": "\\", "'": "'", '"': '"'}
 
 
@@ -73,12 +75,19 @@ def _valeurs(texte, i):
 def lire_tables(chemin):
     """{table: [ {colonne: valeur}, … ]} pour toutes les tables de l'export."""
     texte = open(chemin, encoding="utf-8").read()
+    # Ordre des colonnes de chaque table, pour les INSERT qui ne le répètent pas.
+    declarees = {
+        m.group(1): [l.strip().split()[0].strip("`") for l in m.group(2).split("\n") if l.strip().startswith("`")]
+        for m in _CREATE.finditer(texte)
+    }
     tables = {}
     position = 0
     while True:
         m = _ENTETE.search(texte, position)
         if not m:
             return tables
-        colonnes = [c.strip().strip("`") for c in m.group(2).split(",")]
+        colonnes = (
+            [c.strip().strip("`") for c in m.group(2).split(",")] if m.group(2) else declarees.get(m.group(1), [])
+        )
         lignes, position = _valeurs(texte, m.end())
         tables.setdefault(m.group(1), []).extend(dict(zip(colonnes, l)) for l in lignes)

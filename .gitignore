@@ -59,3 +59,5 @@ infra/reprise/*.sql.gz
 /Planning-main/
 # Réglages locaux de l'outil d'assistance.
 /.claude/
+# Données de production (dumps, comptes réels) : jamais dans le dépôt.
+/DonneeEnProd/

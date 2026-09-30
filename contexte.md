@@ -147,6 +147,16 @@ Exclus du dépôt par `.gitignore` : `*.sql`, `BDM/`, `Bdm-main/`, `DailyGda-mai
 Pour la mise en prod (sur demande seulement) : fusionner la branche dans `main`,
 puis sur le VPS `sh infra/securiser-production.sh` avant `up -d --build`.
 
+**Données réelles chargées en local (30/09)** : Chantiers (export prod du 30/09),
+Campagnes/BDM (dump du 24/09 : 81 utilisateurs, 2 444 ventes, 2 185 enrôlements),
+Planning (déjà présent), RH et Jus d'orange (sauvegardes prod d'août, déjà présentes).
+Comptes du hub synchronisés : **tous les mots de passe locaux = `1234`**. Liste
+complète, classée par application et type d'utilisateur :
+`DonneeEnProd/Comptes_GDA_Hub.xlsx` (données personnelles, jamais versionné).
+Procédure réutilisable : `scripts/reprise/LISEZMOI.md` (en prod, NE PAS mettre
+MOT_DE_PASSE_UNIQUE). Les photos Chantiers et rapports Planning ne sont que des
+chemins : copier les fichiers depuis l'ancien hébergement.
+
 Reste :
 1. Tester en vrai les notifications push sur un téléphone (HTTPS de la prod).
 2. Capture mobile de Chantiers une fois la machine moins chargée (son en-tête
