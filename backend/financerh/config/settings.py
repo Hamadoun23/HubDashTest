@@ -22,6 +22,13 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-a-remplacer-en-productio
 DEBUG = env_bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
 
+# Garde-fou : en production (DEBUG faux), refuser de démarrer avec une clé
+# secrète connue de tous (valeur par défaut écrite dans le dépôt).
+if not DEBUG and (not SECRET_KEY or "insecure" in SECRET_KEY or "dev-" in SECRET_KEY or "developpement" in SECRET_KEY):
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY doit etre definie en production.")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

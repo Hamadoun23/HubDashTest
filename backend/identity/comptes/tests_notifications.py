@@ -68,11 +68,13 @@ class NotificationsTest(_Base):
 
     def test_abonnement_push(self, _pousser):
         entete = {"HTTP_AUTHORIZATION": f"Bearer {self.jeton(self.agent)}"}
-        corps = {"endpoint": "https://push.exemple/abc", "keys": {"p256dh": "cle", "auth": "secret"}}
+        corps = {"endpoint": "https://fcm.googleapis.com/fcm/send/abc", "keys": {"p256dh": "cle", "auth": "secret"}}
         self.assertEqual(self.client.post("/api/identity/notifications/push/abonnement", corps, format="json", **entete).status_code, 204)
         self.assertEqual(AbonnementPush.objects.get().utilisateur, self.agent)
-        mauvais = {"endpoint": "http://pas-https/abc", "keys": {"p256dh": "c", "auth": "s"}}
-        self.assertEqual(self.client.post("/api/identity/notifications/push/abonnement", mauvais, format="json", **entete).status_code, 400)
+        for adresse in ["http://fcm.googleapis.com/x", "https://identity:8000/api/x", "https://169.254.169.254/latest", "https://fcm.googleapis.com.evil.com/x", "https://fcm.googleapis.com:8443/x"]:
+            mauvais = {"endpoint": adresse, "keys": {"p256dh": "c", "auth": "s"}}
+            r = self.client.post("/api/identity/notifications/push/abonnement", mauvais, format="json", **entete)
+            self.assertEqual(r.status_code, 400, adresse)
 
     @override_settings(GDAHUB_CLE_INTERNE="cle-de-test")
     def test_route_interne(self, _pousser):

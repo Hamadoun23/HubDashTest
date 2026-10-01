@@ -1,6 +1,11 @@
 import { Link } from '@inertiajs/react';
 import { cn } from '@campagnes/lib/cn';
 
+// Libellés du serveur (« &laquo; Précédent ») : entités décodées puis affichées
+// en texte — jamais injectées comme HTML.
+const ENTITES = { '&laquo;': '«', '&raquo;': '»', '&amp;': '&', '&hellip;': '…', '&nbsp;': ' ' };
+const texte = (s) => String(s ?? '').replace(/&[a-z]+;/g, (e) => ENTITES[e] ?? e);
+
 export default function Pagination({ links, from, to, total }) {
     if (!links || links.length <= 3) return null;
 
@@ -20,8 +25,9 @@ export default function Pagination({ links, from, to, total }) {
                             link.active ? 'bg-gda-orange text-white' : 'text-gray-500 hover:bg-gray-100',
                             !link.url && 'pointer-events-none opacity-40',
                         )}
-                        dangerouslySetInnerHTML={{ __html: link.label }}
-                    />
+                    >
+                        {texte(link.label)}
+                    </Link>
                 ))}
             </div>
         </div>

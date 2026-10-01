@@ -259,7 +259,13 @@ def api_vente_store(request):
         donnees["campagne_id"] = ids_ouvertes[0]
     fichier = request.FILES.get("carte_identite")
     if fichier:
-        donnees["carte_identite"] = _stocker_piece_identite(fichier)
+        try:
+            donnees["carte_identite"] = _stocker_piece_identite(fichier)
+        except PieceInvalide as erreur:
+            return JsonResponse(
+                {"success": False, "message": str(erreur), "errors": {"carte_identite": [str(erreur)]}},
+                status=422,
+            )
 
     partenaire = partenaire_courant(request)
     adhesion = None
@@ -331,6 +337,38 @@ def _valider_adhesion(request, donnees):
     return valides
 
 
+class PieceInvalide(ValueError):
+    """Pièce d'identité refusée : ni image ni PDF, ou trop lourde."""
+
+
+def _format_piece(fichier):
+    """Extension sûre déduite du contenu réel du fichier (image ou PDF), sinon PieceInvalide.
+
+    Vérifier l'extension ne suffit pas : un .html renommé en .jpg serait servi
+    tel quel sur l'origine du hub (XSS stockée).
+    """
+    if fichier.size > 10 * 1024 * 1024:
+        raise PieceInvalide("La pièce d'identité dépasse 10 Mo.")
+    debut = fichier.read(5)
+    fichier.seek(0)
+    if debut.startswith(b"%PDF-"):
+        return ".pdf"
+    from PIL import Image, UnidentifiedImageError
+
+    try:
+        image = Image.open(fichier)
+        image.verify()
+        format_reel = image.format
+    except (UnidentifiedImageError, OSError, SyntaxError):
+        format_reel = None
+    finally:
+        fichier.seek(0)
+    formats = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "GIF": ".gif"}
+    if format_reel not in formats:
+        raise PieceInvalide("La pièce d'identité doit être une image (JPG, PNG, GIF, WebP) ou un PDF.")
+    return formats[format_reel]
+
+
 def _stocker_piece_identite(fichier):
     """Enregistre le justificatif et renvoie son chemin relatif au disque public."""
     from django.core.files.storage import FileSystemStorage
@@ -342,7 +380,7 @@ def _stocker_piece_identite(fichier):
     # Nom aléatoire, jamais celui du fichier envoyé : « carte.jpg » ou
     # « IMG_2026… » se devinent, et ces pièces sont des données personnelles.
     # (La passerelle exige en plus un compte habilité pour les servir.)
-    extension = Path(fichier.name or "").suffix.lower()[:10]
+    extension = _format_piece(fichier)
     stockage = FileSystemStorage(location=settings.MEDIA_ROOT / "cartes-identite")
     nom = stockage.save(f"{uuid.uuid4().hex}{extension}", fichier)
     return f"cartes-identite/{nom}"
@@ -655,8 +693,12 @@ def commercial_client_update(request, client):
 
     fichier = request.FILES.get("carte_identite")
     if fichier:
+        try:
+            nouvelle = _stocker_piece_identite(fichier)
+        except PieceInvalide as erreur:
+            return retour_avec_erreurs(request, {"carte_identite": str(erreur)})
         _supprimer_piece_identite(client)
-        client.carte_identite = _stocker_piece_identite(fichier)
+        client.carte_identite = nouvelle
 
     client.save()
     deposer_flash(request, success="Informations client mises à jour.")

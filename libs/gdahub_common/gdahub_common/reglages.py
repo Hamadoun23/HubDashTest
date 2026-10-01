@@ -32,6 +32,13 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "developpement-local-non-secret
 DEBUG = _booleen("DJANGO_DEBUG", "False")
 ALLOWED_HOSTS = _liste("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0")
 
+# Garde-fou : en production (DEBUG faux), refuser de démarrer avec une clé
+# secrète connue de tous (valeur par défaut écrite dans le dépôt).
+if not DEBUG and (not SECRET_KEY or "insecure" in SECRET_KEY or "dev-" in SECRET_KEY or "developpement" in SECRET_KEY):
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY doit etre definie en production.")
+
 # Code de l'application portee par ce service : « bdm », « orange », « daily »,
 # « planning », « identity ». Il sert a lire les habilitations dans le jeton.
 GDAHUB_APPLICATION = os.environ.get("GDAHUB_APPLICATION", "")

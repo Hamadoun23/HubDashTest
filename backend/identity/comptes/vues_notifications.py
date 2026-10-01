@@ -29,6 +29,27 @@ from comptes.models import AbonnementPush, Notification
 
 LIMITE = 30
 
+#: Services push des navigateurs. Le serveur envoie des requêtes à l'adresse
+#: d'abonnement fournie par le navigateur : sans cette liste, n'importe quel
+#: compte pourrait lui faire appeler une adresse interne (SSRF, OWASP A10).
+HOTES_PUSH = (
+    "fcm.googleapis.com",
+    "updates.push.services.mozilla.com",
+    "push.services.mozilla.com",
+    "web.push.apple.com",
+    ".notify.windows.com",
+)
+
+
+def _endpoint_autorise(endpoint: str) -> bool:
+    from urllib.parse import urlparse
+
+    url = urlparse(endpoint)
+    hote = (url.hostname or "").lower()
+    return url.scheme == "https" and url.port in (None, 443) and any(
+        hote == h or (h.startswith(".") and hote.endswith(h)) for h in HOTES_PUSH
+    )
+
 
 def _en_json(n: Notification) -> dict:
     return {
@@ -84,7 +105,7 @@ class AbonnementPushVue(APIView):
     def post(self, requete):
         endpoint = (requete.data.get("endpoint") or "").strip()
         cles = requete.data.get("keys") or {}
-        if not endpoint.startswith("https://") or not cles.get("p256dh") or not cles.get("auth"):
+        if not _endpoint_autorise(endpoint) or not cles.get("p256dh") or not cles.get("auth"):
             return Response({"detail": "Abonnement push incomplet."}, status=status.HTTP_400_BAD_REQUEST)
         AbonnementPush.objects.update_or_create(
             endpoint=endpoint[:1000],

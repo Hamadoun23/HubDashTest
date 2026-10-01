@@ -16,7 +16,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get(
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get(
     "SECRET_KEY",
     "django-insecure-chantiers-developpement-local-uniquement",
 )
@@ -26,6 +26,13 @@ DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in ("true", "1", "yes")
 ALLOWED_HOSTS = [h for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if h]
 if DEBUG and not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["*"]
+
+# Garde-fou : en production (DEBUG faux), refuser de démarrer avec une clé
+# secrète connue de tous (valeur par défaut écrite dans le dépôt).
+if not DEBUG and (not SECRET_KEY or "insecure" in SECRET_KEY or "dev-" in SECRET_KEY or "developpement" in SECRET_KEY):
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY doit etre definie en production.")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
