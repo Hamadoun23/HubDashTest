@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import Lower, Trim
 
+from core.validation import date_requete
 from core.auth_backend import hacher_mot_de_passe
 from core.models import ROLES_COMMERCIAUX, Agence, Role, TypeCarte, User
 from core.php import nombre_format
@@ -198,8 +199,8 @@ def resoudre_periode(request, campagne):
         jusqua = request.GET.get("date_fin")
         return (
             "perso",
-            _debut_jour(date.fromisoformat(depuis)) if depuis else debut_campagne,
-            _fin_jour(date.fromisoformat(jusqua)) if jusqua else fin_campagne,
+            _debut_jour(date_requete(depuis)) if depuis else debut_campagne,
+            _fin_jour(date_requete(jusqua)) if jusqua else fin_campagne,
         )
 
     return "campagne", debut_campagne, fin_campagne

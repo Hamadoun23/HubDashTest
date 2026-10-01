@@ -7,6 +7,7 @@ commercial téléphonique et commercial terrain.
 
 from datetime import datetime
 
+from django.contrib.auth.views import redirect_to_login
 from inertia import render
 
 from campagnes.models import (
@@ -89,7 +90,9 @@ def _campagne_a_venir(user):
 def dashboard(request):
     user = request.user
     if not user.is_authenticated:
-        return render(request, "Dashboard", {"variant": "guest"})
+        # Dans GDA Hub, un compte sans habilitation Campagnes arrive ici
+        # anonyme : même traitement que les autres écrans (role_required).
+        return redirect_to_login(request.get_full_path())
     if user.is_admin:
         return _dashboard_admin(request, user, lecture_seule=False)
     if user.is_direction:

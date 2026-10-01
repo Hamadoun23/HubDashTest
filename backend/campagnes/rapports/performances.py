@@ -79,9 +79,24 @@ def _partenaire_id(request):
     return getattr(request.user, "partenaire_id", None)
 
 
+def _date_ou_none(valeur):
+    """Date ISO de l'URL ; une valeur saisie à la main et invalide est ignorée."""
+    try:
+        return date.fromisoformat(valeur) if valeur else None
+    except ValueError:
+        return None
+
+
+def _entier_ou_none(valeur):
+    try:
+        return int(valeur) if valeur else None
+    except (TypeError, ValueError):
+        return None
+
+
 def _resoudre_campagne_filtre(request, user):
     """Campagne explicitement choisie, si l'utilisateur y a accès."""
-    valeur = request.GET.get("campagne_id")
+    valeur = _entier_ou_none(request.GET.get("campagne_id"))
     if not valeur:
         return None
     campagne = filtrer_campagnes(
@@ -104,14 +119,15 @@ def _contexte_performance(request):
     partenaire_id = _partenaire_id(request)
 
     if user.is_admin or user.is_direction:
-        agence_id = int(request.GET["agence"]) if request.GET.get("agence") else None
+        agence_id = _entier_ou_none(request.GET.get("agence"))
     elif user.is_commercial_ou_telephonique:
         agence_id = int(user.agence_id) if user.agence_id else None
     else:
         agence_id = None
 
-    du, au = request.GET.get("du"), request.GET.get("au")
+    du, au = _date_ou_none(request.GET.get("du")), _date_ou_none(request.GET.get("au"))
     filtre_intervalle = bool(du and au)
+    periode = _date_ou_none((request.GET.get("periode") or "") + "-01") if request.GET.get("periode") else None
 
     campagne_filtre = _resoudre_campagne_filtre(request, user)
 
@@ -149,7 +165,7 @@ def _contexte_performance(request):
         )
 
     if filtre_intervalle:
-        debut, fin = _debut_jour(date.fromisoformat(du)), _fin_jour(date.fromisoformat(au))
+        debut, fin = _debut_jour(du), _fin_jour(au)
         if debut > fin:
             debut, fin = _debut_jour(fin.date()), _fin_jour(debut.date())
         libelle = f"Du {debut.strftime('%d/%m/%Y')} au {fin.strftime('%d/%m/%Y')}"
@@ -157,8 +173,8 @@ def _contexte_performance(request):
             libelle += f" — campagne « {campagne_filtre.nom} »"
         elif campagne_ids:
             libelle += " — " + _libelle_campagnes(campagnes_du_type)
-    elif request.GET.get("periode"):
-        premier = date.fromisoformat(request.GET["periode"] + "-01")
+    elif periode:
+        premier = periode
         suivant = (premier + timedelta(days=32)).replace(day=1)
         debut, fin = _debut_jour(premier), _fin_jour(suivant - timedelta(days=1))
         libelle = f"{MOIS_FR[premier.month - 1]} {premier.year}"

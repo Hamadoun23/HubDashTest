@@ -169,6 +169,17 @@ class LigneRequisitionViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["requisition"]
 
+    def get_queryset(self):
+        """Memes yeux que sur la requisition : son auteur, son manager, la Finance."""
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.role in ROLES_FINANCE:
+            return queryset
+        portee = Q(requisition__demandeur=user)
+        if user.equipe.exists():
+            portee |= Q(requisition__demandeur__manager=user)
+        return queryset.filter(portee)
+
     def _verifier_modifiable(self, requisition):
         """Les lignes suivent le sort de la requisition qui les porte.
 
@@ -432,6 +443,30 @@ class LigneFraisMissionViewSet(viewsets.ModelViewSet):
         if mission.demandeur_id != self.request.user.id:
             raise PermissionDenied("Frais rattaches a la mission d'un autre agent.")
         serializer.save()
+
+    def _verifier_modifiable(self, ligne, mission=None):
+        """Seul l'agent corrige ses frais, et plus apres leur validation.
+
+        Le manager voit les frais de son equipe pour les suivre, pas pour les
+        reecrire ; une ligne validee par la Finance appartient a l'audit.
+        """
+        user = self.request.user
+        if ligne.mission.demandeur_id != user.id or (
+            mission is not None and mission.demandeur_id != user.id
+        ):
+            raise PermissionDenied("Frais rattaches a la mission d'un autre agent.")
+        if ligne.valide:
+            raise ValidationError({"valide": "Ligne deja validee par la Finance."})
+
+    def perform_update(self, serializer):
+        self._verifier_modifiable(
+            serializer.instance, serializer.validated_data.get("mission")
+        )
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._verifier_modifiable(instance)
+        instance.delete()
 
     @action(detail=True, methods=["post"], permission_classes=[EstFinance])
     def valider(self, request, pk=None):

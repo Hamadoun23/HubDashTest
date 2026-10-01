@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404, redirect
 
 from campagnes.models import Campagne, TypeCampagne
 from campagnes.services import agregats_telephonique, rapports_telephoniques_campagne
+from core.validation import date_requete
 from core.decorators import http_methods, role_required
 from core.exports import graphiques as gr
 from core.exports.tableur import (
@@ -86,7 +87,7 @@ def export_ventes_periode(request):
     agence_id = request.GET.get("agence") or None
     reference = request.GET.get("date") or datetime.now().strftime("%Y-%m")
 
-    premier = date.fromisoformat(reference + "-01")
+    premier = date_requete(reference + "-01")
     if type_rapport == "hebdomadaire":
         debut = premier - timedelta(days=premier.weekday())
         fin = debut + timedelta(days=6)

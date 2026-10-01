@@ -18,6 +18,7 @@ from campagnes.services import (
     agregats_telephonique,
     rapports_telephoniques_campagne,
 )
+from core.validation import date_requete
 from core.decorators import http_methods, role_required
 from core.middleware import deposer_flash
 from core.models import Agence, Role, TypeCarte, User
@@ -70,8 +71,8 @@ def _filtres_synthese(request, campagne):
 
     du, au = request.GET.get("du"), request.GET.get("au")
     if du and au:
-        debut = max(_debut_jour(date.fromisoformat(du)), debut_campagne)
-        fin = min(_fin_jour(date.fromisoformat(au)), fin_campagne)
+        debut = max(_debut_jour(date_requete(du)), debut_campagne)
+        fin = min(_fin_jour(date_requete(au)), fin_campagne)
         if debut > fin:
             debut, fin = _debut_jour(fin.date()), _fin_jour(debut.date())
     else:
@@ -637,8 +638,8 @@ def _dates_reporting(request, campagne):
     fin_campagne = _fin_jour(campagne.date_fin)
 
     du, au = request.GET.get("date_debut"), request.GET.get("date_fin")
-    debut = _debut_jour(date.fromisoformat(du)) if du else debut_campagne
-    fin = _fin_jour(date.fromisoformat(au)) if au else fin_campagne
+    debut = _debut_jour(date_requete(du)) if du else debut_campagne
+    fin = _fin_jour(date_requete(au)) if au else fin_campagne
 
     debut, fin = max(debut, debut_campagne), min(fin, fin_campagne)
     if debut > fin:
@@ -858,15 +859,15 @@ def _rapports_telephoniques_filtres(request):
             return TelephoniqueRapport.objects.none()
         du = request.GET.get("date_debut")
         au = request.GET.get("date_fin")
-        debut = _debut_jour(date.fromisoformat(du)) if du else _debut_jour(campagne.date_debut)
-        fin = _fin_jour(date.fromisoformat(au)) if au else _fin_jour(campagne.date_fin)
+        debut = _debut_jour(date_requete(du)) if du else _debut_jour(campagne.date_debut)
+        fin = _fin_jour(date_requete(au)) if au else _fin_jour(campagne.date_fin)
         return rapports_telephoniques_campagne(
             campagne, debut, fin, None, _entier(request.GET.get("user_id"))
         )
 
     qs = filtrer_saisies(TelephoniqueRapport.objects.all(), partenaire)
     if request.GET.get("user_id"):
-        qs = qs.filter(user_id=int(request.GET["user_id"]))
+        qs = qs.filter(user_id=_entier(request.GET.get("user_id")))
     if request.GET.get("date_debut"):
         qs = qs.filter(date_rapport__gte=request.GET["date_debut"])
     if request.GET.get("date_fin"):

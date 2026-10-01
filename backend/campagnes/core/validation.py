@@ -184,3 +184,15 @@ def booleen(source, nom, defaut=False):
     if valeur is None:
         return defaut
     return str(valeur).lower() in ("1", "true", "on", "yes")
+
+
+def date_requete(valeur):
+    """Date ISO lue dans l'URL ; invalide → 400 plutôt qu'une erreur serveur."""
+    from datetime import date
+
+    from django.core.exceptions import BadRequest
+
+    try:
+        return date.fromisoformat(valeur)
+    except (TypeError, ValueError):
+        raise BadRequest(f"Date invalide : {valeur!r}.")
