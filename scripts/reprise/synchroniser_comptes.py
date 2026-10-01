@@ -83,6 +83,9 @@ def compte(identifiant, email="", nom="", prenom="", fonction=""):
 
 
 def habiliter(u, code, roles, local=""):
+    if code not in apps:
+        # Application absente de ce hub (ex. « organisation ») : rien à accorder.
+        return
     h, cree = Habilitation.objects.get_or_create(
         utilisateur=u, application=apps[code], defaults={"roles": roles, "identifiant_local": local, "active": True}
     )
