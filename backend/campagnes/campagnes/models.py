@@ -6,7 +6,7 @@ reprise à l'identique : ces règles pilotent l'accès aux écrans de vente et
 d'enrôlement, toute divergence se verrait immédiatement en production.
 """
 
-from datetime import date, timedelta
+from datetime import date
 
 from django.db import models
 
@@ -29,13 +29,6 @@ class TypeCampagne(models.TextChoices):
 
 #: Statuts posés manuellement : ils ne sont jamais recalculés à partir des dates.
 STATUTS_MANUELS = [StatutCampagne.ARRETEE, StatutCampagne.ANNULEE]
-
-#: Délai laissé à un commercial pour accepter ou refuser son contrat de
-#: prestation, à compter de la publication du contrat (ou de son engagement si
-#: celui-ci est postérieur, cf. `Campagne.contrat_delai_expire`). Porté de 5 à
-#: 10 jours le 21/09/2026 : plusieurs commerciaux avaient rejoint la campagne
-#: en retard et se retrouvaient avec un délai déjà expiré.
-DELAI_REPONSE_CONTRAT_JOURS = 10
 
 
 class Campagne(LaravelModel):
@@ -237,25 +230,18 @@ class Campagne(LaravelModel):
 
     # -- Contrat et remise ---------------------------------------------------
 
-    def contrat_delai_expire(self, depuis=None) -> bool:
+    def contrat_delai_expire(self) -> bool:
         """
-        Le commercial dispose de `DELAI_REPONSE_CONTRAT_JOURS` pour répondre,
-        à partir de la publication du contrat — ou de son engagement si
-        celui-ci est postérieur (`ContratPrestationReponse.created_at`).
+        Un commercial peut accepter ou refuser son contrat à tout moment
+        pendant la campagne ; passé `date_fin`, ce n'est plus possible en ligne.
 
-        Sans ce garde-fou, un commercial ajouté à une campagne dont le contrat
-        est publié depuis plus longtemps que ce délai (renfort en cours de
-        campagne) hériterait d'un délai déjà expiré et ne pourrait jamais
-        répondre.
+        Un délai fixe (5 puis 10 jours après publication) posait problème aux
+        renforts engagés en cours de campagne et aux commerciaux répondant en
+        retard : la campagne elle-même reste la seule échéance qui a du sens.
         """
         if not self.contrat_publie_at:
             return False
-        from datetime import datetime
-
-        depart = self.contrat_publie_at
-        if depuis and depuis > depart:
-            depart = depuis
-        return depart + timedelta(days=DELAI_REPONSE_CONTRAT_JOURS) < datetime.now()
+        return date.today() > self.date_fin
 
     def remise_sapplique_au_type(self, type_carte_id: int) -> bool:
         pourcentage = float(self.remise_pourcentage or 0)

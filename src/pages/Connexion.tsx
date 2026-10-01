@@ -129,7 +129,7 @@ export default function Connexion() {
                   type="text"
                   value={identifiant}
                   onChange={(e) => setIdentifiant(e.target.value)}
-                  placeholder="prenom.nom@gdamali.net"
+                  placeholder="hcisse ou hcisse@gdamali.net"
                   autoComplete="username"
                   required
                   className="w-full rounded-xl border border-border bg-surface2 py-3 pl-10 pr-3.5 text-sm text-white placeholder:text-muted/70 transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"

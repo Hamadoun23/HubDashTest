@@ -9,7 +9,7 @@ const label = { accepte: 'Accepté', rejete: 'Refusé', en_attente: 'En attente'
 
 export default function Contrat({ campagne, isDirectionDetail }) {
     function republier() {
-        if (confirm('Republier le contrat ? Toutes les réponses repasseront en attente avec un nouveau délai de 10 jours.')) {
+        if (confirm("Republier le contrat ? Toutes les réponses repasseront en attente ; les commerciaux pourront répondre jusqu'à la fin de la campagne.")) {
             router.post(route('admin.campagnes.republier-contrat', campagne.id));
         }
     }
@@ -34,7 +34,7 @@ export default function Contrat({ campagne, isDirectionDetail }) {
                         <p><strong>Communication :</strong> {campagne.contrat_forfait_communication} F</p>
                         <p><strong>Lieu :</strong> {campagne.contrat_lieu_signature}</p>
                         <p><strong>Déplacement :</strong> {campagne.contrat_forfait_deplacement} F</p>
-                        {campagne.contrat_publie_at && <p className="text-gray-500">Publié le {campagne.contrat_publie_at} — délai 10 jours</p>}
+                        {campagne.contrat_publie_at && <p className="text-gray-500">Publié le {campagne.contrat_publie_at} — réponses possibles jusqu'à la fin de la campagne</p>}
                     </div>
                     {campagne.contrat_clause_libre && (
                         <p className="mb-4 border-l-2 border-gray-200 pl-3 text-sm text-gray-500">{campagne.contrat_clause_libre}</p>

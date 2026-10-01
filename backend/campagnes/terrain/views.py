@@ -5,7 +5,7 @@ reporting téléphonique.
 Portage de app/Http/Controllers/{Commercial,Clients,Api}/*.php.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -17,7 +17,6 @@ from campagnes.models import (
     Campagne,
     CampagneAideVersement,
     ContratPrestationReponse,
-    DELAI_REPONSE_CONTRAT_JOURS,
     StatutReponseContrat,
     TypeCampagne,
 )
@@ -765,7 +764,7 @@ def contrat_show(request):
         defaults={"statut": StatutReponseContrat.EN_ATTENTE},
     )
 
-    verrou = bool(campagne.contrat_publie_at) and campagne.contrat_delai_expire(reponse.created_at)
+    verrou = bool(campagne.contrat_publie_at) and campagne.contrat_delai_expire()
     peut_repondre = (
         bool(campagne.contrat_publie_at)
         and not verrou
@@ -774,15 +773,9 @@ def contrat_show(request):
 
     contexte = services.donnees_contrat(campagne)
     versements = campagne.aide_versements.filter(user_id=user.id).order_by("-semaine_debut")
-    # Le commercial dispose de DELAI_REPONSE_CONTRAT_JOURS après publication
-    # pour répondre — ou après son engagement, si celui-ci est postérieur
-    # (renfort en cours de campagne, cf. Campagne.contrat_delai_expire).
-    echeance = (
-        max(campagne.contrat_publie_at, reponse.created_at)
-        + timedelta(days=DELAI_REPONSE_CONTRAT_JOURS)
-        if campagne.contrat_publie_at
-        else None
-    )
+    # Le commercial peut répondre à tout moment pendant la campagne : la seule
+    # échéance est sa date de fin (cf. Campagne.contrat_delai_expire).
+    echeance = campagne.date_fin if campagne.contrat_publie_at else None
 
     return render(
         request,
@@ -810,7 +803,7 @@ def contrat_show(request):
             },
             "verrou5j": bool(verrou),
             "peutRepondre": bool(peut_repondre),
-            "echeance": echeance.strftime("%d/%m/%Y %H:%M") if echeance else None,
+            "echeance": echeance.strftime("%d/%m/%Y") if echeance else None,
             "document": {
                 # Le contrat UBA énonce la rémunération dans son article 4 ;
                 # celui de la BDM la laisse au bloc calculé plus bas. Afficher
@@ -878,13 +871,13 @@ def _repondre_contrat(request, statut):
         raise Http404
 
     if (
-        campagne.contrat_delai_expire(reponse.created_at)
+        campagne.contrat_delai_expire()
         or reponse.statut != StatutReponseContrat.EN_ATTENTE
     ):
         deposer_flash(
             request,
             error="Vous ne pouvez plus modifier votre réponse "
-            f"(délai de {DELAI_REPONSE_CONTRAT_JOURS} jours dépassé ou décision déjà enregistrée).",
+            "(la campagne est terminée ou votre décision est déjà enregistrée).",
         )
         return redirect("/mon-contrat")
 

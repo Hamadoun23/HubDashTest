@@ -55,7 +55,7 @@ export default function ContratShow({ campagne, user, reponse, verrou5j, peutRep
 
             {campagne.contrat_publie_at && echeance && (
                 <p className="mb-4 text-sm text-gray-500">
-                    Date limite pour accepter ou refuser : <strong>{echeance}</strong> (10 jours après publication).
+                    Vous pouvez accepter ou refuser à tout moment jusqu'à la fin de la campagne, le <strong>{echeance}</strong>.
                 </p>
             )}
 
@@ -87,7 +87,7 @@ export default function ContratShow({ campagne, user, reponse, verrou5j, peutRep
                     </p>
                 )}
                 {verrou5j && reponse.statut === 'en_attente' && (
-                    <p className="mb-3 font-semibold text-gray-500">Délai de 10 jours dépassé — vous ne pouvez plus accepter ou refuser en ligne.</p>
+                    <p className="mb-3 font-semibold text-gray-500">La campagne est terminée — vous ne pouvez plus accepter ou refuser en ligne.</p>
                 )}
 
                 {peutRepondre && (

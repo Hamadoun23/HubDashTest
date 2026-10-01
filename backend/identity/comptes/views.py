@@ -88,6 +88,27 @@ def _profil(utilisateur: Utilisateur) -> dict:
     }
 
 
+def trouver_utilisateur(identifiant: str):
+    """
+    Compte correspondant a l'identifiant saisi (deja en minuscules).
+
+    L'identifiant exact l'emporte toujours. A defaut, un nom sans « @ » est
+    complete par le domaine GDA : « hcisse » ouvre le compte
+    « hcisse@gdamali.net », qu'il porte cette adresse comme identifiant ou
+    comme e-mail. Une adresse partagee par plusieurs comptes ne donne rien :
+    on ne choisit jamais un compte au hasard.
+    """
+    utilisateur = Utilisateur.objects.filter(identifiant=identifiant).first()
+    if utilisateur is not None or "@" in identifiant or not identifiant:
+        return utilisateur
+    adresse = f"{identifiant}@{settings.GDAHUB_DOMAINE_MAIL}"
+    utilisateur = Utilisateur.objects.filter(identifiant=adresse).first()
+    if utilisateur is not None:
+        return utilisateur
+    candidats = list(Utilisateur.objects.filter(email__iexact=adresse)[:2])
+    return candidats[0] if len(candidats) == 1 else None
+
+
 class Connexion(APIView):
     """Echange un identifiant et un mot de passe contre un couple de jetons."""
 
@@ -102,7 +123,7 @@ class Connexion(APIView):
         identifiant = formulaire.validated_data["identifiant"]
         mot_de_passe = formulaire.validated_data["mot_de_passe"]
 
-        utilisateur = Utilisateur.objects.filter(identifiant=identifiant).first()
+        utilisateur = trouver_utilisateur(identifiant)
 
         # Le hachage est calcule meme quand le compte n'existe pas : sans cela,
         # le temps de reponse revele quels identifiants sont valides.

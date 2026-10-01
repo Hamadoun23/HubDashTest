@@ -75,6 +75,10 @@ GDAHUB_VAPID_CONTACT = os.environ.get("GDAHUB_VAPID_CONTACT", "mailto:support@gd
 # Cle partagee par les services du hub pour demander une notification
 # (route interne). Vide : la route est fermee.
 GDAHUB_CLE_INTERNE = os.environ.get("GDAHUB_CLE_INTERNE", "")
+
+# Domaine des adresses GDA : « hcisse » suffit pour se connecter avec
+# « hcisse@gdamali.net » (cf. comptes.views.trouver_utilisateur).
+GDAHUB_DOMAINE_MAIL = os.environ.get("GDAHUB_DOMAINE_MAIL", "gdamali.net").lower().lstrip("@")
 GDAHUB_DUREE_RAFRAICHISSEMENT = int(
     os.environ.get("GDAHUB_DUREE_RAFRAICHISSEMENT", "604800")
 )  # 7 jours

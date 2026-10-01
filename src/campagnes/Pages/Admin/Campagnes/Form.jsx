@@ -228,7 +228,7 @@ export default function CampagneForm({ campagne, agences, commerciaux, aDesAgenc
                         <>
                             <Checkbox
                                 id="contrat_republier"
-                                label="Republier le contrat — nouvelle date limite de 10 jours et réinitialisation des réponses en attente"
+                                label="Republier le contrat — réponses jusqu'à la fin de la campagne, réinitialisation des réponses en attente"
                                 checked={data.contrat_republier}
                                 onChange={(e) => setData('contrat_republier', e.target.checked)}
                             />
