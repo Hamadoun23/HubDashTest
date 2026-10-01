@@ -9,7 +9,13 @@ from datetime import datetime
 
 from inertia import render
 
-from campagnes.models import Campagne, StatutCampagne, TypeCampagne
+from campagnes.models import (
+    Campagne,
+    ContratPrestationReponse,
+    StatutCampagne,
+    StatutReponseContrat,
+    TypeCampagne,
+)
 from rapports.services import (
     agreger_par_periode,
     classement_enrolements_pour_campagnes,
@@ -58,6 +64,25 @@ def _libelle(campagnes):
         return "Aucune campagne"
     noms = [f"« {c.nom} »" for c in campagnes]
     return noms[0] if len(noms) == 1 else ", ".join(noms[:-1]) + " et " + noms[-1]
+
+
+def _campagne_a_venir(user):
+    """
+    Prochaine campagne programmée où ce commercial est engagé, à signaler sur
+    le tableau de bord pour qu'il aille signer son contrat avant le démarrage.
+    """
+    a_venir = Campagne.programmees_pour_commercial(user)
+    if not a_venir:
+        return None
+    campagne = a_venir[0]
+    reponse = ContratPrestationReponse.objects.filter(
+        campagne_id=campagne.id, user_id=user.id
+    ).first()
+    return {
+        "nom": campagne.nom,
+        "date_debut": _jj_mm_aaaa(campagne.date_debut),
+        "contrat_statut": reponse.statut if reponse else StatutReponseContrat.EN_ATTENTE,
+    }
 
 
 @http_methods("GET", "HEAD")
@@ -200,6 +225,7 @@ def _dashboard_telephonique(request, user):
             if campagne
             else None,
             "signataire": bool(campagne and campagne.user_est_signataire_contrat(user)),
+            "campagneAVenir": _campagne_a_venir(user),
         },
     )
 
@@ -277,5 +303,6 @@ def _dashboard_commercial(request, user):
                 else None,
                 "campagnesOuvertes": _resume(enrolement_ouvertes),
             },
+            "campagneAVenir": _campagne_a_venir(user),
         },
     )

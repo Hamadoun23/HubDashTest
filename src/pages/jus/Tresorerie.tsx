@@ -61,7 +61,7 @@ export default function Tresorerie() {
     <div>
       <PageHeader icon={Landmark} titre="Trésorerie" sousTitre="Rapprochement des encaissements" />
 
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><p className="text-xs text-muted">Total commercial</p><p className="mt-1 text-lg font-bold text-white">{totaux.total_commercial} F</p></Card>
         <Card><p className="text-xs text-muted">Total reçu</p><p className="mt-1 text-lg font-bold text-white">{totaux.total_recu} F</p></Card>
         <Card><p className="text-xs text-muted">Écart global</p><p className="mt-1 text-lg font-bold text-white">{totaux.ecart_global} F</p></Card>

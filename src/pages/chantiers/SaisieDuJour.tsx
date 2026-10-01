@@ -1,106 +1,230 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Card } from '../../components/ui-light/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { ProgressBar } from '../../components/ui-light/ProgressBar';
-import { useAction, useApi } from '../../lib/hooks/useApi';
-import { creerMiseAJour, modifierMiseAJour, vueDuJour, type ElementJour } from '../../lib/api/chantiers';
+import { EtatChargement, EtatErreur } from './EtatsGda';
+import { ApiError } from '../../lib/api/client';
+import { useApi } from '../../lib/hooks/useApi';
+import { saisirEnLot, vueDuJour, type ElementJour } from '../../lib/api/chantiers';
 import type { ContexteChantier } from './ChantierLayout';
+import ModaleTache from './ModaleTache';
+import { BADGE_STATUT, LIBELLE_STATUT, classeBarre, statutDepuisProgression, useToast } from './toast';
 
-function LigneTache({ chantierId, item, recharger }: { chantierId: number; item: ElementJour; recharger: () => void }) {
-  const [progress, setProgress] = useState(item.effective_progress);
-  const [commentaire, setCommentaire] = useState(item.daily_update?.comment ?? '');
-  const creation = useAction(creerMiseAJour);
-  const modification = useAction(modifierMiseAJour);
-  const saisie = item.daily_update ? modification : creation;
-
-  const progressionEnHausse = progress > item.effective_progress;
-
-  async function enregistrer() {
-    // Le backend exige une justification (`progress_note`) dès que l'avancement
-    // augmente — le champ « Commentaire » sert cette double fonction ici.
-    const payload = { progress, comment: commentaire || undefined, progress_note: commentaire || undefined };
-    if (item.daily_update) {
-      await modification.executer(chantierId, item.daily_update.id, payload);
-    } else {
-      await creation.executer(chantierId, { task_id: item.task.id, ...payload });
-    }
-    recharger();
-  }
-
-  return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold text-chantiers-marron">{item.task.activity}</p>
-          <p className="text-xs text-slate-500">
-            {item.task.phase} · {item.task.subphase}
-          </p>
-        </div>
-        <span className="text-xs font-semibold text-slate-500">{item.effective_status}</span>
-      </div>
-      <ProgressBar progress={item.effective_progress} height={5} accent="#c8521a" />
-      <div className="mt-1 flex items-end gap-2">
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-semibold text-slate-500">Avancement (%)</label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={progress}
-            onChange={(e) => setProgress(Number(e.target.value))}
-            className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 focus:border-chantiers-terracotta focus:outline-none"
-          />
-        </div>
-        <div className="flex-[2]">
-          <label className="mb-1 block text-xs font-semibold text-slate-500">
-            Commentaire{progressionEnHausse ? ' (obligatoire pour justifier la hausse)' : ''}
-          </label>
-          <input
-            value={commentaire}
-            onChange={(e) => setCommentaire(e.target.value)}
-            placeholder="Travaux réalisés, incidents..."
-            className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-chantiers-terracotta focus:outline-none"
-          />
-        </div>
-        <button
-          onClick={enregistrer}
-          disabled={saisie.enCours || (progressionEnHausse && !commentaire.trim())}
-          className="rounded-lg bg-chantiers-terracotta px-3 py-1.5 text-xs font-bold text-white disabled:opacity-60"
-        >
-          {saisie.enCours ? 'Envoi...' : item.daily_update ? 'Mettre à jour' : 'Enregistrer'}
-        </button>
-      </div>
-      {saisie.erreur ? <p className="text-xs font-semibold text-chantiers-rouge">{saisie.erreur}</p> : null}
-    </div>
-  );
+function aujourdhui() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export default function SaisieDuJour() {
-  const { projet } = useOutletContext<ContexteChantier>();
-  const jour = useApi(() => vueDuJour(projet.id), [projet.id]);
+type Modification = { progress: number; status: string; base: number };
 
-  if (jour.chargement) return <EtatChargement texte="Chargement de la saisie du jour…" />;
-  if (jour.erreur || !jour.donnees) return <EtatErreur message={jour.erreur ?? 'Indisponible'} recharger={jour.recharger} />;
+/** Port de la page `#page-daily` (renderDaily / quickUpdate / saveDailyAll). */
+export default function SaisieDuJour() {
+  const { projet, rechargerTableau, estPartenaire } = useOutletContext<ContexteChantier>();
+  const [date, setDate] = useState(aujourdhui());
+  const jour = useApi(() => vueDuJour(projet.id, date), [projet.id, date]);
+  const [filtre, setFiltre] = useState<'all' | 'ip' | 'nd'>('all');
+  const [phase, setPhase] = useState('');
+  const [modifs, setModifs] = useState<Record<number, Modification>>({});
+  const [ouverte, setOuverte] = useState<number | null>(null);
+  const [envoi, setEnvoi] = useState(false);
+  const { toast, element: toastEl } = useToast();
+
+  const items = jour.donnees?.items ?? [];
+  const phases = useMemo(() => [...new Set(items.map((i) => i.task.phase))], [items]);
+
+  const progressionDe = (i: ElementJour) => modifs[i.task.id]?.progress ?? i.effective_progress;
+  const statutDe = (i: ElementJour) => modifs[i.task.id]?.status ?? i.effective_status;
+
+  let filtres = phase ? items.filter((i) => i.task.phase === phase) : items;
+  if (filtre === 'ip') filtres = filtres.filter((i) => statutDe(i) !== 'annule' && (statutDe(i) === 'en_cours' || progressionDe(i) > 0));
+  if (filtre === 'nd') filtres = filtres.filter((i) => statutDe(i) === 'non_demarre');
+
+  function changerDate(valeur: string) {
+    if (!valeur) return;
+    setDate(valeur);
+    setModifs({});
+  }
+
+  function miseAJourRapide(i: ElementJour, valeur: number) {
+    if (estPartenaire) return;
+    setModifs((m) => ({
+      ...m,
+      [i.task.id]: {
+        progress: valeur,
+        status: statutDepuisProgression(valeur),
+        base: m[i.task.id]?.base ?? (i.daily_update ? i.daily_update.progress : i.task.progress),
+      },
+    }));
+  }
+
+  async function toutEnregistrer() {
+    const cles = Object.keys(modifs);
+    if (!cles.length) {
+      toast('Aucune modification à enregistrer');
+      return;
+    }
+    setEnvoi(true);
+    try {
+      await saisirEnLot(
+        projet.id,
+        date,
+        cles.map((id) => ({ task_id: Number(id), progress: modifs[Number(id)].progress, status: modifs[Number(id)].status })),
+      );
+      setModifs({});
+      jour.recharger();
+      rechargerTableau();
+      toast('Toutes les modifications enregistrées ✓', 'ok');
+    } catch (e) {
+      const erreurs = e instanceof ApiError ? (e.details as { errors?: { detail?: string }[] } | null)?.errors : undefined;
+      toast(erreurs?.[0]?.detail || (e instanceof Error ? e.message : 'Erreur'), 'err');
+    } finally {
+      setEnvoi(false);
+    }
+  }
+
+  const libelleDate = `Date sélectionnée · ${new Date(`${date}T12:00:00`).toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })}`;
+  const itemOuvert = ouverte !== null ? items.find((i) => i.task.id === ouverte) : undefined;
 
   return (
-    <div>
-      <Card className="mb-4">
-        <h2 className="text-sm font-bold text-chantiers-marron">Saisie du jour — {projet.name}</h2>
-        <p className="mt-1 text-xs text-slate-500">{jour.donnees.date}</p>
-      </Card>
+    <div className="page active gda-legacy" id="page-daily">
+      <div className="page-header">
+        <div>
+          <div className="page-title">Saisie du jour</div>
+          <div className="page-sub">{libelleDate}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div className="form-group" style={{ marginBottom: 0, minWidth: 170 }}>
+            <label className="form-label">Date de saisie</label>
+            <input type="date" value={date} onChange={(e) => changerDate(e.target.value)} />
+          </div>
+          <button type="button" className="btn btn-secondary" onClick={() => setFiltre('all')}>
+            Toutes
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => setFiltre('ip')}>
+            En cours
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => setFiltre('nd')}>
+            Non démarrées
+          </button>
+        </div>
+      </div>
 
-      {jour.donnees.items.length === 0 ? (
-        <p className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
-          Aucune tâche à saisir aujourd'hui.
-        </p>
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 13, color: 'var(--muted)' }}>
+            Mettez à jour l'avancement de vos tâches. Cliquez sur une ligne pour voir les détails.
+          </div>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ fontSize: 12, color: 'var(--muted)' }}>Filtre phase :</div>
+            <select value={phase} style={{ padding: '5px 10px', fontSize: 12 }} onChange={(e) => setPhase(e.target.value)}>
+              <option value="">— Toutes les phases —</option>
+              {phases.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {jour.chargement && !jour.donnees ? (
+        <EtatChargement texte="Chargement de la saisie du jour…" />
+      ) : jour.erreur ? (
+        <EtatErreur message={jour.erreur} recharger={jour.recharger} />
+      ) : filtres.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--muted)' }}>Aucune tâche dans ce filtre.</div>
       ) : (
-        <div className="flex flex-col gap-3">
-          {jour.donnees.items.map((item) => (
-            <LigneTache key={item.task.id} chantierId={projet.id} item={item} recharger={jour.recharger} />
-          ))}
+        <div>
+          {filtres.map((i) => {
+            const prog = progressionDe(i);
+            const st = statutDe(i);
+            const commentaire = st === 'annule' ? i.daily_update?.comment || i.task.status_comment : '';
+            return (
+              <div key={i.task.id} className="daily-task-row" onClick={() => setOuverte(i.task.id)}>
+                <div>
+                  <div className="task-name">
+                    {i.task.subphase} — {i.task.activity}
+                  </div>
+                  <div className="task-phase">{i.task.phase}</div>
+                </div>
+                <div>
+                  <span className={`badge ${BADGE_STATUT[st] ?? 'badge-nd'}`}>{LIBELLE_STATUT[st] ?? st}</span>
+                  {commentaire ? (
+                    <div className="status-note" style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4, maxWidth: 220 }}>
+                      {commentaire}
+                    </div>
+                  ) : null}
+                </div>
+                <div className="range-wrap" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={prog}
+                    style={{ width: '100%' }}
+                    disabled={estPartenaire}
+                    onChange={(e) => miseAJourRapide(i, Number(e.target.value))}
+                  />
+                  <div className="range-val">{prog}%</div>
+                </div>
+                <div>
+                  <div className="pbar">
+                    <div className={`pbar-fill ${classeBarre(prog)}`} style={{ width: `${prog}%` }} />
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOuverte(i.task.id);
+                    }}
+                  >
+                    {estPartenaire ? 'Détails' : 'Détail'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
+
+      {!estPartenaire && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
+          <button type="button" className="btn btn-ok btn-sm" disabled={envoi} onClick={toutEnregistrer}>
+            {envoi ? 'Envoi…' : '✓ Enregistrer toutes les modifications'}
+          </button>
+        </div>
+      )}
+
+      {itemOuvert && (
+        <ModaleTache
+          chantierId={projet.id}
+          item={itemOuvert}
+          date={date}
+          progressionAffichee={progressionDe(itemOuvert)}
+          statutAffiche={statutDe(itemOuvert)}
+          lectureSeule={estPartenaire}
+          toast={toast}
+          onFermer={() => setOuverte(null)}
+          onEnregistre={() => {
+            setModifs((m) => {
+              const reste = { ...m };
+              delete reste[itemOuvert.task.id];
+              return reste;
+            });
+            setOuverte(null);
+            jour.recharger();
+            rechargerTableau();
+          }}
+        />
+      )}
+      {toastEl}
     </div>
   );
 }

@@ -29,10 +29,11 @@ sur l'ecran de connexion habituel. Creer le compte a la volee lui donnerait un
 role vide - et dans BDM, le role decide de tout.
 """
 
+import hashlib
 import logging
 
 from django.conf import settings
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 
 #: Le code de cette application dans GDA Hub. C'est la cle sous
 #: laquelle le jeton porte l'identifiant local de la personne.
@@ -100,14 +101,35 @@ def _identifiant_du_jeton(jeton):
     return (identifiant or None), False, charge
 
 
+#: Cle de session : empreinte du dernier jeton du hub verifie pour cette session.
+CLE_EMPREINTE = "hub_jeton_empreinte"
+
+
+def _empreinte(jeton):
+    return hashlib.sha256(jeton.encode("utf-8")).hexdigest()[:32]
+
+
 class AuthentificationHub:
-    """Ouvre la session BDM d'un agent deja connecte a GDA Hub."""
+    """Ouvre la session BDM d'un agent deja connecte a GDA Hub.
+
+    **La session suit le compte du hub.** Quand la requete porte un jeton du
+    hub, c'est lui qui fait foi : une session BDM ouverte pour quelqu'un
+    d'autre (un admin qui s'est deconnecte du hub, puis un commercial qui se
+    connecte sur le meme navigateur) est fermee, et celle du titulaire du
+    jeton est ouverte a la place. Sans cette regle, le commercial heritait de
+    la session de l'admin — ses ecrans, son choix de client, ses droits.
+
+    Pour ne pas reverifier la signature a chaque requete, la session retient
+    l'empreinte du dernier jeton verifie : tant que le meme jeton revient,
+    rien n'est refait. Une requete sans jeton (connexion directe a BDM) garde
+    sa session telle quelle.
+    """
 
     def __init__(self, suivant):
         self.suivant = suivant
 
     def __call__(self, requete):
-        if getattr(settings, "GDAHUB_JWKS_URL", "") and not requete.user.is_authenticated:
+        if getattr(settings, "GDAHUB_JWKS_URL", ""):
             self._rattacher(requete)
         return self.suivant(requete)
 
@@ -115,14 +137,33 @@ class AuthentificationHub:
         entete = requete.META.get("HTTP_AUTHORIZATION", "")
         if not entete.lower().startswith("bearer "):
             return
+        jeton = entete.split(None, 1)[1].strip()
+        empreinte = _empreinte(jeton)
+        if requete.user.is_authenticated and requete.session.get(CLE_EMPREINTE) == empreinte:
+            return
 
-        identifiant, explicite, charge = _identifiant_du_jeton(
-            entete.split(None, 1)[1].strip()
-        )
+        identifiant, explicite, charge = _identifiant_du_jeton(jeton)
         if identifiant is None:
             return
 
+        # Le jeton prouve l'identite ; l'habilitation « campagnes » donne le
+        # droit d'entrer. Sans elle, un compte BDM qui porte la meme adresse
+        # qu'un compte du hub s'ouvrirait meme si le hub ne donne (ou plus)
+        # acces a Campagnes a cette personne.
+        habilitations = (charge or {}).get("habilitations") or {}
+        if not (charge or {}).get("est_superadmin") and habilitations.get(APPLICATION) is None:
+            if requete.user.is_authenticated:
+                logout(requete)
+            return
+
         compte = self._compte(identifiant, explicite)
+        if requete.user.is_authenticated:
+            if compte is not None and requete.user.pk == compte.pk:
+                # Meme personne, jeton renouvele : on retient simplement ce jeton.
+                requete.session[CLE_EMPREINTE] = empreinte
+                return
+            # Session ouverte pour quelqu'un d'autre que le titulaire du jeton.
+            logout(requete)
         if compte is None:
             journal.warning(
                 "Jeton du hub valide pour « %s », mais aucun compte BDM ne "
@@ -144,6 +185,7 @@ class AuthentificationHub:
         # partager sans redecoder le jeton a chaque requete — lui ne
         # s'execute plus une fois `requete.user` authentifie.
         requete.session["hub_photo"] = (charge or {}).get("photo")
+        requete.session[CLE_EMPREINTE] = empreinte
 
     @staticmethod
     def _compte(identifiant, explicite):

@@ -50,3 +50,41 @@ class PrefixeDeService:
 
         reponse.headers["Location"] = f"{prefixe}{lieu}"
         return reponse
+
+
+class NavigationVersLeHub:
+    """Une adresse /campagnes/... ouverte directement dans le navigateur
+    (lien copié, favori) est renvoyée vers l'écran équivalent de GDA Hub.
+
+    Dans le hub, les écrans de Campagnes sont rendus par l'interface du hub
+    (`#/campagnes/...`), qui lit ce service en JSON (en-tête X-Inertia).
+    Une navigation directe, sans cet en-tête, demanderait l'ancienne page
+    BDM, dont les fichiers compilés ne sont plus livrés : erreur serveur.
+
+    Inerte hors du hub (pas de FORCE_SCRIPT_NAME) et pour tout ce qui n'est
+    pas une page : API JSON, fichiers, route du service worker, santé.
+    """
+
+    LIBRES = ("/api/", "/static/", "/storage/", "/logo/", "/ziggy.json", "/sw.js", "/sante", "/site.webmanifest", "/favicon.ico", "/robots.txt")
+
+    def __init__(self, suivant):
+        self.suivant = suivant
+
+    def __call__(self, requete):
+        prefixe = (getattr(settings, "FORCE_SCRIPT_NAME", "") or "").rstrip("/")
+        if (
+            prefixe
+            and requete.method in ("GET", "HEAD")
+            and not requete.headers.get("X-Inertia")
+            and not requete.headers.get("X-Requested-With")
+            and "text/html" in requete.headers.get("Accept", "")
+            and not requete.path_info.startswith(self.LIBRES)
+        ):
+            from django.http import HttpResponseRedirect
+
+            chemin = requete.path_info if requete.path_info != "/" else ""
+            requete_qs = requete.META.get("QUERY_STRING", "")
+            # Adresse absolue : PrefixeDeService ne doit pas y ajouter le préfixe.
+            cible = f"{requete.scheme}://{requete.get_host()}/#{prefixe}{chemin}" + (f"?{requete_qs}" if requete_qs else "")
+            return HttpResponseRedirect(cible)
+        return self.suivant(requete)

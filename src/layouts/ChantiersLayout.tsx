@@ -29,10 +29,22 @@ export default function ChantiersLayout() {
   return (
     <div className="min-h-screen bg-chantiers-creme text-chantiers-marron">
       <header
-        className="sticky top-0 z-40 flex h-20 items-center gap-4 px-4 shadow-[0_2px_16px_rgba(0,0,0,0.2)] md:px-8"
-        style={{ background: 'linear-gradient(90deg, #1a1814 0%, #241f18 60%, #1a1814 100%)' }}
+        className="sticky top-0 z-40 flex h-20 items-center gap-4 overflow-hidden px-4 shadow-[0_2px_16px_rgba(0,0,0,0.2)] md:px-8"
+        style={{ backgroundColor: '#1a1814' }}
       >
-        <Link to="/chantiers" className="flex shrink-0 items-center gap-2.5 text-white">
+        {/* Motif de marque GDA (le même que Planning) — dégradé sombre par-dessus
+            pour garder le texte blanc lisible. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              'linear-gradient(90deg, rgba(22,18,16,0.88) 0%, rgba(22,18,16,0.55) 55%, rgba(22,18,16,0.82) 100%), ' +
+              "url('/motif-orange.jpg')",
+          }}
+        />
+
+        <Link to="/chantiers" className="relative flex shrink-0 items-center gap-2.5 text-white">
           <span className="flex size-9 items-center justify-center rounded-xl bg-chantiers-terracotta text-white">
             <HardHat size={18} />
           </span>
@@ -47,7 +59,7 @@ export default function ChantiersLayout() {
         <Link
           to="/"
           title="Revenir à GDA Hub"
-          className="hidden shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/55 transition hover:bg-white/10 hover:text-white sm:inline-flex"
+          className="relative hidden shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-white/55 transition hover:bg-white/10 hover:text-white sm:inline-flex"
         >
           <span aria-hidden>&larr;</span>
           GDA Hub

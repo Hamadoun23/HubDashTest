@@ -16,5 +16,7 @@ xhtml2pdf==0.2.17
 # Compte unique de GDA Hub : verification du jeton RS256 signe par identity.
 # cryptography est indispensable — sans lui, PyJWT leve « Algorithm not
 # supported » a la premiere requete. Voir core/hub.py.
-PyJWT>=2.8
+PyJWT>=2.15
 cryptography>=42.0
+# Dépendance indirecte (requests, pywebpush…) : versions < 2.8 vulnérables.
+urllib3>=2.8

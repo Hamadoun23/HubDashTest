@@ -19,6 +19,8 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY requirements.txt .
+# pip à jour : les versions anciennes ont des failles connues (pip-audit).
+RUN pip install --no-cache-dir --upgrade "pip>=26.2"
 RUN pip install -r requirements.txt gunicorn==23.0.0
 
 

@@ -48,3 +48,16 @@ infra/effectif/personnel.json
 # mots de passe de tout le personnel : elles n'ont rien a faire dans un depot.
 infra/reprise/*.sql
 infra/reprise/*.sql.gz
+
+# --- Jamais dans le dépôt ---------------------------------------------------
+# Dumps de base : données personnelles réelles (clients, commerciaux, téléphones).
+*.sql
+# Copies des anciennes applications, gardées en local comme référence.
+/BDM/
+/Bdm-main/
+/DailyGda-main/
+/Planning-main/
+# Réglages locaux de l'outil d'assistance.
+/.claude/
+# Données de production (dumps, comptes réels) : jamais dans le dépôt.
+/DonneeEnProd/

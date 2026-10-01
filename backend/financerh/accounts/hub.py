@@ -32,6 +32,9 @@ from rest_framework import authentication, exceptions
 #: laquelle le jeton porte l'identifiant local de la personne.
 APPLICATION = "rh"
 
+#: Habilitations du hub qui ouvrent cette application.
+HABILITATIONS_ADMISES = ("rh", "finance", "direction", "organisation",)
+
 journal = logging.getLogger("financerh.hub")
 
 #: Duree de vie du cache des cles publiques, cote PyJWT.
@@ -94,6 +97,18 @@ class AuthentificationHub(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed(
                 "Le jeton de GDA Hub n'a pas pu etre verifie."
             ) from erreur
+
+        # Le jeton prouve l'identite, l'habilitation donne le droit d'entrer.
+        # Sans elle, un agent qui a un compte ici mais a qui le hub n'ouvre
+        # pas (ou plus) cette application y entrerait quand meme : retirer un
+        # acces depuis l'administration du hub doit suffire a le fermer.
+        habilitations = charge.get("habilitations") or {}
+        if not charge.get("est_superadmin") and not any(
+            habilitations.get(code) is not None for code in HABILITATIONS_ADMISES
+        ):
+            raise exceptions.PermissionDenied(
+                "Votre compte GDA Hub n'a pas acces a cette application."
+            )
 
         # Le hub identifie par l'adresse professionnelle ; cette
         # application peut connaitre la personne sous un autre nom.

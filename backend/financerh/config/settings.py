@@ -22,6 +22,13 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-secret-a-remplacer-en-productio
 DEBUG = env_bool("DJANGO_DEBUG", True)
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]")
 
+# Garde-fou : en production (DEBUG faux), refuser de démarrer avec une clé
+# secrète connue de tous (valeur par défaut écrite dans le dépôt).
+if not DEBUG and (not SECRET_KEY or "insecure" in SECRET_KEY or "dev-" in SECRET_KEY or "developpement" in SECRET_KEY):
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY doit etre definie en production.")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -136,9 +143,16 @@ GDAHUB_JETON_AUDIENCE = os.environ.get("GDAHUB_JETON_AUDIENCE", "gdahub")
 REST_FRAMEWORK = {
     # L'ordre compte : la classe du hub rend la main des qu'elle voit un jeton
     # qui n'est pas le sien, et SimpleJWT reprend la main derriere elle.
+    # Dans GDA Hub (GDAHUB_AUTH_SEULE), seul le jeton du hub est accepte :
+    # les jetons propres a FinanceRH (SimpleJWT) sont une seconde porte
+    # d'entree qui ne passe pas par les habilitations du hub.
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "accounts.hub.AuthentificationHub",
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        ("accounts.hub.AuthentificationHub",)
+        if os.environ.get("GDAHUB_AUTH_SEULE", "False").lower() in ("1", "true", "yes", "oui")
+        else (
+            "accounts.hub.AuthentificationHub",
+            "rest_framework_simplejwt.authentication.JWTAuthentication",
+        )
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),

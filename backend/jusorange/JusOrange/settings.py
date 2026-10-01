@@ -21,20 +21,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
+# DJANGO_SECRET_KEY : le nom commun à tous les services du hub (SECRET_KEY
+# reste accepté pour le déploiement autonome historique).
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or os.environ.get(
     'SECRET_KEY',
     'django-insecure-m5u!=6&_i9%!k#_nu@f4+lsaj)l=a8rlhk1-ums#j=z28+2x2(',  # dev uniquement
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+DEBUG = os.environ.get('DJANGO_DEBUG', os.environ.get('DEBUG', 'True')).lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = [h for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h]
+ALLOWED_HOSTS = [h for h in os.environ.get('DJANGO_ALLOWED_HOSTS', os.environ.get('ALLOWED_HOSTS', '')).split(',') if h]
 
 # En dev (DEBUG=True) Django autorise déjà localhost ; en production sur le VPS
 # la liste est fournie par la variable ALLOWED_HOSTS du fichier .env.
 if DEBUG and not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+# Garde-fou : en production (DEBUG faux), refuser de démarrer avec une clé
+# secrète connue de tous (valeur par défaut écrite dans le dépôt).
+if not DEBUG and (not SECRET_KEY or "insecure" in SECRET_KEY or "dev-" in SECRET_KEY or "developpement" in SECRET_KEY):
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY doit etre definie en production.")
 
 
 # Application definition
@@ -132,11 +141,18 @@ GDAHUB_JETON_AUDIENCE = os.environ.get('GDAHUB_JETON_AUDIENCE', 'gdahub')
 REST_FRAMEWORK = {
     # L'ordre compte : la classe du hub rend la main des qu'elle voit un jeton
     # qui n'est pas le sien, et les classes maison reprennent derriere elle.
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'accounts.hub.AuthentificationHub',
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
+    # Dans GDA Hub (GDAHUB_AUTH_SEULE), seul le jeton du hub est accepte :
+    # jetons et sessions propres a Jus d'orange ne passent pas par les
+    # habilitations du hub.
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        ['accounts.hub.AuthentificationHub']
+        if os.environ.get('GDAHUB_AUTH_SEULE', 'False').lower() in ('1', 'true', 'yes', 'oui')
+        else [
+            'accounts.hub.AuthentificationHub',
+            'rest_framework.authentication.TokenAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+        ]
+    ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],

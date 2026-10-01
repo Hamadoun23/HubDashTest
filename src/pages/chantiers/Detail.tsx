@@ -1,85 +1,215 @@
-import { Calendar, CheckCircle2, Circle, ListChecks, User, Users } from 'lucide-react';
-import { useOutletContext } from 'react-router-dom';
-import { Card } from '../../components/ui-light/Card';
-import { EtatChargement, EtatErreur } from '../../components/ui-light/EtatRequete';
-import { ProgressBar } from '../../components/ui-light/ProgressBar';
-import { StatTile } from '../../components/ui-light/StatTile';
-import { useApi } from '../../lib/hooks/useApi';
-import { obtenirTableauDeBord } from '../../lib/api/chantiers';
+import { useEffect, useState } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { EtatChargement } from './EtatsGda';
+import { useAction } from '../../lib/hooks/useApi';
+import { exporterTableauDeBordExcel } from '../../lib/api/chantiers';
 import type { ContexteChantier } from './ChantierLayout';
+import { TOUTES, useGraphiques } from './graphiquesDashboard';
 
 export default function Detail() {
-  const { projet } = useOutletContext<ContexteChantier>();
-  const dashboard = useApi(() => obtenirTableauDeBord(projet.id), [projet.id]);
+  const { projet, tableau, estPartenaire } = useOutletContext<ContexteChantier>();
+  const navigate = useNavigate();
+  const export_ = useAction(exporterTableauDeBordExcel);
+  const [filtrePhase, setFiltrePhase] = useState(TOUTES);
+
+  useEffect(() => setFiltrePhase(TOUTES), [projet.id]);
+
+  const refs = useGraphiques(tableau, filtrePhase);
+
+  if (!tableau) return <EtatChargement texte="Chargement du tableau de bord…" />;
+
+  const phases = tableau.progress_by_phase;
+  const toutesActivites = tableau.charts.activities;
+  const activitesFiltrees = filtrePhase === TOUTES ? toutesActivites : toutesActivites.filter((a) => a.phase === filtrePhase);
 
   return (
-    <div>
-      <div className="grid grid-cols-[1fr_1.4fr] gap-6">
-        <Card className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 text-sm">
-            <User size={15} className="text-slate-400" />
-            <span className="text-slate-700">{projet.client || 'Client non renseigné'}</span>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Calendar size={15} className="text-slate-400" />
-            <span className="text-slate-700">
-              {projet.start_date ?? '—'} → {projet.end_date ?? '—'}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <Users size={15} className="text-slate-400" />
-            <span className="text-slate-700">
-              {projet.user_names.length > 0 ? projet.user_names.join(', ') : 'Aucune équipe assignée'}
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <ListChecks size={15} className="text-slate-400" />
-            <span className="text-slate-700">{projet.tasks_count} tâches au total</span>
-          </div>
-          {projet.description ? <p className="mt-1 text-xs text-slate-500">{projet.description}</p> : null}
-        </Card>
+    <div className="page active gda-legacy" id="page-dashboard">
+      <div className="page-header">
+        <div>
+          <div className="page-title">Tableau de bord</div>
+          <div className="page-sub">Vue d'ensemble du projet</div>
+        </div>
+        {!estPartenaire && (
+          <button type="button" className="btn btn-primary" onClick={() => navigate(`/chantiers/${projet.id}/saisie`)}>
+            ✎ Saisie du jour
+          </button>
+        )}
+      </div>
 
-        <Card className="flex flex-col gap-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-chantiers-marron">Avancement global</h2>
-            <span className="font-display text-base font-bold tabular-nums text-chantiers-marron">
-              {Math.round(projet.overall_progress)}%
-            </span>
-          </div>
-          <ProgressBar progress={projet.overall_progress} accent="#c8521a" />
+      <div className="stats-row">
+        <div className="stat-card s-total">
+          <div className="stat-val">{tableau.stats.total}</div>
+          <div className="stat-lbl">Tâches totales</div>
+        </div>
+        <div className="stat-card s-done">
+          <div className="stat-val">{tableau.stats.done}</div>
+          <div className="stat-lbl">Terminées</div>
+        </div>
+        <div className="stat-card s-prog">
+          <div className="stat-val">{tableau.stats.in_progress}</div>
+          <div className="stat-lbl">En cours</div>
+        </div>
+        <div className="stat-card s-late">
+          <div className="stat-val">{tableau.stats.cancelled}</div>
+          <div className="stat-lbl">Annulées</div>
+        </div>
+      </div>
 
-          <div className="mt-2 flex flex-col gap-4">
-            {Object.entries(projet.progress_by_phase).length === 0 ? (
-              <p className="text-xs text-slate-500">Aucune phase définie pour ce chantier.</p>
+      <div className="card">
+        <div className="card-head">Avancement par phase</div>
+        <div>
+          {phases.map((p) => {
+            const cls = p.progress === 100 ? 'fill-done' : p.progress > 0 ? 'fill-low' : 'fill-0';
+            return (
+              <div
+                key={p.phase}
+                className={`dash-phase-row${p.partner_hidden ? ' row-partner-hidden' : ''}`}
+                style={{ display: 'grid', gridTemplateColumns: '180px 1fr 50px', alignItems: 'center', gap: 14, marginBottom: 10 }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{p.phase}</div>
+                <div className="pbar">
+                  <div className={`pbar-fill ${cls}`} style={{ width: `${p.progress}%` }} />
+                </div>
+                <div
+                  style={{
+                    fontFamily: "Tahoma,Verdana,'Segoe UI',sans-serif",
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: 'var(--blanc)',
+                  }}
+                >
+                  {p.progress}%
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {!estPartenaire && (
+        <div className="card">
+          <div className="card-head">Activité récente</div>
+          <div>
+            {tableau.recent_activity.length === 0 ? (
+              <div style={{ color: 'var(--muted)', fontSize: 13, padding: 20, textAlign: 'center' }}>
+                Aucune activité enregistrée — commencez la saisie du jour.
+              </div>
             ) : (
-              Object.entries(projet.progress_by_phase).map(([phase, avancement]) => (
-                <div key={phase} className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500">{phase}</span>
-                    <span className="text-xs font-semibold text-chantiers-marron">{Math.round(avancement)}%</span>
+              tableau.recent_activity.map((a) => (
+                <div
+                  key={`${a.task_id}-${a.ts}`}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '10px 0', borderBottom: '1px solid var(--bg2)' }}
+                >
+                  <div
+                    style={{
+                      background: 'var(--bg2)',
+                      borderRadius: 6,
+                      padding: '6px 10px',
+                      fontFamily: "Tahoma,Verdana,'Segoe UI',sans-serif",
+                      fontSize: 12,
+                      color: 'var(--muted)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {a.time}
                   </div>
-                  <ProgressBar progress={avancement} height={6} accent="#c8521a" />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{a.task_name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                      {a.action} · <span style={{ color: 'var(--blanc)', fontWeight: 600 }}>{a.user}</span>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      marginLeft: 'auto',
+                      fontFamily: "Tahoma,Verdana,'Segoe UI',sans-serif",
+                      fontSize: 18,
+                      fontWeight: 700,
+                      color: 'var(--blanc)',
+                    }}
+                  >
+                    {a.progress}%
+                  </div>
                 </div>
               ))
             )}
           </div>
-        </Card>
-      </div>
+        </div>
+      )}
 
-      <div className="mt-6">
-        {dashboard.chargement ? (
-          <EtatChargement texte="Chargement du tableau de bord…" />
-        ) : dashboard.erreur || !dashboard.donnees ? (
-          <EtatErreur message={dashboard.erreur ?? 'Tableau de bord indisponible'} recharger={dashboard.recharger} />
-        ) : (
-          <div className="grid grid-cols-5 gap-4">
-            <StatTile icon={ListChecks} valeur={dashboard.donnees.stats.total} libelle="Tâches au total" teinte="#c8521a" />
-            <StatTile icon={CheckCircle2} valeur={dashboard.donnees.stats.done} libelle="Terminées" teinte="#1a7a42" />
-            <StatTile icon={Circle} valeur={dashboard.donnees.stats.in_progress} libelle="En cours" teinte="#1a5c8a" />
-            <StatTile icon={Circle} valeur={dashboard.donnees.stats.not_started} libelle="Non démarrées" teinte="#8a8a8a" />
-            <StatTile icon={Circle} valeur={dashboard.donnees.stats.cancelled} libelle="Annulées" teinte="#c01a1a" />
+      <div className="card" id="dashboard-stats-card">
+        <div className="card-head dashboard-stats-card-head">
+          <span className="dashboard-stats-card-head__title">Données & statistiques</span>
+          <button
+            type="button"
+            className="btn btn-excel btn-sm dashboard-stats-export-btn"
+            disabled={export_.enCours}
+            onClick={() => export_.executer(projet.id, `dashboard-${projet.name}.xlsx`)}
+          >
+            {export_.enCours ? 'Export…' : 'Exporter Excel'}
+          </button>
+        </div>
+        <p className="dashboard-charts-intro">
+          Synthèse du projet : statuts, phases, sous-phases. Les activités sont affichées par phase (1re phase par défaut) ; vous pouvez tout
+          afficher si besoin.
+        </p>
+        <div className="dashboard-charts-grid">
+          <div className="dashboard-chart-wrap">
+            <div className="dashboard-chart-title">Répartition par statut</div>
+            <div className="dashboard-chart-canvas">
+              <canvas ref={refs.pie} aria-label="Camembert des statuts" />
+            </div>
           </div>
-        )}
+          <div className="dashboard-chart-wrap">
+            <div className="dashboard-chart-title">Avancement par phase (%)</div>
+            <div className="dashboard-chart-canvas">
+              <canvas ref={refs.phase} aria-label="Histogramme par phase" />
+            </div>
+          </div>
+          <div className="dashboard-chart-wrap dashboard-chart-wrap--wide">
+            <div className="dashboard-chart-title">Sous-phases — progression moyenne</div>
+            <div className="dashboard-chart-canvas dashboard-chart-canvas--tall">
+              <canvas ref={refs.sub} aria-label="Barres des sous-phases" />
+            </div>
+          </div>
+          <div className="dashboard-chart-wrap dashboard-chart-wrap--wide">
+            <div className="dashboard-chart-head-row">
+              <div className="dashboard-chart-title">Activités — progression</div>
+              {toutesActivites.length > 0 && (
+                <div className="dashboard-activity-toolbar">
+                  <label htmlFor="dashboard-activity-phase-filter" className="dashboard-activity-filter-lbl">
+                    Afficher
+                  </label>
+                  <select
+                    id="dashboard-activity-phase-filter"
+                    className="dashboard-activity-phase-select"
+                    value={filtrePhase}
+                    onChange={(e) => setFiltrePhase(e.target.value)}
+                  >
+                    {phases.map((p) => (
+                      <option key={p.phase} value={p.phase}>
+                        {p.phase}
+                      </option>
+                    ))}
+                    <option value={TOUTES}>Tout afficher ({toutesActivites.length})</option>
+                  </select>
+                </div>
+              )}
+            </div>
+            {toutesActivites.length === 0 ? (
+              <div className="dashboard-activity-empty">Aucune activité pour ce projet.</div>
+            ) : activitesFiltrees.length === 0 ? (
+              <div className="dashboard-activity-empty">Aucune activité pour cette phase.</div>
+            ) : null}
+            <div
+              ref={refs.actWrap}
+              className="dashboard-chart-canvas dashboard-chart-canvas--activities"
+              hidden={activitesFiltrees.length === 0}
+            >
+              <canvas ref={refs.act} aria-label="Barres par activité" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ from django.contrib.auth import logout as fermer_session
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.templatetags.static import static
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from inertia import render
 
 from . import throttling
@@ -248,3 +248,21 @@ def sante(request):
         base = f"indisponible : {erreur}"
         code = 503
     return JsonResponse({"service": "campagnes", "base": base}, status=code)
+
+
+@http_methods("GET", "HEAD")
+@ensure_csrf_cookie
+def table_routes(request):
+    """La table de routes `window.Ziggy`, pour les pages servies par GDA Hub.
+
+    Dans BDM seule, le gabarit `app.html` injecte cet objet dans la page. Dans
+    le hub, les pages React sont servies par l'interface du hub et lisent
+    Campagnes en JSON (protocole Inertia) : elles n'ont jamais ce gabarit, et
+    viennent chercher la table ici, une fois au chargement.
+
+    Pose aussi le cookie CSRF : une réponse Inertia en JSON ne le déclenche
+    pas, et la première écriture serait sinon refusée.
+    """
+    from .routes import objet_ziggy
+
+    return JsonResponse(objet_ziggy(request))

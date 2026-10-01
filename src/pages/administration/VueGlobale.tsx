@@ -64,7 +64,7 @@ export default function VueGlobale() {
       />
 
       <p className="mb-3 text-xs text-muted">Départements — l'organigramme de l'entreprise, indépendant des accès applicatifs.</p>
-      <div className="mb-6 grid grid-cols-4 gap-3">
+      <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
         {listeDepartements.map((dep) => {
           const comptes = liste.filter((u) => u.departement === dep.id);
           return (
@@ -88,7 +88,7 @@ export default function VueGlobale() {
       <p className="mb-3 text-xs text-muted">
         Applications — qui a accès à quoi, tous départements confondus. Pour changer un accès, ouvrez la fiche du compte concerné.
       </p>
-      <div className="mb-6 grid grid-cols-4 gap-3">
+      <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
         {catalogue.map((app) => {
           const comptesApp = liste.filter((u) => u.habilitations.some((h) => h.active && h.application === app.id));
           return (

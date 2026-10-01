@@ -35,7 +35,7 @@ export function RapportGenerique({ donnees }: { donnees: Record<string, unknown>
   return (
     <div className="flex flex-col gap-4">
       {stats.length > 0 && (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map(([cle, valeur]) => (
             <StatTile key={cle} icon={BarChart3} valeur={String(valeur)} libelle={libelle(cle)} />
           ))}

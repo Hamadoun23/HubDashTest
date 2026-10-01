@@ -29,6 +29,7 @@ from core.validation import ErreursValidation, Validateur, booleen
 
 from . import services
 from .models import (
+    DELAI_REPONSE_CONTRAT_JOURS,
     STATUTS_MANUELS,
     Campagne,
     CampagneAction,
@@ -50,13 +51,10 @@ STATUTS_PILOTABLES = [StatutCampagne.PROGRAMMEE, StatutCampagne.EN_COURS]
 
 def _corps(request):
     """
-    Corps de la requête, que la méthode soit POST ou PUT/PATCH.
-
-    `request.POST` suffit dans tous les cas : `core.middleware.CorpsJsonMiddleware`
-    le remplit déjà à partir du corps JSON ou form-urlencoded, quelle que soit
-    la méthode — reconstruire le corps ici à la main (`QueryDict(request.body)`)
-    traiterait un corps JSON comme une chaîne de requête et ne lirait plus
-    aucun champ (c'était le cas du PUT `/admin/campagnes/<id>`).
+    `CorpsJsonMiddleware` remplit déjà `request.POST` pour tout corps JSON,
+    quelle que soit la méthode (POST/PUT/PATCH/DELETE) — un second passage ici
+    via `QueryDict(request.body)` reparserait à tort le JSON brut comme une
+    chaîne de requête et viderait tous les champs sur les mises à jour PUT.
     """
     return request.POST
 
@@ -423,6 +421,22 @@ def _sync_types_cartes_remise(campagne, source):
     )
 
 
+def _prevenir_signataires(campagne, user_ids):
+    """Notification GDA Hub aux commerciaux : un contrat attend leur réponse."""
+    from core.notifications_hub import notifier
+
+    destinataires = []
+    for u in User.objects.filter(id__in=list(user_ids)):
+        destinataires += [u.telephone, u.email]
+    notifier(
+        destinataires,
+        titre=f"Contrat à signer — {campagne.nom}",
+        message="Votre contrat de prestation est disponible : consultez-le et donnez votre réponse.",
+        lien="/campagnes/mon-contrat",
+        application="campagnes",
+    )
+
+
 def _sync_reponses_contrat(campagne, source, creation):
     """
     Aligne les réponses au contrat sur la liste des signataires.
@@ -430,7 +444,8 @@ def _sync_reponses_contrat(campagne, source, creation):
     À la création, le contrat est publié immédiatement ; ensuite seule une
     demande explicite de republication remet les réponses à zéro.
     """
-    if creation or booleen(source, "contrat_republier"):
+    publication = creation or booleen(source, "contrat_republier")
+    if publication:
         campagne.contrat_publie_at = datetime.now().replace(microsecond=0)
         campagne.save(update_fields=["contrat_publie_at"])
         if not creation:
@@ -457,6 +472,10 @@ def _sync_reponses_contrat(campagne, source, creation):
     if not campagne.contrat_publie_at and ids:
         campagne.contrat_publie_at = datetime.now().replace(microsecond=0)
         campagne.save(update_fields=["contrat_publie_at"])
+
+    # Publication : tous les signataires ; sinon, les nouveaux venus seulement.
+    if campagne.contrat_publie_at:
+        _prevenir_signataires(campagne, ids if publication else ids - existants)
 
 
 # ---------------------------------------------------------------------------
@@ -577,9 +596,7 @@ def _perimetre_agences(source, partenaire):
         return True, [], None
 
     toutes_agences = booleen(source, "toutes_agences")
-    # Le frontend envoie `agence_ids` (cf. `NouvelleCampagne` côté virtus-dashboard,
-    # et la prop `agence_ids` déjà renvoyée par `edit()` ci-dessus) — pas `agences`.
-    agence_ids = [] if toutes_agences else _liste(source, "agence_ids")
+    agence_ids = [] if toutes_agences else _liste(source, "agences")
     if not toutes_agences and not agence_ids:
         return (
             toutes_agences,
@@ -606,98 +623,12 @@ def _perimetre_ou_dates_modifies(campagne, donnees, toutes_agences, agence_ids):
     return False
 
 
-def _defauts_edition(campagne):
-    """
-    Valeurs courantes de `campagne`, au format attendu par les validateurs.
-
-    Le formulaire Laravel d'origine réémettait tous les champs à chaque
-    modification ; l'écran d'édition de virtus-dashboard, lui, n'en propose
-    que deux (`prime_meilleur_vendeur`, `aide_hebdo_montant` — voir
-    `Detail.tsx`/`modifierCampagne`). Sans ces valeurs de repli, un champ non
-    envoyé serait lu comme vide par `_valider_base`/`_valider_remise_aide` et
-    bloquerait la mise à jour (nom/dates requis) ou, pire, écraserait
-    silencieusement les autres réglages de la campagne avec les valeurs par
-    défaut de *création* de `_champs_vente` (ex. « aide hebdomadaire »
-    désactivée alors qu'elle était active).
-    """
-    defauts = {
-        "nom": campagne.nom,
-        "date_debut": campagne.date_debut.isoformat(),
-        "date_fin": campagne.date_fin.isoformat(),
-        "prime_meilleur_vendeur": campagne.prime_meilleur_vendeur,
-        "toutes_agences": "1" if campagne.toutes_agences else "",
-    }
-    if campagne.type == TypeCampagne.VENTE_CARTE:
-        defauts.update(
-            {
-                "remise_pourcentage": campagne.remise_pourcentage,
-                "aide_hebdo_active": "1" if campagne.aide_hebdo_active else "",
-                "aide_hebdo_montant": campagne.aide_hebdo_montant,
-                "aide_hebdo_carburant": campagne.aide_hebdo_carburant,
-                "aide_hebdo_credit_tel": campagne.aide_hebdo_credit_tel,
-                "aide_hebdo_tous_commerciaux": "1"
-                if campagne.aide_hebdo_tous_commerciaux
-                else "",
-                "remise_tous_types_cartes": "1"
-                if campagne.remise_tous_types_cartes
-                else "",
-                "contrat_emolument_forfait": campagne.contrat_emolument_forfait,
-                "contrat_forfait_communication": campagne.contrat_forfait_communication,
-                "contrat_forfait_deplacement": campagne.contrat_forfait_deplacement,
-                "contrat_representant_nom": campagne.contrat_representant_nom,
-                "contrat_lieu_signature": campagne.contrat_lieu_signature,
-                "contrat_clause_libre": campagne.contrat_clause_libre,
-            }
-        )
-    return defauts
-
-
-def _defauts_edition_listes(campagne):
-    """Listes (agences, bénéficiaires, types de cartes) au même repli."""
-    listes = {}
-    if not campagne.toutes_agences:
-        listes["agence_ids"] = [
-            str(i) for i in campagne.agences.values_list("id", flat=True)
-        ]
-    if campagne.type == TypeCampagne.VENTE_CARTE:
-        listes["aide_beneficiaires"] = [
-            str(i) for i in campagne.signataires_contrat.values_list("id", flat=True)
-        ]
-        listes["remise_types_cartes"] = [
-            str(i) for i in campagne.types_cartes_remise.values_list("id", flat=True)
-        ]
-    return listes
-
-
-def _completer_avec_defauts(source, campagne):
-    """
-    Copie mutable de `source` complétée par les valeurs courantes de
-    `campagne` pour tout champ absent — transforme une mise à jour partielle
-    (seuls certains champs envoyés) en un jeu de données complet, sans quoi
-    les champs tus seraient traités comme vides plutôt que « inchangés ».
-
-    Seule l'*absence* du champ déclenche le repli : un champ explicitement
-    envoyé (y compris vide, pour lever une case à cocher) prime toujours.
-    """
-    complet = source.copy()
-
-    for champ, valeur in _defauts_edition(campagne).items():
-        if champ not in complet:
-            complet[champ] = "" if valeur is None else str(valeur)
-
-    for champ, valeurs in _defauts_edition_listes(campagne).items():
-        if not complet.getlist(f"{champ}[]") and not complet.getlist(champ):
-            complet.setlist(champ, valeurs)
-
-    return complet
-
-
 @role_required(Role.ADMIN)
 @http_methods("POST", "PUT", "PATCH")
 def update(request, campagne):
     campagne = _campagne_du_perimetre(request, campagne)
     partenaire = partenaire_courant(request)
-    source = _completer_avec_defauts(_corps(request), campagne)
+    source = _corps(request)
 
     # Le type est figé à la création : le changer laisserait des données
     # orphelines (contrat, enrôlements) derrière lui.
@@ -1020,9 +951,13 @@ def republier_contrat(request, campagne):
     ContratPrestationReponse.objects.filter(campagne_id=campagne.id).update(
         statut=StatutReponseContrat.EN_ATTENTE, repondu_at=None
     )
+    _prevenir_signataires(
+        campagne,
+        ContratPrestationReponse.objects.filter(campagne_id=campagne.id).values_list("user_id", flat=True),
+    )
     deposer_flash(
         request,
-        success="Contrat republié — nouveau délai de 5 jours pour accepter ou refuser.",
+        success=f"Contrat republié — nouveau délai de {DELAI_REPONSE_CONTRAT_JOURS} jours pour accepter ou refuser.",
     )
     return redirect(_url_show(campagne.id, "contrat"))
 

@@ -1,0 +1,339 @@
+/*
+ * Habillage des pages de Campagnes (BDM) dans GDA Hub.
+ *
+ * Tout est limité au conteneur `.bdm-app` posé par HoteCampagnes, et
+ * enveloppé dans `:where()` : ces règles ne comptent pour rien dans la
+ * spécificité, les classes utilitaires des pages gardent donc le dernier mot,
+ * comme dans BDM — et rien ici ne déborde sur le reste du hub.
+ */
+
+/* Ce que le gabarit de BDM posait sur <body> : Inter, texte gris-900. Le hub,
+   lui, écrit en blanc sur fond sombre et titre en Outfit. */
+:where(.bdm-app) {
+  background: #120d0a url('/motif-orange.jpg') center / cover fixed;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #fff;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+/* Spécificité d'un simple sélecteur d'élément, comme la règle `h1, h2, h3`
+   du hub qu'elle remplace (et chargée après elle) : les classes des pages
+   l'emportent toujours. */
+:where(.bdm-app) h1,
+:where(.bdm-app) h2,
+:where(.bdm-app) h3 {
+  font-family: inherit;
+  letter-spacing: normal;
+  text-wrap: wrap;
+}
+
+/* Utilitaire `scrollbar-thin` de BDM (css/app.css). */
+.bdm-app .scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(0 0 0 / 0.15) transparent;
+}
+.bdm-app .scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.bdm-app .scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgb(0 0 0 / 0.15);
+  border-radius: 9999px;
+}
+
+/* Barre de chargement entre deux écrans. */
+@keyframes bdm-chargement {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+/* --- @tailwindcss/forms (stratégie « base »), comme dans BDM ------------- */
+/* Généré depuis le plugin puis préfixé par :where(.bdm-app). */
+
+:where(.bdm-app) input:where([type='text']),:where(.bdm-app) input:where(:not([type])),:where(.bdm-app) input:where([type='email']),:where(.bdm-app) input:where([type='url']),:where(.bdm-app) input:where([type='password']),:where(.bdm-app) input:where([type='number']),:where(.bdm-app) input:where([type='date']),:where(.bdm-app) input:where([type='datetime-local']),:where(.bdm-app) input:where([type='month']),:where(.bdm-app) input:where([type='search']),:where(.bdm-app) input:where([type='tel']),:where(.bdm-app) input:where([type='time']),:where(.bdm-app) input:where([type='week']),:where(.bdm-app) select:where([multiple]),:where(.bdm-app) textarea,:where(.bdm-app) select {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: #fff;
+  border-color: #6b7280;
+  border-width: 1px;
+  border-radius: 0px;
+  padding-top: 0.5rem;
+  padding-right: 0.75rem;
+  padding-bottom: 0.5rem;
+  padding-left: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  --tw-shadow: 0 0 #0000;
+}
+
+:where(.bdm-app) input:where([type='text']):focus, :where(.bdm-app) input:where(:not([type])):focus, :where(.bdm-app) input:where([type='email']):focus, :where(.bdm-app) input:where([type='url']):focus, :where(.bdm-app) input:where([type='password']):focus, :where(.bdm-app) input:where([type='number']):focus, :where(.bdm-app) input:where([type='date']):focus, :where(.bdm-app) input:where([type='datetime-local']):focus, :where(.bdm-app) input:where([type='month']):focus, :where(.bdm-app) input:where([type='search']):focus, :where(.bdm-app) input:where([type='tel']):focus, :where(.bdm-app) input:where([type='time']):focus, :where(.bdm-app) input:where([type='week']):focus, :where(.bdm-app) select:where([multiple]):focus, :where(.bdm-app) textarea:focus, :where(.bdm-app) select:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  --tw-ring-inset: var(--tw-empty,/*!*/ /*!*/);
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: #2563eb;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+  border-color: #2563eb;
+}
+
+:where(.bdm-app) input::-moz-placeholder, :where(.bdm-app) textarea::-moz-placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+:where(.bdm-app) input::placeholder,:where(.bdm-app) textarea::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+:where(.bdm-app) ::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+:where(.bdm-app) ::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: inherit;
+}
+
+:where(.bdm-app) ::-webkit-datetime-edit {
+  display: inline-flex;
+}
+
+:where(.bdm-app) ::-webkit-datetime-edit,:where(.bdm-app) ::-webkit-datetime-edit-year-field,:where(.bdm-app) ::-webkit-datetime-edit-month-field,:where(.bdm-app) ::-webkit-datetime-edit-day-field,:where(.bdm-app) ::-webkit-datetime-edit-hour-field,:where(.bdm-app) ::-webkit-datetime-edit-minute-field,:where(.bdm-app) ::-webkit-datetime-edit-second-field,:where(.bdm-app) ::-webkit-datetime-edit-millisecond-field,:where(.bdm-app) ::-webkit-datetime-edit-meridiem-field {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+:where(.bdm-app) select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+}
+
+:where(.bdm-app) select:where([multiple]),:where(.bdm-app) select:where([size]:not([size="1"])) {
+  background-image: initial;
+  background-position: initial;
+  background-repeat: unset;
+  background-size: initial;
+  padding-right: 0.75rem;
+  -webkit-print-color-adjust: unset;
+          print-color-adjust: unset;
+}
+
+:where(.bdm-app) input:where([type='checkbox']),:where(.bdm-app) input:where([type='radio']) {
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  padding: 0;
+  -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+  display: inline-block;
+  vertical-align: middle;
+  background-origin: border-box;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  flex-shrink: 0;
+  height: 1rem;
+  width: 1rem;
+  color: #2563eb;
+  background-color: #fff;
+  border-color: #6b7280;
+  border-width: 1px;
+  --tw-shadow: 0 0 #0000;
+}
+
+:where(.bdm-app) input:where([type='checkbox']) {
+  border-radius: 0px;
+}
+
+:where(.bdm-app) input:where([type='radio']) {
+  border-radius: 100%;
+}
+
+:where(.bdm-app) input:where([type='checkbox']):focus,:where(.bdm-app) input:where([type='radio']):focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  --tw-ring-inset: var(--tw-empty,/*!*/ /*!*/);
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: #2563eb;
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+:where(.bdm-app) input:where([type='checkbox']):checked,:where(.bdm-app) input:where([type='radio']):checked {
+  border-color: transparent;
+  background-color: currentColor;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+:where(.bdm-app) input:where([type='checkbox']):checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+}
+
+@media (forced-colors: active)  {
+  :where(.bdm-app) input:where([type='checkbox']):checked {
+    -webkit-appearance: auto;
+       -moz-appearance: auto;
+            appearance: auto;
+  }
+}
+
+:where(.bdm-app) input:where([type='radio']):checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='8' cy='8' r='3'/%3e%3c/svg%3e");
+}
+
+@media (forced-colors: active)  {
+  :where(.bdm-app) input:where([type='radio']):checked {
+    -webkit-appearance: auto;
+       -moz-appearance: auto;
+            appearance: auto;
+  }
+}
+
+:where(.bdm-app) input:where([type='checkbox']):checked:hover,:where(.bdm-app) input:where([type='checkbox']):checked:focus,:where(.bdm-app) input:where([type='radio']):checked:hover,:where(.bdm-app) input:where([type='radio']):checked:focus {
+  border-color: transparent;
+  background-color: currentColor;
+}
+
+:where(.bdm-app) input:where([type='checkbox']):indeterminate {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 16 16'%3e%3cpath stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 8h8'/%3e%3c/svg%3e");
+  border-color: transparent;
+  background-color: currentColor;
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@media (forced-colors: active)  {
+  :where(.bdm-app) input:where([type='checkbox']):indeterminate {
+    -webkit-appearance: auto;
+       -moz-appearance: auto;
+            appearance: auto;
+  }
+}
+
+:where(.bdm-app) input:where([type='checkbox']):indeterminate:hover,:where(.bdm-app) input:where([type='checkbox']):indeterminate:focus {
+  border-color: transparent;
+  background-color: currentColor;
+}
+
+:where(.bdm-app) input:where([type='file']) {
+  background: unset;
+  border-color: inherit;
+  border-width: 0;
+  border-radius: 0;
+  padding: 0;
+  font-size: unset;
+  line-height: inherit;
+}
+
+:where(.bdm-app) input:where([type='file']):focus {
+  outline: 1px solid ButtonText;
+  outline: 1px auto -webkit-focus-ring-color;
+}
+
+
+/* --- Thème du hub ----------------------------------------------------------
+ * Les écrans de BDM sont écrits pour un canevas crème (cartes blanches,
+ * textes gris foncé). Dans GDA Hub, Campagnes reprend l'habillage des autres
+ * applications : motif orange en fond, cartes sombres translucides, textes
+ * clairs (cf. RhLayout, components/ui/Card.tsx). Plutôt que de réécrire les
+ * 52 écrans, les classes claires sont traduites ici, une fois — mêmes
+ * teintes que `tailwind.config.js` (surface, surface2, border, muted).
+ * Spécificité `.bdm-app .classe` : elle l'emporte sur l'utilitaire d'origine ;
+ * les variantes `hover:` sont redéclarées avec `:hover` pour rester actives.
+ */
+
+/* Surfaces */
+.bdm-app .bg-white { background-color: rgba(26, 19, 14, 0.6); backdrop-filter: blur(20px); }
+.bdm-app .bg-\[\#F6F5F2\] { background-color: transparent; }
+.bdm-app .bg-gray-50 { background-color: rgba(255, 255, 255, 0.04); }
+.bdm-app .bg-gray-100 { background-color: rgba(255, 255, 255, 0.08); }
+.bdm-app .bg-gray-200 { background-color: rgba(255, 255, 255, 0.14); }
+.bdm-app .bg-white\/15 { background-color: rgba(255, 255, 255, 0.15); }
+.bdm-app .shadow-card, .bdm-app .shadow-sm { box-shadow: none; }
+/* Fenêtres et tiroirs : au-dessus du contenu, presque opaques pour rester lisibles. */
+.bdm-app .fixed .bg-white, .bdm-app .fixed.bg-white, .bdm-app .shadow-xl {
+  background-color: rgba(28, 20, 15, 0.97);
+}
+
+/* Teintes d'état (alertes, badges, puces) : translucides sur fond sombre. */
+.bdm-app .bg-orange-50 { background-color: rgba(255, 106, 43, 0.16); }
+.bdm-app .bg-orange-100 { background-color: rgba(255, 106, 43, 0.24); }
+.bdm-app .bg-blue-50 { background-color: rgba(59, 130, 246, 0.16); }
+.bdm-app .bg-blue-50\/40 { background-color: rgba(59, 130, 246, 0.08); }
+.bdm-app .bg-green-50, .bdm-app .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.16); }
+.bdm-app .bg-green-50\/50 { background-color: rgba(16, 185, 129, 0.08); }
+.bdm-app .bg-amber-50 { background-color: rgba(245, 158, 11, 0.16); }
+.bdm-app .bg-amber-50\/40 { background-color: rgba(245, 158, 11, 0.08); }
+.bdm-app .bg-red-50 { background-color: rgba(239, 68, 68, 0.16); }
+
+/* Survols */
+.bdm-app .hover\:bg-gray-50:hover { background-color: rgba(255, 255, 255, 0.06); }
+.bdm-app .hover\:bg-gray-100:hover { background-color: rgba(255, 255, 255, 0.1); }
+.bdm-app .hover\:bg-red-50:hover { background-color: rgba(239, 68, 68, 0.16); }
+.bdm-app .hover\:bg-amber-50:hover { background-color: rgba(245, 158, 11, 0.16); }
+.bdm-app .hover\:bg-orange-100:hover { background-color: rgba(255, 106, 43, 0.24); }
+
+/* Textes */
+.bdm-app .text-gray-900, .bdm-app .text-gray-800 { color: #fff; }
+.bdm-app .text-gray-700 { color: #f3e9e1; }
+.bdm-app .text-gray-600 { color: #e2d4c8; }
+.bdm-app .text-gray-500 { color: #c9b8ab; }
+.bdm-app .text-gray-400 { color: #a8978a; }
+.bdm-app .text-gray-300 { color: #8a7b70; }
+.bdm-app .placeholder\:text-gray-400::placeholder, .bdm-app ::placeholder { color: #a8978a; }
+.bdm-app .hover\:text-gray-900:hover, .bdm-app .hover\:text-gray-700:hover, .bdm-app .hover\:text-gray-600:hover { color: #fff; }
+.bdm-app .text-blue-600, .bdm-app .text-blue-700, .bdm-app .text-blue-800, .bdm-app .text-blue-900 { color: #93c5fd; }
+.bdm-app .text-green-600, .bdm-app .text-green-700, .bdm-app .text-green-800, .bdm-app .text-emerald-700 { color: #6ee7b7; }
+.bdm-app .text-amber-600, .bdm-app .text-amber-700, .bdm-app .text-amber-800 { color: #fcd34d; }
+.bdm-app .text-red-600, .bdm-app .text-red-700, .bdm-app .text-red-800 { color: #fca5a5; }
+.bdm-app .hover\:text-red-500:hover, .bdm-app .hover\:text-red-600:hover { color: #fca5a5; }
+.bdm-app .text-orange-700, .bdm-app .hover\:text-orange-700:hover { color: #fdba74; }
+.bdm-app .text-orange-700\/70 { color: rgba(253, 186, 116, 0.75); }
+
+/* Bordures, séparateurs, anneaux */
+.bdm-app .border-gray-50, .bdm-app .border-gray-100 { border-color: rgba(255, 255, 255, 0.08); }
+.bdm-app .border-gray-200 { border-color: rgba(255, 255, 255, 0.12); }
+.bdm-app .border-gray-300, .bdm-app .hover\:border-gray-300:hover, .bdm-app .hover\:border-gray-200:hover { border-color: rgba(255, 255, 255, 0.18); }
+.bdm-app .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08); }
+.bdm-app .ring-gray-200 { --tw-ring-color: rgba(255, 255, 255, 0.12); }
+.bdm-app .border-blue-200 { border-color: rgba(59, 130, 246, 0.35); }
+.bdm-app .border-green-200 { border-color: rgba(16, 185, 129, 0.35); }
+.bdm-app .border-amber-200 { border-color: rgba(245, 158, 11, 0.35); }
+.bdm-app .border-red-200 { border-color: rgba(239, 68, 68, 0.35); }
+.bdm-app .border-orange-200 { border-color: rgba(255, 106, 43, 0.35); }
+.bdm-app .ring-blue-200 { --tw-ring-color: rgba(59, 130, 246, 0.35); }
+.bdm-app .ring-emerald-200 { --tw-ring-color: rgba(16, 185, 129, 0.35); }
+.bdm-app .ring-amber-200 { --tw-ring-color: rgba(245, 158, 11, 0.35); }
+.bdm-app .ring-red-200 { --tw-ring-color: rgba(239, 68, 68, 0.35); }
+.bdm-app .ring-orange-200, .bdm-app .ring-orange-100 { --tw-ring-color: rgba(255, 106, 43, 0.35); }
+
+/* Champs de formulaire : comme les champs du hub (bg-surface2, bordure fine). */
+.bdm-app input:not([type='checkbox']):not([type='radio']):not([type='file']).bg-white,
+.bdm-app select.bg-white,
+.bdm-app textarea.bg-white {
+  background-color: rgba(36, 26, 19, 0.55);
+  backdrop-filter: none;
+  color: #fff;
+}
+.bdm-app [type='checkbox']:not(:checked), .bdm-app [type='radio']:not(:checked) {
+  background-color: rgba(36, 26, 19, 0.55);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.bdm-app option { background-color: #1a130e; color: #fff; }

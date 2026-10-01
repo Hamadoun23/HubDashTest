@@ -27,7 +27,7 @@ export default function Direction() {
   return (
     <div>
       <PageHeader icon={Citrus} titre="Jus d'orange — Direction" sousTitre="Vue d'ensemble" />
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile icon={Users} valeur={listeUtilisateurs.length > 0 ? actifs : '—'} libelle="Utilisateurs actifs" teinte="#a78bfa" />
         <StatTile icon={ShoppingCart} valeur={`${kpi.ca_total} F`} libelle="Chiffre d'affaires" teinte="#34d399" />
         <StatTile icon={Wine} valeur={kpi.bouteilles} libelle="Bouteilles en stock" teinte="#ff8a4c" />

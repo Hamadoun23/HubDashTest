@@ -5,7 +5,7 @@ description = "Socle partage des services GDA Hub : authentification JWT, permis
 requires-python = ">=3.12"
 dependencies = [
     "djangorestframework>=3.18",
-    "pyjwt[crypto]>=2.10",
+    "pyjwt[crypto]>=2.15",
 ]
 
 [build-system]

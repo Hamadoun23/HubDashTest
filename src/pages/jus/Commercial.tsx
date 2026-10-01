@@ -29,7 +29,7 @@ export default function Commercial() {
     <div>
       <PageHeader icon={ShoppingCart} titre="Jus d'orange — Commercial" sousTitre="Prospection, clients, ventes" />
 
-      <div className="mb-4 grid grid-cols-4 gap-4">
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile icon={Users} valeur={kpi.clients} libelle="Clients" teinte="#60a5fa" />
         <StatTile icon={ShoppingCart} valeur={kpi.ventes} libelle="Ventes" teinte="#ff8a4c" />
         <StatTile icon={Wallet} valeur={`${kpi.ca_total} F`} libelle="Chiffre d'affaires" teinte="#34d399" />

@@ -1,0 +1,827 @@
+/* Surcouche du CSS d'origine (gda-daily.css, généré) : plus aucune surface
+   blanche — panneaux sombres translucides sur le motif orange GDA, dans
+   l'esprit des autres modules du hub. Tout passe par les variables de
+   gda.css ; seules les quelques couleurs codées en dur y sont reprises. */
+
+.gda-daily {
+  --surface: rgba(22, 16, 12, 0.58);
+  --bg: rgba(255, 255, 255, 0.06);
+  --bg2: rgba(255, 255, 255, 0.09);
+  --border: rgba(255, 255, 255, 0.14);
+  --border2: rgba(255, 255, 255, 0.24);
+  --text: #ffffff;
+  --page-title: #ffffff;
+  --muted: rgba(255, 255, 255, 0.64);
+  /* Tons éclaircis : les couleurs d'origine étaient pensées pour un fond clair. */
+  --accent2: #6aa9d8;
+  --ok: #4fbf7f;
+  --warn: #e3ac45;
+  --danger: #f06a6a;
+}
+
+.gda-daily .sidebar,
+.gda-daily .card,
+.gda-daily .stat-card,
+.gda-daily .photo-gallery-shell,
+.gda-daily .logout-popover,
+.gda-daily .modal {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.gda-daily .sidebar {
+  background: rgba(22, 16, 12, 0.72);
+}
+
+.gda-daily .sidebar-project-select:hover,
+.gda-daily .dashboard-activity-phase-select {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+/* Les listes déroulantes natives n'acceptent pas la transparence. */
+.gda-daily select option {
+  background: #241b15;
+  color: #ffffff;
+}
+
+.gda-daily .page-sub {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.gda-daily .page-header {
+  border-bottom-color: rgba(255, 255, 255, 0.22);
+}
+
+.gda-daily .dash-phase-row .pbar {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ===== Typographie et couleurs douces, sans aucun effet =====
+   Une seule famille de tons pastel, chauds, qui se marient au brun/orange
+   de la page : crème pour le texte, sable pour les titres, et quatre teintes
+   d'état (vert, orange, bleu, rouge — celles de daily.gdamali.net) réservées aux statuts. */
+.gda-daily {
+  --font-app: 'Manrope', system-ui, sans-serif;
+  --font-titre: 'Outfit', 'Manrope', system-ui, sans-serif;
+
+  --blanc: #fbf1e4; /* crème : titres et chiffres */
+  --blanc-texte: rgba(251, 241, 228, 0.9); /* texte courant */
+  --blanc-discret: rgba(251, 241, 228, 0.64); /* sous-titres, libellés */
+  --sable: #f0cfa0; /* titres de cartes, en-têtes de colonnes */
+
+  --etat-fait: #1a7a42; /* vert */
+  --etat-cours: #c8521a; /* orange */
+  --etat-total: #1a5c8a; /* bleu */
+  --etat-annule: #c01a1a; /* rouge */
+
+  --muted: rgba(251, 241, 228, 0.64);
+}
+
+.gda-daily .page-title,
+.gda-daily .sp-num,
+.gda-daily .forecast-verdict__title {
+  font-family: var(--font-titre);
+  color: var(--blanc);
+}
+
+.gda-daily .page-title {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.gda-daily .page-sub,
+.gda-daily .dashboard-charts-intro,
+.gda-daily .forecast-chart-hint,
+.gda-daily .forecast-pills-hint {
+  color: var(--blanc-discret);
+}
+
+.gda-daily .card-head,
+.gda-daily .sidebar-section,
+.gda-daily .form-label,
+.gda-daily .tbl th {
+  color: var(--sable);
+  font-family: var(--font-titre);
+}
+
+.gda-daily .dashboard-chart-title {
+  color: var(--blanc);
+  font-family: var(--font-titre);
+}
+
+/* ===== Cartes : aplat sombre translucide ===== */
+.gda-daily .card,
+.gda-daily .stat-card,
+.gda-daily .daily-task-row {
+  background: rgba(20, 12, 7, 0.78);
+  border: 1px solid rgba(251, 241, 228, 0.16);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+/* Statistiques : chiffre et fin liseré dans la teinte douce de l'état. */
+.gda-daily .stat-val {
+  font-family: var(--font-titre);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.gda-daily .stat-card.s-total .stat-val { color: var(--etat-total); }
+.gda-daily .stat-card.s-done .stat-val { color: var(--etat-fait); }
+.gda-daily .stat-card.s-prog .stat-val { color: var(--etat-cours); }
+.gda-daily .stat-card.s-late .stat-val { color: var(--etat-annule); }
+.gda-daily .stat-card.s-total::after { background: var(--etat-total); }
+.gda-daily .stat-card.s-done::after { background: var(--etat-fait); }
+.gda-daily .stat-card.s-prog::after { background: var(--etat-cours); }
+.gda-daily .stat-card.s-late::after { background: var(--etat-annule); }
+
+.gda-daily .stat-lbl {
+  color: var(--blanc-discret);
+}
+
+/* ===== Textes en ligne : crème, jamais l'accent orange d'origine ===== */
+.gda-daily .dash-phase-row > div:first-child,
+.gda-daily .dash-phase-row > div:last-child,
+.gda-daily .pct-num,
+.gda-daily .task-name,
+.gda-daily .tbl td {
+  color: var(--blanc) !important;
+}
+
+.gda-daily .task-phase,
+.gda-daily .range-val {
+  color: var(--blanc-discret);
+}
+
+/* ===== Barres de progression : beurre en cours, sauge terminé ===== */
+.gda-daily .pbar {
+  background: rgba(251, 241, 228, 0.16);
+}
+
+.gda-daily .fill-0 { background: rgba(251, 241, 228, 0.28); }
+.gda-daily .fill-low,
+.gda-daily .fill-mid,
+.gda-daily .pbar-fill,
+.gda-daily .sp-fill { background: var(--etat-cours); }
+.gda-daily .fill-done { background: var(--etat-fait); }
+
+/* ===== Boutons : plats, teintes crème ===== */
+.gda-daily .btn {
+  border-radius: 8px;
+  font-family: var(--font-titre);
+  font-weight: 600;
+  box-shadow: none;
+  transform: none;
+}
+
+.gda-daily .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gda-daily .btn-primary {
+  background: #381419;
+  color: var(--blanc);
+  border: 1px solid rgba(251, 241, 228, 0.28);
+}
+
+.gda-daily .btn-primary:hover:not(:disabled) {
+  background: #4a1c22;
+  color: var(--blanc);
+}
+
+.gda-daily .btn-excel {
+  background: var(--etat-fait);
+  color: var(--blanc);
+  border: 1px solid var(--etat-fait);
+}
+
+.gda-daily .btn-excel:hover:not(:disabled) {
+  background: #166a39;
+  color: var(--blanc);
+}
+
+.gda-daily .btn-ok {
+  background: var(--etat-fait);
+  color: var(--blanc);
+  border: 1px solid var(--etat-fait);
+}
+
+.gda-daily .btn-ok:hover:not(:disabled) {
+  background: #166a39;
+  color: var(--blanc);
+}
+
+.gda-daily .btn-secondary {
+  background: transparent;
+  color: var(--blanc);
+  border: 1px solid rgba(251, 241, 228, 0.42);
+}
+
+.gda-daily .btn-secondary:hover:not(:disabled) {
+  background: rgba(251, 241, 228, 0.12);
+  border-color: rgba(251, 241, 228, 0.62);
+}
+
+/* ===== Sidebar ===== */
+.gda-daily .sidebar-section {
+  font-weight: 700;
+}
+
+.gda-daily .nav-item {
+  color: var(--blanc-texte);
+  font-weight: 500;
+}
+
+.gda-daily .nav-item:hover {
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.08);
+}
+
+.gda-daily .nav-item.active {
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.13);
+  border-left-color: var(--sable);
+}
+
+/* ===== Badges de statut : teintes douces sur fond translucide ===== */
+.gda-daily .badge-nd { background: rgba(251, 241, 228, 0.16); color: var(--blanc-texte); }
+.gda-daily .badge-ip { background: var(--etat-cours); color: var(--blanc); }
+.gda-daily .badge-ok { background: var(--etat-fait); color: var(--blanc); }
+.gda-daily .badge-late { background: var(--etat-annule); color: var(--blanc); }
+
+.gda-daily .phase-row td {
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.09);
+}
+
+.gda-daily .tbl tr:hover td {
+  background: rgba(251, 241, 228, 0.06);
+}
+
+/* ===== Champs de saisie ===== */
+.gda-daily input[type='text'],
+.gda-daily input[type='number'],
+.gda-daily input[type='date'],
+.gda-daily input[type='search'],
+.gda-daily select,
+.gda-daily textarea {
+  color: var(--blanc);
+  border-color: rgba(251, 241, 228, 0.28);
+}
+
+.gda-daily input:focus,
+.gda-daily select:focus,
+.gda-daily textarea:focus {
+  border-color: var(--sable);
+  box-shadow: none;
+}
+
+/* ===== Derniers fonds clairs d'origine : zone de dépôt, écran vide, aperçu ===== */
+.gda-daily .drop-zone,
+.gda-daily .photo-empty,
+.gda-daily .photo-hero,
+.gda-daily .photo-upload-card,
+.gda-daily .photo-gallery-shell {
+  background: rgba(20, 12, 7, 0.55);
+  box-shadow: none;
+}
+
+.gda-daily .drop-zone,
+.gda-daily .photo-empty {
+  border-color: rgba(251, 241, 228, 0.32);
+}
+
+.gda-daily .drop-zone:hover,
+.gda-daily .drop-zone.drag-active {
+  background: rgba(251, 241, 228, 0.1);
+  border-color: var(--sable);
+  transform: none;
+}
+
+.gda-daily .dz-text,
+.gda-daily .photo-empty-title,
+.gda-daily .photo-hero-title {
+  color: var(--blanc);
+}
+
+.gda-daily .dz-text span,
+.gda-daily .photo-empty-text,
+.gda-daily .photo-hero-desc {
+  color: var(--blanc-discret);
+}
+
+.gda-daily .photo-tab {
+  background: transparent;
+  color: var(--blanc-texte);
+}
+
+.gda-daily .photo-tab.active {
+  background: rgba(251, 241, 228, 0.14);
+  color: var(--blanc);
+  border-color: var(--sable);
+}
+
+/* ===== Chargement : simple rotation, sans effet ===== */
+.gda-daily .etat-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
+  vertical-align: -2px;
+  border: 2px solid rgba(251, 241, 228, 0.3);
+  border-top-color: var(--blanc);
+  border-radius: 50%;
+  animation: etat-rotation 0.8s linear infinite;
+}
+
+@keyframes etat-rotation {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===================================================================
+   GALERIE PHOTOS — aplats sombres, teintes crème/sable, sans effet
+   =================================================================== */
+.gda-daily .photo-gallery-shell {
+  background: rgba(20, 12, 7, 0.55);
+  border: 1px solid rgba(251, 241, 228, 0.16);
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+/* Onglets de catégorie */
+.gda-daily .photo-tabs {
+  gap: 6px;
+  padding: 14px 18px;
+  background: rgba(20, 12, 7, 0.5);
+  border-bottom: 1px solid rgba(251, 241, 228, 0.14);
+}
+
+.gda-daily .photo-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-family: var(--font-titre);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--blanc-texte);
+  background: transparent;
+  border: 1px solid rgba(251, 241, 228, 0.22);
+  border-radius: 8px;
+  box-shadow: none;
+  transform: none;
+}
+
+.gda-daily .photo-tab:hover {
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.1);
+  border-color: rgba(251, 241, 228, 0.4);
+}
+
+.gda-daily .photo-tab.active {
+  color: var(--blanc);
+  background: #381419;
+  border-color: var(--sable);
+  box-shadow: none;
+}
+
+.gda-daily .photo-tab__nb {
+  min-width: 20px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.16);
+  border-radius: 999px;
+}
+
+.gda-daily .photo-tab.active .photo-tab__nb {
+  background: var(--sable);
+  color: #381419;
+}
+
+/* Bandeau de la catégorie */
+.gda-daily .photo-stage {
+  padding: 20px;
+}
+
+.gda-daily .photo-hero {
+  padding: 22px 24px;
+  margin-bottom: 16px;
+  background: rgba(251, 241, 228, 0.07);
+  border: 1px solid rgba(251, 241, 228, 0.14);
+  border-left: 4px solid var(--sable);
+  border-radius: 12px;
+  color: var(--blanc);
+}
+
+.gda-daily .photo-hero::after {
+  display: none;
+}
+
+.gda-daily .photo-hero-eyebrow {
+  color: var(--sable);
+  font-weight: 700;
+}
+
+.gda-daily .photo-hero-title {
+  font-family: var(--font-titre);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--blanc);
+}
+
+.gda-daily .photo-hero-desc {
+  color: var(--blanc-discret);
+}
+
+.gda-daily .photo-count-badge {
+  background: rgba(251, 241, 228, 0.1);
+  border: 1px solid rgba(251, 241, 228, 0.24);
+  color: var(--blanc);
+  backdrop-filter: none;
+  font-family: var(--font-titre);
+}
+
+/* Barre de sélection multiple */
+.gda-daily .photo-select-toolbar {
+  background: rgba(251, 241, 228, 0.08);
+  border: 1px solid rgba(251, 241, 228, 0.22);
+}
+
+.gda-daily .photo-select-count {
+  color: var(--blanc-texte);
+}
+
+/* Zone de dépôt */
+.gda-daily .photo-upload-card {
+  margin-bottom: 16px;
+}
+
+.gda-daily .drop-zone {
+  padding: 26px 24px;
+  background: rgba(251, 241, 228, 0.04);
+  border: 1px dashed rgba(251, 241, 228, 0.34);
+  border-radius: 12px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.gda-daily .dz-icon-ring {
+  width: 56px;
+  height: 56px;
+  background: rgba(251, 241, 228, 0.1);
+  color: var(--blanc);
+  font-size: 24px;
+}
+
+.gda-daily .dz-text {
+  color: var(--blanc-discret);
+}
+
+.gda-daily .dz-text strong {
+  color: var(--blanc);
+}
+
+/* Grille de photos */
+.gda-daily .photo-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.gda-daily .photo-frame {
+  background: rgba(251, 241, 228, 0.06);
+  border: 1px solid rgba(251, 241, 228, 0.16);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.gda-daily .photo-item:hover img {
+  transform: none;
+}
+
+.gda-daily .photo-item:hover .photo-frame {
+  border-color: var(--sable);
+}
+
+.gda-daily .photo-item .photo-overlay {
+  background: linear-gradient(to top, rgba(20, 12, 7, 0.85), transparent 60%);
+}
+
+.gda-daily .photo-zoom-hint {
+  color: var(--blanc);
+}
+
+.gda-daily .photo-date-badge {
+  background: rgba(20, 12, 7, 0.78);
+  color: var(--blanc);
+  backdrop-filter: none;
+}
+
+.gda-daily .photo-action-btn {
+  background: rgba(20, 12, 7, 0.88);
+  color: var(--blanc);
+  border: 1px solid rgba(251, 241, 228, 0.3);
+}
+
+.gda-daily .photo-action-btn.del {
+  background: var(--etat-annule);
+  border-color: var(--etat-annule);
+  color: var(--blanc);
+}
+
+.gda-daily .photo-caption-label {
+  color: var(--blanc);
+}
+
+.gda-daily .photo-caption-date {
+  color: var(--blanc-discret);
+}
+
+/* Sélection d'une photo */
+.gda-daily .photo-select-check {
+  background: rgba(20, 12, 7, 0.75);
+  border: 2px solid rgba(251, 241, 228, 0.7);
+  color: #381419;
+}
+
+.gda-daily .photo-select-check.checked {
+  background: var(--sable);
+  border-color: var(--sable);
+}
+
+.gda-daily .photo-item--selected .photo-frame {
+  outline: 2px solid var(--sable);
+}
+
+/* Écran « aucune photo » */
+.gda-daily .photo-empty {
+  background: rgba(251, 241, 228, 0.04);
+  border: 1px dashed rgba(251, 241, 228, 0.3);
+  border-radius: 12px;
+}
+
+.gda-daily .photo-empty-icon {
+  background: rgba(251, 241, 228, 0.1);
+  color: var(--blanc);
+}
+
+.gda-daily .photo-empty-title {
+  font-family: var(--font-titre);
+  font-size: 20px;
+  color: var(--blanc);
+}
+
+.gda-daily .photo-empty-text {
+  color: var(--blanc-discret);
+}
+
+/* Visionneuse */
+.gda-daily .lightbox {
+  background: rgba(14, 8, 5, 0.94);
+}
+
+.gda-daily .lb-close,
+.gda-daily .lb-nav {
+  color: var(--blanc);
+}
+
+/* Onglets de la galerie : sélecteur segmenté (piste sombre, actif en crème plein) */
+.gda-daily .photo-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  margin: 18px 18px 0;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(251, 241, 228, 0.1);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.gda-daily .photo-tab {
+  flex: 1 1 0;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 10px 14px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--blanc-discret);
+  background: transparent;
+  border: 0;
+  border-radius: 9px;
+}
+
+.gda-daily .photo-tab:hover {
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.08);
+  border: 0;
+}
+
+.gda-daily .photo-tab.active {
+  color: #381419;
+  background: var(--blanc);
+  border: 0;
+  font-weight: 700;
+}
+
+.gda-daily .photo-tab__nb {
+  min-width: 22px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blanc-texte);
+  background: rgba(251, 241, 228, 0.12);
+  border-radius: 999px;
+}
+
+.gda-daily .photo-tab.active .photo-tab__nb {
+  background: rgba(56, 20, 25, 0.14);
+  color: #381419;
+}
+
+@media (max-width: 720px) {
+  .gda-daily .photo-tab {
+    flex: 0 0 auto;
+  }
+}
+
+
+/* ===================================================================
+   APERÇU DU RAPPORT — sections du PDF avec les composants du dashboard
+   =================================================================== */
+.gda-daily .rapport-libelle {
+  margin: 8px 0 12px;
+  font-family: var(--font-titre);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sable);
+}
+
+.gda-daily .rapport-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 26px 28px;
+  background: rgba(20, 12, 7, 0.78);
+  border: 1px solid rgba(251, 241, 228, 0.16);
+  border-left: 4px solid var(--etat-cours);
+  border-radius: 12px;
+}
+
+.gda-daily .rapport-surtitre {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sable);
+}
+
+.gda-daily .rapport-titre {
+  margin: 6px 0 14px;
+  font-family: var(--font-titre);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: var(--blanc);
+}
+
+.gda-daily .rapport-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gda-daily .rapport-meta span {
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.08);
+  border: 1px solid rgba(251, 241, 228, 0.16);
+  border-radius: 8px;
+}
+
+.gda-daily .rapport-meta b {
+  margin-right: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blanc-discret);
+}
+
+.gda-daily .rapport-global {
+  min-width: 200px;
+  text-align: right;
+}
+
+.gda-daily .rapport-global__pct {
+  font-family: var(--font-titre);
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--blanc);
+}
+
+.gda-daily .rapport-global__lbl {
+  margin: 6px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blanc-discret);
+}
+
+.gda-daily .rapport-phase {
+  display: grid;
+  grid-template-columns: 180px 1fr 56px;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.gda-daily .rapport-phase + .rapport-phase {
+  border-top: 1px solid rgba(251, 241, 228, 0.08);
+}
+
+.gda-daily .rapport-phase__nom {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blanc);
+}
+
+.gda-daily .rapport-phase__pct {
+  text-align: right;
+  font-family: var(--font-titre);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blanc);
+}
+
+.gda-daily .rapport-card-head {
+  margin: 0;
+  padding: 18px 20px 14px;
+}
+
+.gda-daily .rapport-note {
+  margin-top: 4px;
+  max-width: 240px;
+  font-size: 11px;
+  color: var(--blanc-discret);
+}
+
+.gda-daily .rapport-compte {
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--blanc);
+  background: rgba(251, 241, 228, 0.14);
+  border-radius: 999px;
+}
+
+.gda-daily .rapport-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.gda-daily .rapport-photo {
+  margin: 0;
+}
+
+.gda-daily .rapport-photo img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(251, 241, 228, 0.16);
+  border-radius: 10px;
+}
+
+.gda-daily .rapport-photo figcaption {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--blanc-texte);
+}
+
+@media (max-width: 720px) {
+  .gda-daily .rapport-global {
+    text-align: left;
+  }
+
+  .gda-daily .rapport-phase {
+    grid-template-columns: 110px 1fr 48px;
+  }
+}

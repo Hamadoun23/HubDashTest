@@ -17,6 +17,7 @@ from campagnes.models import (
     Campagne,
     CampagneAideVersement,
     ContratPrestationReponse,
+    DELAI_REPONSE_CONTRAT_JOURS,
     StatutReponseContrat,
     TypeCampagne,
 )
@@ -53,13 +54,10 @@ def _nom(user):
 
 def _corps(request):
     """
-    Corps de la requête, que la méthode soit POST ou PUT/PATCH.
-
-    `request.POST` suffit dans tous les cas : `core.middleware.CorpsJsonMiddleware`
-    le remplit déjà à partir du corps JSON ou form-urlencoded, quelle que soit
-    la méthode — reconstruire le corps ici à la main (`QueryDict(request.body)`)
-    traiterait un corps JSON comme une chaîne de requête et ne lirait plus
-    aucun champ.
+    `CorpsJsonMiddleware` remplit déjà `request.POST` pour tout corps JSON,
+    quelle que soit la méthode (POST/PUT/PATCH/DELETE) — un second passage ici
+    via `QueryDict(request.body)` reparserait à tort le JSON brut comme une
+    chaîne de requête et viderait tous les champs sur les mises à jour PUT.
     """
     return request.POST
 
@@ -261,7 +259,13 @@ def api_vente_store(request):
         donnees["campagne_id"] = ids_ouvertes[0]
     fichier = request.FILES.get("carte_identite")
     if fichier:
-        donnees["carte_identite"] = _stocker_piece_identite(fichier)
+        try:
+            donnees["carte_identite"] = _stocker_piece_identite(fichier)
+        except PieceInvalide as erreur:
+            return JsonResponse(
+                {"success": False, "message": str(erreur), "errors": {"carte_identite": [str(erreur)]}},
+                status=422,
+            )
 
     partenaire = partenaire_courant(request)
     adhesion = None
@@ -333,13 +337,52 @@ def _valider_adhesion(request, donnees):
     return valides
 
 
+class PieceInvalide(ValueError):
+    """Pièce d'identité refusée : ni image ni PDF, ou trop lourde."""
+
+
+def _format_piece(fichier):
+    """Extension sûre déduite du contenu réel du fichier (image ou PDF), sinon PieceInvalide.
+
+    Vérifier l'extension ne suffit pas : un .html renommé en .jpg serait servi
+    tel quel sur l'origine du hub (XSS stockée).
+    """
+    if fichier.size > 10 * 1024 * 1024:
+        raise PieceInvalide("La pièce d'identité dépasse 10 Mo.")
+    debut = fichier.read(5)
+    fichier.seek(0)
+    if debut.startswith(b"%PDF-"):
+        return ".pdf"
+    from PIL import Image, UnidentifiedImageError
+
+    try:
+        image = Image.open(fichier)
+        image.verify()
+        format_reel = image.format
+    except (UnidentifiedImageError, OSError, SyntaxError):
+        format_reel = None
+    finally:
+        fichier.seek(0)
+    formats = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "GIF": ".gif"}
+    if format_reel not in formats:
+        raise PieceInvalide("La pièce d'identité doit être une image (JPG, PNG, GIF, WebP) ou un PDF.")
+    return formats[format_reel]
+
+
 def _stocker_piece_identite(fichier):
     """Enregistre le justificatif et renvoie son chemin relatif au disque public."""
     from django.core.files.storage import FileSystemStorage
     from django.conf import settings
 
+    import uuid
+    from pathlib import Path
+
+    # Nom aléatoire, jamais celui du fichier envoyé : « carte.jpg » ou
+    # « IMG_2026… » se devinent, et ces pièces sont des données personnelles.
+    # (La passerelle exige en plus un compte habilité pour les servir.)
+    extension = _format_piece(fichier)
     stockage = FileSystemStorage(location=settings.MEDIA_ROOT / "cartes-identite")
-    nom = stockage.save(fichier.name, fichier)
+    nom = stockage.save(f"{uuid.uuid4().hex}{extension}", fichier)
     return f"cartes-identite/{nom}"
 
 
@@ -650,8 +693,12 @@ def commercial_client_update(request, client):
 
     fichier = request.FILES.get("carte_identite")
     if fichier:
+        try:
+            nouvelle = _stocker_piece_identite(fichier)
+        except PieceInvalide as erreur:
+            return retour_avec_erreurs(request, {"carte_identite": str(erreur)})
         _supprimer_piece_identite(client)
-        client.carte_identite = _stocker_piece_identite(fichier)
+        client.carte_identite = nouvelle
 
     client.save()
     deposer_flash(request, success="Informations client mises à jour.")
@@ -687,12 +734,20 @@ def commercial_client_destroy(request, client):
 
 
 def _campagne_du_commercial(user):
-    """Première campagne active du périmètre où le commercial est engagé."""
+    """
+    Campagne pour laquelle ce commercial voit et signe son contrat.
+
+    D'abord la campagne en cours où il est engagé ; à défaut, la prochaine
+    campagne programmée où il est engagé et dont le contrat est déjà publié —
+    pour qu'il puisse le consulter et le signer avant le démarrage, sans
+    attendre que la campagne passe « en cours ».
+    """
     Campagne.sync_statuts()
     for campagne in Campagne.actives_pour_commercial(user):
         if campagne.est_engage_commercial(user.id):
             return campagne
-    return None
+    a_venir = Campagne.programmees_pour_commercial(user)
+    return a_venir[0] if a_venir else None
 
 
 @role_required(Role.COMMERCIAL, Role.COMMERCIAL_TELEPHONIQUE)
@@ -710,7 +765,7 @@ def contrat_show(request):
         defaults={"statut": StatutReponseContrat.EN_ATTENTE},
     )
 
-    verrou = bool(campagne.contrat_publie_at) and campagne.contrat_delai_expire()
+    verrou = bool(campagne.contrat_publie_at) and campagne.contrat_delai_expire(reponse.created_at)
     peut_repondre = (
         bool(campagne.contrat_publie_at)
         and not verrou
@@ -719,9 +774,12 @@ def contrat_show(request):
 
     contexte = services.donnees_contrat(campagne)
     versements = campagne.aide_versements.filter(user_id=user.id).order_by("-semaine_debut")
-    # Le commercial dispose de 5 jours après publication pour répondre.
+    # Le commercial dispose de DELAI_REPONSE_CONTRAT_JOURS après publication
+    # pour répondre — ou après son engagement, si celui-ci est postérieur
+    # (renfort en cours de campagne, cf. Campagne.contrat_delai_expire).
     echeance = (
-        campagne.contrat_publie_at + timedelta(days=5)
+        max(campagne.contrat_publie_at, reponse.created_at)
+        + timedelta(days=DELAI_REPONSE_CONTRAT_JOURS)
         if campagne.contrat_publie_at
         else None
     )
@@ -736,6 +794,9 @@ def contrat_show(request):
                 "date_fin": campagne.date_fin.strftime("%d/%m/%Y"),
                 "contrat_publie_at": bool(campagne.contrat_publie_at),
                 "aide_hebdo_active": campagne.aide_hebdo_active,
+                # La campagne n'a pas encore démarré : le commercial peut
+                # signer par avance (cf. _campagne_du_commercial).
+                "a_venir": campagne.date_debut > date.today(),
             },
             "user": {
                 "adresse_contrat": user.adresse_contrat,
@@ -816,11 +877,14 @@ def _repondre_contrat(request, statut):
     if reponse is None:
         raise Http404
 
-    if campagne.contrat_delai_expire() or reponse.statut != StatutReponseContrat.EN_ATTENTE:
+    if (
+        campagne.contrat_delai_expire(reponse.created_at)
+        or reponse.statut != StatutReponseContrat.EN_ATTENTE
+    ):
         deposer_flash(
             request,
             error="Vous ne pouvez plus modifier votre réponse "
-            "(délai de 5 jours dépassé ou décision déjà enregistrée).",
+            f"(délai de {DELAI_REPONSE_CONTRAT_JOURS} jours dépassé ou décision déjà enregistrée).",
         )
         return redirect("/mon-contrat")
 

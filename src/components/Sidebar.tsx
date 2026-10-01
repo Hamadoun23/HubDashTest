@@ -1,9 +1,10 @@
-import { Bell, Building2, ChevronRight, Home, LogOut, Search, Settings, Sun } from 'lucide-react';
-import { useState } from 'react';
+import { Bell, Building2, ChevronRight, Home, LogOut, Settings } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { APPLICATIONS_HUB } from '../lib/navigation';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from './ui/Avatar';
+import { BoutonInstaller } from './BoutonInstaller';
+import { useNotificationsOptionnelles } from '../lib/notifications/NotificationsContext';
 
 function estActif(chemin: string, href: string) {
   if (href === '/') return chemin === '/';
@@ -13,8 +14,10 @@ function estActif(chemin: string, href: string) {
 export function Sidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { identite, utilisateur, applications, deconnecter } = useAuth();
-  const [lightMode, setLightMode] = useState(false);
+  const { identite, utilisateur, applications, habilitations, deconnecter } = useAuth();
+  const nonLues = useNotificationsOptionnelles()?.nonLues ?? 0;
+  // L'administration du hub n'est proposée qu'à ceux qui peuvent s'en servir.
+  const estAdminHub = Boolean(identite?.est_superadmin || habilitations.hub);
 
   // Chaque utilisateur ne voit que les applications auxquelles il a accès
   // (`applications`, renvoyées par identity à la connexion) — même filtre que
@@ -35,14 +38,6 @@ export function Sidebar() {
         </div>
       </div>
 
-      <div className="mx-4 flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
-        <Search size={16} className="text-muted" />
-        <input
-          placeholder="Rechercher..."
-          className="w-full bg-transparent text-sm text-white placeholder:text-muted focus:outline-none"
-        />
-      </div>
-
       <nav className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         <div>
           <div className="mb-1 flex items-center gap-2 px-3">
@@ -60,6 +55,7 @@ export function Sidebar() {
           </Link>
         </div>
 
+        {estAdminHub && (
         <div>
           <div className="mb-1 flex items-center gap-2 px-3">
             <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
@@ -75,6 +71,7 @@ export function Sidebar() {
             Administration
           </Link>
         </div>
+        )}
 
         <div>
           <div className="mb-1 flex items-center gap-2 px-3">
@@ -103,15 +100,23 @@ export function Sidebar() {
       </nav>
 
       <div className="flex flex-col gap-1 border-t border-border px-3 py-3">
-        <button className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-muted hover:bg-surface2 hover:text-white">
+        <BoutonInstaller />
+        <Link
+          to="/notifications"
+          className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+            estActif(pathname, '/notifications') ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
+          }`}
+        >
           <span className="flex items-center gap-3">
             <Bell size={17} />
             Notifications
           </span>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-black">
-            3
-          </span>
-        </button>
+          {nonLues > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-black">
+              {nonLues > 99 ? '99+' : nonLues}
+            </span>
+          )}
+        </Link>
         <Link
           to="/mon-compte"
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-muted hover:bg-surface2 hover:text-white"
@@ -122,28 +127,8 @@ export function Sidebar() {
       </div>
 
       <div className="border-t border-border p-3">
-        <button
-          onClick={() => setLightMode((v) => !v)}
-          className="flex w-full items-center justify-between rounded-2xl border border-border bg-surface2 px-3 py-2.5"
-        >
-          <span className="flex items-center gap-2 text-sm font-medium text-white">
-            <Sun size={16} className="text-accent2" />
-            Mode clair
-          </span>
-          <span
-            className={`flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${
-              lightMode ? 'bg-accent' : 'bg-surface'
-            }`}
-          >
-            <span
-              className={`h-4 w-4 rounded-full bg-white transition-transform ${
-                lightMode ? 'translate-x-4' : 'translate-x-0'
-              }`}
-            />
-          </span>
-        </button>
 
-        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
+        <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
           <Link to="/mon-compte" className="flex flex-1 items-center gap-3 overflow-hidden">
             <Avatar label={identite?.nom_complet ?? '?'} size={36} />
             <div className="flex-1 overflow-hidden text-left">

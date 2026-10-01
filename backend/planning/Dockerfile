@@ -22,6 +22,8 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./requirements.txt
+# pip à jour : les versions anciennes ont des failles connues (pip-audit).
+RUN pip install --no-cache-dir --upgrade "pip>=26.2"
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/

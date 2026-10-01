@@ -212,6 +212,34 @@ class PhotoSerializer(serializers.ModelSerializer):
         # d'origine.
         read_only_fields = ["projet", "user_id", "user_name", "original_name", "file_size"]
 
+    #: Formats acceptés, vérifiés sur le contenu (Pillow) et pas seulement sur
+    #: l'extension : un .html renommé en .jpg ne passe pas (XSS stockée).
+    FORMATS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "GIF": ".gif"}
+    TAILLE_MAX = 15 * 1024 * 1024
+
+    def validate_file(self, fichier):
+        if fichier is None:
+            return fichier
+        if fichier.size > self.TAILLE_MAX:
+            raise serializers.ValidationError("Photo trop lourde (15 Mo au plus).")
+        from PIL import Image, UnidentifiedImageError
+
+        try:
+            image = Image.open(fichier)
+            image.verify()
+            format_reel = image.format
+        except (UnidentifiedImageError, OSError, SyntaxError):
+            raise serializers.ValidationError("Le fichier n'est pas une image valide (JPEG, PNG, WebP ou GIF).")
+        finally:
+            fichier.seek(0)
+        if format_reel not in self.FORMATS:
+            raise serializers.ValidationError("Format d'image non accepté (JPEG, PNG, WebP ou GIF).")
+        import uuid
+
+        # Nom aléatoire et extension conforme au contenu réel.
+        fichier.name = f"{uuid.uuid4().hex}{self.FORMATS[format_reel]}"
+        return fichier
+
 
 class RapportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -225,6 +253,5 @@ class DashboardChartSerializer(serializers.Serializer):
     """Forme des donnees de graphiques renvoyees par `DashboardViewSet`."""
 
     status_counts = serializers.DictField(child=serializers.IntegerField())
-    progress_by_phase = serializers.ListField(child=serializers.DictField())
-    progress_by_subphase = serializers.ListField(child=serializers.DictField())
-    activities_chart = serializers.ListField(child=serializers.DictField())
+    subphases = serializers.ListField(child=serializers.DictField())
+    activities = serializers.ListField(child=serializers.DictField())

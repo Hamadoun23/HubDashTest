@@ -35,6 +35,17 @@ x-django: &django
     GDAHUB_JWKS_URL: http://identity:8000/.well-known/jwks.json
     GDAHUB_JETON_EMETTEUR: gdahub-identity
     GDAHUB_JETON_AUDIENCE: gdahub
+    # La connexion et les droits passent uniquement par le hub : les services
+    # qui avaient leur propre connexion (FinanceRH, Jus d'orange) n'acceptent
+    # plus que le jeton d'identity, et exigent l'habilitation correspondante.
+    GDAHUB_AUTH_SEULE: "True"
+    # Cle partagee entre les services et identity pour demander une
+    # notification (route interne, jamais exposee par la passerelle).
+    GDAHUB_CLE_INTERNE: "developpement-cle-interne-locale"
+    GDAHUB_URL_IDENTITY: http://identity:8000
+    # Le HTTPS est assure par le nginx de l'hote : pas de redirection a ce
+    # niveau (elle bouclerait sur les appels internes, en http).
+    DJANGO_SSL_REDIRECT: "False"
 
 services:
   # --- Les bases : une par application ------------------------------------
@@ -238,6 +249,11 @@ services:
       # deconnecteraient mutuellement a chaque navigation.
       SESSION_COOKIE_NAME: campagnes_sessionid
       CSRF_COOKIE_NAME: campagnes_csrftoken
+      # Sur « / » et non « /campagnes/ » : les pages de Campagnes sont servies
+      # par l'interface du hub (a la racine) et doivent lire ce cookie pour
+      # signer leurs ecritures (en-tete X-CSRFToken). Son nom est propre a
+      # Campagnes : aucun autre service ne l'ecrase.
+      CSRF_COOKIE_PATH: /
     volumes:
       - ./backend/campagnes:/app
       - media-campagnes-app:/app/media
@@ -275,6 +291,7 @@ services:
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./gateway/entetes-proxy.conf:/etc/nginx/entetes-proxy.conf:ro
+      - ./gateway/fichiers-securite.conf:/etc/nginx/fichiers-securite.conf:ro
       # En lecture seule : la passerelle distribue les fichiers, elle n'en
       # ecrit aucun.
       - media-financerh:/var/media/rh:ro

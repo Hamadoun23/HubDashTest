@@ -1,101 +1,103 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense, lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import App from './App';
 import './index.css';
 import { AuthProvider } from './lib/auth/AuthContext';
 import { RequireAuth } from './components/RequireAuth';
-import Accueil from './pages/Accueil';
-import Administration from './pages/Administration';
-import NouveauCompte from './pages/administration/NouveauCompte';
-import DetailCompte from './pages/administration/DetailCompte';
-import NouveauDepartement from './pages/administration/NouveauDepartement';
-import DetailDepartement from './pages/administration/DetailDepartement';
-import DetailApplication from './pages/administration/DetailApplication';
+import { FiletErreur } from './components/FiletErreur';
 import Connexion from './pages/Connexion';
-import MonCompte from './pages/MonCompte';
 
-import JusLayout from './layouts/JusLayout';
-import RhLayout from './layouts/RhLayout';
-import ChantiersLayout from './layouts/ChantiersLayout';
-import PlanningLayout from './layouts/PlanningLayout';
-import CampagnesLayout from './layouts/CampagnesLayout';
 
-import ChantierLayout from './pages/chantiers/ChantierLayout';
-import ChantiersDetail from './pages/chantiers/Detail';
-import Journal from './pages/chantiers/Journal';
-import ChantiersListe from './pages/chantiers/Liste';
-import Meteo from './pages/chantiers/Meteo';
-import Photos from './pages/chantiers/Photos';
-import Rapport from './pages/chantiers/Rapport';
-import SaisieDuJour from './pages/chantiers/SaisieDuJour';
-import Structure from './pages/chantiers/Structure';
-import Taches from './pages/chantiers/Taches';
 
-import TableauDeBordJus from './pages/jus/TableauDeBord';
-import Reporting from './pages/jus/Reporting';
-import Tresorerie from './pages/jus/Tresorerie';
-import Utilisateurs from './pages/jus/Utilisateurs';
+// Chaque écran est chargé à la demande : le premier affichage (connexion,
+// accueil) ne télécharge pas le code de toutes les applications.
+const ProjetsChantiers = lazy(() => import('./pages/chantiers/Projets'));
+const RedirectionStructure = lazy(() => import('./pages/chantiers/Projets').then((m) => ({ default: m.RedirectionStructure })));
+const Accueil = lazy(() => import('./pages/Accueil'));
+const Administration = lazy(() => import('./pages/Administration'));
+const NouveauCompte = lazy(() => import('./pages/administration/NouveauCompte'));
+const DetailCompte = lazy(() => import('./pages/administration/DetailCompte'));
+const NouveauDepartement = lazy(() => import('./pages/administration/NouveauDepartement'));
+const DetailDepartement = lazy(() => import('./pages/administration/DetailDepartement'));
+const DetailApplication = lazy(() => import('./pages/administration/DetailApplication'));
+const MonCompte = lazy(() => import('./pages/MonCompte'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const HoteCampagnes = lazy(() => import('./campagnes/HoteCampagnes'));
+const JusLayout = lazy(() => import('./layouts/JusLayout'));
+const RhLayout = lazy(() => import('./layouts/RhLayout'));
+const PlanningLayout = lazy(() => import('./layouts/PlanningLayout'));
+const AccueilChantiers = lazy(() => import('./pages/chantiers/Accueil'));
+const ChantierLayout = lazy(() => import('./pages/chantiers/ChantierLayout'));
+const ChantiersDetail = lazy(() => import('./pages/chantiers/Detail'));
+const Meteo = lazy(() => import('./pages/chantiers/Meteo'));
+const Photos = lazy(() => import('./pages/chantiers/Photos'));
+const Rapport = lazy(() => import('./pages/chantiers/Rapport'));
+const SaisieDuJour = lazy(() => import('./pages/chantiers/SaisieDuJour'));
+const Taches = lazy(() => import('./pages/chantiers/Taches'));
+const TableauDeBordJus = lazy(() => import('./pages/jus/TableauDeBord'));
+const Reporting = lazy(() => import('./pages/jus/Reporting'));
+const Tresorerie = lazy(() => import('./pages/jus/Tresorerie'));
+const Utilisateurs = lazy(() => import('./pages/jus/Utilisateurs'));
+const ClientsCommercial = lazy(() => import('./pages/jus/commercial/Clients'));
+const Commandes = lazy(() => import('./pages/jus/commercial/Commandes'));
+const Factures = lazy(() => import('./pages/jus/commercial/Factures'));
+const Paiements = lazy(() => import('./pages/jus/commercial/Paiements'));
+const Prospection = lazy(() => import('./pages/jus/commercial/Prospection'));
+const Ventes = lazy(() => import('./pages/jus/commercial/Ventes'));
+const Articles = lazy(() => import('./pages/jus/production/Articles'));
+const Bouteilles = lazy(() => import('./pages/jus/production/Bouteilles'));
+const Conditionnements = lazy(() => import('./pages/jus/production/Conditionnements'));
+const Cueillettes = lazy(() => import('./pages/jus/production/Cueillettes'));
+const Inventaires = lazy(() => import('./pages/jus/production/Inventaires'));
+const Producteurs = lazy(() => import('./pages/jus/production/Producteurs'));
+const Productions = lazy(() => import('./pages/jus/production/Productions'));
+const Receptions = lazy(() => import('./pages/jus/production/Receptions'));
+const Appro = lazy(() => import('./pages/jus/reporting/Appro'));
+const Distribution = lazy(() => import('./pages/jus/reporting/Distribution'));
+const Emballage = lazy(() => import('./pages/jus/reporting/Emballage'));
+const Entrepot = lazy(() => import('./pages/jus/reporting/Entrepot'));
+const Fabrication = lazy(() => import('./pages/jus/reporting/Fabrication'));
+const Recolte = lazy(() => import('./pages/jus/reporting/Recolte'));
+const Clients = lazy(() => import('./pages/planning/Clients'));
+const DetailClientPlanning = lazy(() => import('./pages/planning/DetailClient'));
+const IdeesContenu = lazy(() => import('./pages/planning/IdeesContenu'));
+const Publications = lazy(() => import('./pages/planning/Publications'));
+const Statistiques = lazy(() => import('./pages/planning/Statistiques'));
+const TableauDeBordPlanning = lazy(() => import('./pages/planning/TableauDeBord'));
+const Tournages = lazy(() => import('./pages/planning/Tournages'));
+const Absences = lazy(() => import('./pages/rh/Absences'));
+const Annuaire = lazy(() => import('./pages/rh/Annuaire'));
+const Historique = lazy(() => import('./pages/rh/Historique'));
+const MesDemandes = lazy(() => import('./pages/rh/MesDemandes'));
+const MonEspace = lazy(() => import('./pages/rh/MonEspace'));
+const Organisation = lazy(() => import('./pages/rh/Organisation'));
+const Permissions = lazy(() => import('./pages/rh/Permissions'));
+const Presences = lazy(() => import('./pages/rh/Presences'));
+const Retards = lazy(() => import('./pages/rh/Retards'));
+const TableauDeBordRh = lazy(() => import('./pages/rh/TableauDeBord'));
+const Validations = lazy(() => import('./pages/rh/Validations'));
+const RequisitionDetail = lazy(() => import('./pages/finance/RequisitionDetail'));
 
-import ClientsCommercial from './pages/jus/commercial/Clients';
-import Commandes from './pages/jus/commercial/Commandes';
-import Factures from './pages/jus/commercial/Factures';
-import Paiements from './pages/jus/commercial/Paiements';
-import Prospection from './pages/jus/commercial/Prospection';
-import Ventes from './pages/jus/commercial/Ventes';
 
-import Articles from './pages/jus/production/Articles';
-import Bouteilles from './pages/jus/production/Bouteilles';
-import Conditionnements from './pages/jus/production/Conditionnements';
-import Cueillettes from './pages/jus/production/Cueillettes';
-import Inventaires from './pages/jus/production/Inventaires';
-import Producteurs from './pages/jus/production/Producteurs';
-import Productions from './pages/jus/production/Productions';
-import Receptions from './pages/jus/production/Receptions';
 
-import Appro from './pages/jus/reporting/Appro';
-import Distribution from './pages/jus/reporting/Distribution';
-import Emballage from './pages/jus/reporting/Emballage';
-import Entrepot from './pages/jus/reporting/Entrepot';
-import Fabrication from './pages/jus/reporting/Fabrication';
-import Recolte from './pages/jus/reporting/Recolte';
 
-import Clients from './pages/planning/Clients';
-import DetailClientPlanning from './pages/planning/DetailClient';
-import IdeesContenu from './pages/planning/IdeesContenu';
-import Publications from './pages/planning/Publications';
-import Statistiques from './pages/planning/Statistiques';
-import TableauDeBordPlanning from './pages/planning/TableauDeBord';
-import Tournages from './pages/planning/Tournages';
 
-import CampagnesTableauDeBord from './pages/campagnes/TableauDeBord';
-import CampagnesVentes from './pages/campagnes/Ventes';
-import CampagnesEnrolements from './pages/campagnes/Enrolements';
-import CampagnesListe from './pages/campagnes/admin/Liste';
-import CampagnesCreer from './pages/campagnes/admin/Creer';
-import CampagnesDetail from './pages/campagnes/admin/Detail';
-import CampagnesPerformances from './pages/campagnes/Performances';
-import CampagnesMonContrat from './pages/campagnes/MonContrat';
-import CampagnesTelephonique from './pages/campagnes/Telephonique';
-import CampagnesChoixClient from './pages/campagnes/ChoixClient';
 
-import Absences from './pages/rh/Absences';
-import Annuaire from './pages/rh/Annuaire';
-import Historique from './pages/rh/Historique';
-import MesDemandes from './pages/rh/MesDemandes';
-import MonEspace from './pages/rh/MonEspace';
-import Organisation from './pages/rh/Organisation';
-import Permissions from './pages/rh/Permissions';
-import Presences from './pages/rh/Presences';
-import Retards from './pages/rh/Retards';
-import TableauDeBordRh from './pages/rh/TableauDeBord';
-import Validations from './pages/rh/Validations';
-import RequisitionDetail from './pages/finance/RequisitionDetail';
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
       <AuthProvider>
+        <FiletErreur>
+        <Suspense
+          fallback={
+            <div className="flex h-screen w-full items-center justify-center bg-bg">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+            </div>
+          }
+        >
         <Routes>
           <Route path="/connexion" element={<Connexion />} />
 
@@ -111,20 +113,13 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/administration/departements/:id" element={<DetailDepartement />} />
               <Route path="/administration/applications/:id" element={<DetailApplication />} />
               <Route path="/mon-compte" element={<MonCompte />} />
+              <Route path="/notifications" element={<Notifications />} />
             </Route>
 
-            <Route element={<CampagnesLayout />}>
-              <Route path="/campagnes" element={<CampagnesTableauDeBord />} />
-              <Route path="/campagnes/ventes" element={<CampagnesVentes />} />
-              <Route path="/campagnes/enrolements" element={<CampagnesEnrolements />} />
-              <Route path="/campagnes/admin/campagnes" element={<CampagnesListe />} />
-              <Route path="/campagnes/admin/campagnes/creer" element={<CampagnesCreer />} />
-              <Route path="/campagnes/admin/campagnes/:id" element={<CampagnesDetail />} />
-              <Route path="/campagnes/performances" element={<CampagnesPerformances />} />
-              <Route path="/campagnes/mon-contrat" element={<CampagnesMonContrat />} />
-              <Route path="/campagnes/reporting-telephonique" element={<CampagnesTelephonique />} />
-              <Route path="/campagnes/choix-client" element={<CampagnesChoixClient />} />
-            </Route>
+            {/* Campagnes : les écrans de BDM, servis par le pont Inertia
+                (src/campagnes/). Chaque adresse #/campagnes/... est celle du
+                service, une à une. */}
+            <Route path="/campagnes/*" element={<HoteCampagnes />} />
 
             {/* Chaque app métier reprend son identité visuelle propre — la
                 sidebar du hub ne fait plus que rediriger vers sa racine. */}
@@ -181,18 +176,18 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/jus/reporting/distribution" element={<Distribution />} />
             </Route>
 
-            <Route element={<ChantiersLayout />}>
-              <Route path="/chantiers" element={<ChantiersListe />} />
-              <Route path="/chantiers/:id" element={<ChantierLayout />}>
-                <Route index element={<ChantiersDetail />} />
-                <Route path="saisie" element={<SaisieDuJour />} />
-                <Route path="taches" element={<Taches />} />
-                <Route path="photos" element={<Photos />} />
-                <Route path="structure" element={<Structure />} />
-                <Route path="journal" element={<Journal />} />
-                <Route path="meteo" element={<Meteo />} />
-                <Route path="rapport" element={<Rapport />} />
-              </Route>
+            {/* Chaque écran Chantiers porte sa propre coquille (en-tête, et sidebar
+                pour un chantier ouvert) — fidèle à daily.gdamali.net. */}
+            <Route path="/chantiers" element={<AccueilChantiers />} />
+            <Route path="/chantiers/projets" element={<ProjetsChantiers />} />
+            <Route path="/chantiers/:id" element={<ChantierLayout />}>
+              <Route index element={<ChantiersDetail />} />
+              <Route path="saisie" element={<SaisieDuJour />} />
+              <Route path="taches" element={<Taches />} />
+              <Route path="photos" element={<Photos />} />
+              <Route path="structure" element={<RedirectionStructure />} />
+              <Route path="meteo" element={<Meteo />} />
+              <Route path="rapport" element={<Rapport />} />
             </Route>
 
             <Route element={<PlanningLayout />}>
@@ -206,7 +201,17 @@ createRoot(document.getElementById('root')!).render(
             </Route>
           </Route>
         </Routes>
+        </Suspense>
+        </FiletErreur>
       </AuthProvider>
     </HashRouter>
   </StrictMode>,
 );
+
+// PWA : service worker (cache de l'interface, page hors ligne, notifications
+// push). Enregistré après le chargement pour ne pas retarder le premier écran.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+  });
+}

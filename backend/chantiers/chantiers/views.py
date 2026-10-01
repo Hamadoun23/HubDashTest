@@ -5,7 +5,7 @@ from urllib.request import urlopen
 
 from django.db import transaction
 from django.db.models import Q
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -13,7 +13,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .exports import excel_response, pdf_response
+from .exports import excel_response
 from .models import (
     ActivityLog,
     MiseAJourJournaliere,
@@ -22,6 +22,14 @@ from .models import (
     Project,
     Rapport,
     SousPhase,
+)
+from .meteo import previsions_decision
+from .reports import (
+    build_stats,
+    build_task_rows,
+    count_non_empty_photo_categories,
+    estimer_pages,
+    generate_report_pdf,
 )
 from .permissions import EstEquipeInterne, LectureSeulePourPartenaire
 from .serializers import (
@@ -108,12 +116,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         log_activity(self.request, "project.created", project=projet, subject=projet)
 
+    def perform_update(self, serializer):
+        projet = serializer.save()
+        log_activity(self.request, "project.updated", project=projet, subject=projet)
+
+    def perform_destroy(self, instance):
+        log_activity(self.request, "project.deleted", project=instance, subject=instance, description=instance.name)
+        instance.delete()
+
     @action(detail=False, methods=["post"], url_path="reorder", permission_classes=[EstEquipeInterne])
     def reorder(self, request):
         order = request.data.get("order", [])
         if not isinstance(order, list) or not order:
             return Response({"detail": "La liste order est obligatoire."}, status=status.HTTP_400_BAD_REQUEST)
         apply_sort_order(self.get_queryset(), order)
+        log_activity(request, "project.reordered", description=f"ordre={order}")
         return Response({"ok": True})
 
     @action(detail=True, methods=["get"])
@@ -153,12 +170,25 @@ class PhaseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Phase.objects.filter(projet__in=project_queryset_for(self.request.user))
 
+    def perform_create(self, serializer):
+        phase = serializer.save()
+        log_activity(self.request, "phase.created", project=phase.projet, subject=phase, description=phase.name)
+
+    def perform_update(self, serializer):
+        phase = serializer.save()
+        log_activity(self.request, "phase.updated", project=phase.projet, subject=phase, description=phase.name)
+
+    def perform_destroy(self, instance):
+        log_activity(self.request, "phase.deleted", project=instance.projet, subject=instance, description=instance.name)
+        instance.delete()
+
     @action(detail=False, methods=["post"], url_path="reorder", permission_classes=[EstEquipeInterne])
     def reorder(self, request):
         project_id = request.data.get("project_id") or request.query_params.get("project_id")
         if not project_id or not isinstance(request.data.get("order"), list):
             return Response({"detail": "project_id et order sont obligatoires."}, status=status.HTTP_400_BAD_REQUEST)
         apply_sort_order(self.get_queryset().filter(projet_id=project_id), request.data["order"])
+        log_activity(request, "phase.reordered", project=Project.objects.filter(pk=project_id).first(), description=f"ordre={request.data['order']}")
         return Response({"ok": True})
 
 
@@ -170,12 +200,26 @@ class SousPhaseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return SousPhase.objects.filter(phase__projet__in=project_queryset_for(self.request.user))
 
+    def perform_create(self, serializer):
+        sous_phase = serializer.save()
+        log_activity(self.request, "sous_phase.created", project=sous_phase.phase.projet, subject=sous_phase, description=sous_phase.name)
+
+    def perform_update(self, serializer):
+        sous_phase = serializer.save()
+        log_activity(self.request, "sous_phase.updated", project=sous_phase.phase.projet, subject=sous_phase, description=sous_phase.name)
+
+    def perform_destroy(self, instance):
+        log_activity(self.request, "sous_phase.deleted", project=instance.phase.projet, subject=instance, description=instance.name)
+        instance.delete()
+
     @action(detail=False, methods=["post"], url_path="reorder", permission_classes=[EstEquipeInterne])
     def reorder(self, request):
         phase_id = request.data.get("phase_id")
         if not phase_id or not isinstance(request.data.get("order"), list):
             return Response({"detail": "phase_id et order sont obligatoires."}, status=status.HTTP_400_BAD_REQUEST)
         apply_sort_order(self.get_queryset().filter(phase_id=phase_id), request.data["order"])
+        phase_pour_log = Phase.objects.filter(pk=phase_id).select_related("projet").first()
+        log_activity(request, "sous_phase.reordered", project=phase_pour_log.projet if phase_pour_log else None, description=f"ordre={request.data['order']}")
         return Response({"ok": True})
 
 
@@ -187,12 +231,26 @@ class TacheViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return visible_tasks(active_project(self.request), self.request.user)
 
+    def perform_create(self, serializer):
+        tache = serializer.save()
+        log_activity(self.request, "task.created", project=tache.sous_phase.phase.projet, subject=tache, description=tache.activity)
+
+    def perform_update(self, serializer):
+        tache = serializer.save()
+        log_activity(self.request, "task.updated", project=tache.sous_phase.phase.projet, subject=tache, description=tache.activity)
+
+    def perform_destroy(self, instance):
+        log_activity(self.request, "task.deleted", project=instance.sous_phase.phase.projet, subject=instance, description=instance.activity)
+        instance.delete()
+
     @action(detail=False, methods=["post"], url_path="reorder", permission_classes=[EstEquipeInterne])
     def reorder(self, request):
         sous_phase_id = request.data.get("sous_phase_id")
         if not sous_phase_id or not isinstance(request.data.get("order"), list):
             return Response({"detail": "sous_phase_id et order sont obligatoires."}, status=status.HTTP_400_BAD_REQUEST)
         apply_sort_order(self.get_queryset().filter(sous_phase_id=sous_phase_id), request.data["order"])
+        sous_phase_pour_log = SousPhase.objects.filter(pk=sous_phase_id).select_related("phase__projet").first()
+        log_activity(request, "task.reordered", project=sous_phase_pour_log.phase.projet if sous_phase_pour_log else None, description=f"ordre={request.data['order']}")
         return Response({"ok": True})
 
     @action(detail=True, methods=["get"], url_path="detail-complete")
@@ -252,7 +310,10 @@ class MiseAJourJournaliereViewSet(viewsets.ModelViewSet):
         project = active_project(request)
         report_date = request.query_params.get("date") or str(timezone.localdate())
         items = []
-        for task in visible_tasks(project, request.user):
+        taches = visible_tasks(project, request.user).order_by(
+            "sous_phase__phase__sort_order", "sous_phase__sort_order", "sort_order", "id"
+        )
+        for task in taches:
             today = task.mises_a_jour.filter(report_date=report_date).first()
             latest = task.latest_daily_update()
             items.append(
@@ -283,6 +344,11 @@ class PhotoViewSet(viewsets.ModelViewSet):
         return Photo.objects.filter(projet=active_project(self.request))
 
     def perform_create(self, serializer):
+        # Une date de prise choisie a la main (formulaire) a priorite sur l'EXIF
+        # et sur la date du jour — sans ce garde-fou, `taken_at` envoye par le
+        # frontend etait toujours ecrase plus bas, silencieusement.
+        taken_at_saisie = serializer.validated_data.get("taken_at")
+
         photo_base64 = self.request.data.get("photo_base64")
         if photo_base64:
             processed = process_base64_photo(photo_base64, self.request.data.get("photo_name", "webcam_capture.jpg"))
@@ -293,7 +359,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
                 original_name=self.request.data.get("photo_name", "webcam_capture.jpg"),
                 file=processed["processed_file"],
                 file_size=processed["file_size"],
-                taken_at=(processed["taken_at"].date() if processed["taken_at"] else timezone.localdate()),
+                taken_at=taken_at_saisie or (processed["taken_at"].date() if processed["taken_at"] else timezone.localdate()),
             )
             log_activity(self.request, "photo.created", project=photo.projet, subject=photo)
             return
@@ -310,7 +376,7 @@ class PhotoViewSet(viewsets.ModelViewSet):
             original_name=upload.name,
             file=processed["processed_file"],
             file_size=processed["file_size"],
-            taken_at=(processed["taken_at"].date() if processed["taken_at"] else timezone.localdate()),
+            taken_at=taken_at_saisie or (processed["taken_at"].date() if processed["taken_at"] else timezone.localdate()),
         )
         log_activity(self.request, "photo.created", project=photo.projet, subject=photo)
 
@@ -325,7 +391,9 @@ class PhotoViewSet(viewsets.ModelViewSet):
     def bulk_delete(self, request):
         qs = self.get_queryset().filter(id__in=request.data.get("ids", []))
         count = qs.count()
+        projet = active_project(request)
         qs.delete()
+        log_activity(request, "photo.deleted", project=projet, description=f"{count} photo(s) supprimee(s)")
         return Response({"deleted": count})
 
 
@@ -342,11 +410,9 @@ class RapportViewSet(viewsets.ModelViewSet):
         project = active_project(request)
         report_date = request.data.get("report_date") or timezone.localdate()
 
-        tasks = visible_tasks(project, request.user)
-        total_tasks = tasks.count()
-        done_tasks = tasks.filter(mises_a_jour__status="termine").distinct().count()
-        in_progress_tasks = tasks.filter(mises_a_jour__status="en_cours").distinct().count()
-        page_count = max(1, (total_tasks + 19) // 20)
+        lignes = build_task_rows(project, request.user, "fr")
+        stats = build_stats(lignes)
+        page_number = estimer_pages(stats["total"], count_non_empty_photo_categories(project))
 
         report = Rapport.objects.create(
             projet=project,
@@ -356,23 +422,22 @@ class RapportViewSet(viewsets.ModelViewSet):
             temperature=request.data.get("temperature") or None,
             weather=request.data.get("weather", ""),
             notes=request.data.get("notes", ""),
-            overall_progress=project.overall_progress(),
-            page_number=f"1/{page_count}",
+            overall_progress=stats["overall"],
+            page_number=page_number,
         )
         log_activity(request, "report.generated", project=project, subject=report)
 
-        data = dashboard_data(project, request.user)
         return Response(
             {
                 "report": RapportSerializer(report).data,
                 "statistics": {
-                    "total_tasks": total_tasks,
-                    "done_tasks": done_tasks,
-                    "in_progress_tasks": in_progress_tasks,
-                    "overall_progress": project.overall_progress(),
-                    "page_count": page_count,
+                    "total_tasks": stats["total"],
+                    "done_tasks": stats["done"],
+                    "in_progress_tasks": stats["in_progress"],
+                    "overall_progress": stats["overall"],
+                    "page_count": page_number,
                 },
-                "tasks": data["activities"][:50],
+                "tasks": lignes[:50],
             },
             status=201,
         )
@@ -380,14 +445,17 @@ class RapportViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"])
     def pdf(self, request, pk=None):
         report = self.get_object()
-        data = dashboard_data(report.projet, request.user)
-        rows = [[r["phase"], r["subphase"], r["activity"], f"{r['progress']}%", r["status"]] for r in data["activities"]]
-        return pdf_response(
-            f"Rapport chantier - {report.projet.name}",
-            ["Phase", "Sous-phase", "Activite", "Progression", "Statut"],
-            rows,
-            f"rapport-{report.report_date}",
-        )
+        lang = request.query_params.get("lang", "fr")
+        try:
+            contenu = generate_report_pdf(report.projet, report, request.user, lang, request.query_params.get("titre") or None)
+        except Exception as erreur:
+            message = f"PDF : {erreur}" if getattr(request.user, "est_interne", False) else "PDF indisponible."
+            return Response({"detail": message}, status=500)
+
+        nom_fichier = f"rapport-gda-{report.report_date}-{report.id}.pdf"
+        reponse = HttpResponse(contenu, content_type="application/pdf")
+        reponse["Content-Disposition"] = f'attachment; filename="{nom_fichier}"'
+        return reponse
 
 
 class DashboardViewSet(viewsets.ViewSet):
@@ -494,6 +562,12 @@ class WeatherView(APIView):
             lat, lon = float(request.query_params["lat"]), float(request.query_params["lon"])
         except (KeyError, TypeError, ValueError):
             return Response({"detail": "Les parametres lat et lon sont requis."}, status=400)
+
+        if endpoint == "decisions":
+            try:
+                return Response(previsions_decision(lat, lon))
+            except Exception:
+                return Response({"ok": False, "message": "Le service meteo est temporairement indisponible."}, status=503)
 
         if endpoint == "nav":
             query = urlencode({"latitude": lat, "longitude": lon, "current": "temperature_2m,weather_code", "timezone": "auto"})

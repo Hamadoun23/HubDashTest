@@ -60,10 +60,24 @@ export default {
           primary: '#ff6a3a',
           primaryDark: '#d03e0d',
         },
+        // Palette de BDM (frontend/tailwind.config.js), utilisée telle quelle
+        // par les pages de Campagnes reprises dans src/campagnes/.
+        gda: {
+          brun: '#381419',
+          gris: '#303030',
+          cuivre: '#b26440',
+          orange: '#FF6A3A',
+          blanc: '#ffffff',
+        },
+      },
+      boxShadow: {
+        card: '0 1px 2px 0 rgb(0 0 0 / 0.04), 0 1px 3px 0 rgb(0 0 0 / 0.04)',
       },
       fontFamily: {
         sans: ['Manrope', 'system-ui', 'sans-serif'],
         display: ['Outfit', 'system-ui', 'sans-serif'],
+        // Marque de Campagnes (logo, intitulés) — cf. BDM.
+        brand: ['Futura', '"Futura PT"', '"Futura Std"', '"Century Gothic"', '"Trebuchet MS"', 'system-ui', 'sans-serif'],
       },
     },
   },

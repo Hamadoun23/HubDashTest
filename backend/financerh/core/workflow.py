@@ -289,7 +289,32 @@ def _clore(document, approuve, commentaire=""):
         hook = getattr(document, "apres_approbation", None)
         if callable(hook):
             hook()
+    _prevenir_demandeur(document, approuve, commentaire)
     return document
+
+
+def _prevenir_demandeur(document, approuve, commentaire=""):
+    """Notification GDA Hub au demandeur : sa demande est tranchee."""
+    from accounts.notifications_hub import notifier
+
+    demandeur = getattr(document, "demandeur", None)
+    if demandeur is None:
+        return
+    nature = str(document._meta.verbose_name).capitalize()
+    reference = getattr(document, "reference", "") or getattr(document, "numero", "") or ""
+    intitule = f"{nature} {reference}".strip()
+    if approuve:
+        titre, message = f"{intitule} approuvee", "Votre demande a ete approuvee."
+    else:
+        titre = f"{intitule} rejetee"
+        message = f"Motif : {commentaire}" if commentaire else "Votre demande a ete rejetee."
+    notifier(
+        [demandeur.email, demandeur.username],
+        titre=titre,
+        message=message,
+        lien="/rh/mes-demandes",
+        application="rh",
+    )
 
 
 @transaction.atomic
