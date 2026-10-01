@@ -12,6 +12,17 @@ SORTIE = sys.argv[2] if len(sys.argv) > 2 else "DonneeEnProd/Comptes_GDA_Hub.xls
 MDP = sys.argv[3] if len(sys.argv) > 3 else "1234"
 
 rapport = json.load(open(D + "rapport.json", encoding="utf-8"))
+# Mots de passe propres à chaque compte (production) ; à défaut, MDP partout.
+try:
+    MDPS = json.load(open(D + "nouveaux_mots_de_passe.json", encoding="utf-8"))
+except FileNotFoundError:
+    MDPS = None
+
+
+def mdp_de(identifiant):
+    if MDPS is None:
+        return MDP
+    return MDPS.get(identifiant, "(inchangé)")
 admins = json.load(open(D + "admins.json", encoding="utf-8"))
 
 ORANGE, BRUN, CREME = "C8521A", "381419", "FBF1E4"
@@ -79,7 +90,7 @@ def onglet(nom, titre, sous_titre, colonnes, groupes):
 COLS = ["Identifiant de connexion", "Mot de passe", "Nom", "Rôle", "Détails"]
 par_app = defaultdict(list)
 for app, ident, nom, role, det in rapport:
-    par_app[app].append((ident, MDP, nom, LIBELLES.get(app, {}).get(role, role), det, role))
+    par_app[app].append((ident, mdp_de(ident), nom, LIBELLES.get(app, {}).get(role, role), det, role))
 
 
 def groupes_de(app, filtre=lambda l: True):
@@ -99,7 +110,7 @@ ws.title = "Récapitulatif"
 ws.sheet_view.showGridLines = False
 ws["A1"] = "Comptes GDA Hub — environnement local (données réelles)"
 ws["A1"].font = titre_font
-ws["A2"] = f"Mot de passe unique pour tous les comptes : {MDP}   ·   Connexion : http://localhost:8080"
+ws["A2"] = (f"Mot de passe unique pour tous les comptes : {MDP}   ·   Connexion : http://localhost:8080" if MDPS is None else "Mots de passe temporaires individuels (colonne B) ; « (inchangé) » = compte déjà existant, mot de passe actuel conservé")
 ws["A2"].font = Font(bold=True, color=ORANGE)
 ws["A3"] = "Données personnelles réelles : ne pas diffuser. Les commerciaux Campagnes se connectent avec leur numéro de téléphone."
 ws["A3"].font = Font(italic=True, color="7A6A5A")
@@ -125,7 +136,7 @@ ws.column_dimensions["C"].width = 10
 
 # --- Onglets ------------------------------------------------------------------
 onglet("Administrateurs hub", "Administrateurs du hub", "Accès à l'administration de GDA Hub (comptes, droits, applications).",
-       COLS, [("Administrateurs", [(i, MDP, n, "Super-administrateur" if s else "Administrateur", ", ".join(h)) for i, n, s, h in admins])])
+       COLS, [("Administrateurs", [(i, mdp_de(i), n, "Super-administrateur" if s else "Administrateur", ", ".join(h)) for i, n, s, h in admins])])
 onglet("RH & Finance", "RH & Finance", "Agents de FinanceRH (congés, présences, demandes, finance).", COLS, groupes_de("rh"))
 onglet("Jus d'orange", "Jus d'orange", "Utilisateurs de l'application Jus d'orange.", COLS, groupes_de("orange"))
 onglet("Chantiers", "Chantiers (daily)", "Suivi de chantier — le partenaire voit la vue client.", COLS, groupes_de("daily"))
@@ -147,7 +158,7 @@ for app, ident, nom, role, det in rapport:
     comptes[ident]["apps"].append(f"{NOMS[app]} ({LIBELLES.get(app, {}).get(role, role)})")
 onglet("Tous les comptes", "Tous les comptes", "Une ligne par compte du hub, avec ses applications.",
        ["Identifiant de connexion", "Mot de passe", "Nom", "Nb d'applications", "Applications"],
-       [("Comptes", sorted([(i, MDP, c["nom"], len(c["apps"]), " · ".join(c["apps"])) for i, c in comptes.items()], key=lambda x: (x[2] or "").lower()))])
+       [("Comptes", sorted([(i, mdp_de(i), c["nom"], len(c["apps"]), " · ".join(c["apps"])) for i, c in comptes.items()], key=lambda x: (x[2] or "").lower()))])
 
 wb.save(SORTIE)
 print("Classeur écrit :", SORTIE, "| onglets :", wb.sheetnames, "| comptes :", len(comptes))

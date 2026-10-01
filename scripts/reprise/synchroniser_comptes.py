@@ -15,9 +15,11 @@ Règles :
 - chaque application reçoit son habilitation, rôle traduit, et l'identifiant
   sous lequel la personne y est connue (`identifiant_local`).
 
-Mots de passe : **inchangés par défaut**. `MOT_DE_PASSE_UNIQUE=1234` (variable
-d'environnement) donne ce mot de passe à tous les comptes — pour un
-environnement de test seulement, jamais en production.
+Mots de passe : **inchangés pour les comptes existants**. Pour les comptes
+créés : `MOTS_DE_PASSE_ALEATOIRES=1` leur donne un mot de passe temporaire
+aléatoire et unique, inscrit dans `nouveaux_mots_de_passe.json` (à remettre aux
+intéressés, puis à supprimer). `MOT_DE_PASSE_UNIQUE=1234` donne ce mot de passe
+à tous les comptes — environnement de test seulement, jamais en production.
 """
 import json
 import os
@@ -29,6 +31,15 @@ from comptes.models import Application, Habilitation, Utilisateur
 
 D = Path(os.environ.get("DOSSIER_COMPTES", "/tmp/comptes"))
 MDP = os.environ.get("MOT_DE_PASSE_UNIQUE", "")
+ALEATOIRES = os.environ.get("MOTS_DE_PASSE_ALEATOIRES", "") in ("1", "true", "oui")
+nouveaux_mdp = {}
+
+
+def _mdp_aleatoire():
+    import secrets
+
+    alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789"
+    return "".join(secrets.choice(alphabet) for _ in range(12))
 apps = {a.code: a for a in Application.objects.all()}
 
 TRADUCTION_RH = {
@@ -61,6 +72,10 @@ def compte(identifiant, email="", nom="", prenom="", fonction=""):
     u.est_actif = True
     if MDP:
         u.set_password(MDP)
+    elif nouveau and ALEATOIRES:
+        mdp = _mdp_aleatoire()
+        u.set_password(mdp)
+        nouveaux_mdp[identifiant] = mdp
     elif nouveau:
         u.set_unusable_password()  # à définir par l'administration du hub
     u.save()
@@ -125,5 +140,9 @@ admins = [
     if u.is_superuser or u.habilitations.filter(application__code="hub").exists()
 ]
 (D / "rapport.json").write_text(json.dumps(rapport, ensure_ascii=False), encoding="utf-8")
+if nouveaux_mdp:
+    chemin = D / "nouveaux_mots_de_passe.json"
+    chemin.write_text(json.dumps(nouveaux_mdp, ensure_ascii=False), encoding="utf-8")
+    chemin.chmod(0o600)
 (D / "admins.json").write_text(json.dumps(admins, ensure_ascii=False), encoding="utf-8")
 print("SYNCHRO", len(rapport), "lignes ;", Utilisateur.objects.count(), "comptes ;", Habilitation.objects.count(), "habilitations")
