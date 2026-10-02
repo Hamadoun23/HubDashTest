@@ -94,20 +94,23 @@ def trouver_utilisateur(identifiant: str):
     Compte correspondant a l'identifiant saisi (deja en minuscules).
 
     L'identifiant exact l'emporte toujours. A defaut, un nom sans « @ » est
-    complete par le domaine GDA : « hcisse » ouvre le compte
-    « hcisse@gdamali.net », qu'il porte cette adresse comme identifiant ou
-    comme e-mail. Une adresse partagee par plusieurs comptes ne donne rien :
-    on ne choisit jamais un compte au hasard.
+    complete par les domaines du groupe (GDAHUB_DOMAINES_MAIL) : « hcisse »
+    ouvre « hcisse@gdamali.net », « sira.diallo » ouvre
+    « sira.diallo@decheznousmali.com », que l'adresse soit l'identifiant ou
+    l'e-mail du compte. Si le nom correspond a plusieurs comptes (meme nom sur
+    deux domaines, adresse partagee), rien n'est ouvert : on ne choisit
+    jamais un compte au hasard.
     """
     utilisateur = Utilisateur.objects.filter(identifiant=identifiant).first()
     if utilisateur is not None or "@" in identifiant or not identifiant:
         return utilisateur
-    adresse = f"{identifiant}@{settings.GDAHUB_DOMAINE_MAIL}"
-    utilisateur = Utilisateur.objects.filter(identifiant=adresse).first()
-    if utilisateur is not None:
-        return utilisateur
-    candidats = list(Utilisateur.objects.filter(email__iexact=adresse)[:2])
-    return candidats[0] if len(candidats) == 1 else None
+    adresses = [f"{identifiant}@{domaine}" for domaine in settings.GDAHUB_DOMAINES_MAIL]
+    candidats = {u.pk: u for u in Utilisateur.objects.filter(identifiant__in=adresses)}
+    if not candidats:
+        for adresse in adresses:
+            for u in Utilisateur.objects.filter(email__iexact=adresse)[:2]:
+                candidats[u.pk] = u
+    return next(iter(candidats.values())) if len(candidats) == 1 else None
 
 
 class Connexion(APIView):

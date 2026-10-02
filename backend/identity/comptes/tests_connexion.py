@@ -8,7 +8,7 @@ from comptes.models import Utilisateur
 URL = "/api/identity/auth/connexion"
 
 
-@override_settings(GDAHUB_DOMAINE_MAIL="gdamali.net")
+@override_settings(GDAHUB_DOMAINES_MAIL=["gdamali.net", "decheznousmali.com"])
 class ConnexionNomCourtTest(TestCase):
     def setUp(self):
         cache.clear()
@@ -48,6 +48,17 @@ class ConnexionNomCourtTest(TestCase):
     def test_autre_domaine_non_complete(self):
         Utilisateur.objects.create_user(identifiant="x@autre.com", mot_de_passe="secret-4", nom="X")
         self.assertNotEqual(self.connexion("x", "secret-4").status_code, 200)
+
+    def test_nom_court_second_domaine(self):
+        Utilisateur.objects.create_user(identifiant="sira.diallo@decheznousmali.com", mot_de_passe="secret-5", nom="DIALLO")
+        r = self.connexion("sira.diallo", "secret-5")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data["utilisateur"]["identifiant"], "sira.diallo@decheznousmali.com")
+
+    def test_meme_nom_sur_deux_domaines_refuse(self):
+        Utilisateur.objects.create_user(identifiant="awa@gdamali.net", mot_de_passe="p", nom="A")
+        Utilisateur.objects.create_user(identifiant="awa@decheznousmali.com", mot_de_passe="p", nom="B")
+        self.assertNotEqual(self.connexion("awa", "p").status_code, 200)
 
     def test_email_partage_ambigu_refuse(self):
         Utilisateur.objects.create_user(identifiant="1", mot_de_passe="p", nom="A", email="double@gdamali.net")

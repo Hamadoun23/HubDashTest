@@ -76,9 +76,14 @@ GDAHUB_VAPID_CONTACT = os.environ.get("GDAHUB_VAPID_CONTACT", "mailto:support@gd
 # (route interne). Vide : la route est fermee.
 GDAHUB_CLE_INTERNE = os.environ.get("GDAHUB_CLE_INTERNE", "")
 
-# Domaine des adresses GDA : « hcisse » suffit pour se connecter avec
-# « hcisse@gdamali.net » (cf. comptes.views.trouver_utilisateur).
-GDAHUB_DOMAINE_MAIL = os.environ.get("GDAHUB_DOMAINE_MAIL", "gdamali.net").lower().lstrip("@")
+# Domaines des adresses du groupe : « hcisse » suffit pour se connecter avec
+# « hcisse@gdamali.net », « sira.diallo » avec « sira.diallo@decheznousmali.com »
+# (cf. comptes.views.trouver_utilisateur). Liste separee par des virgules.
+GDAHUB_DOMAINES_MAIL = [
+    d.strip().lower().lstrip("@")
+    for d in os.environ.get("GDAHUB_DOMAINES_MAIL", "gdamali.net,decheznousmali.com").split(",")
+    if d.strip()
+]
 GDAHUB_DUREE_RAFRAICHISSEMENT = int(
     os.environ.get("GDAHUB_DUREE_RAFRAICHISSEMENT", "604800")
 )  # 7 jours
