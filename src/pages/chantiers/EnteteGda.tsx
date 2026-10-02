@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ClocheNotifications } from '../../components/notifications/ClocheNotifications';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { useEspaceExterne } from '../../lib/auth/commercialExterne';
 import { useApi } from '../../lib/hooks/useApi';
 import { obtenirMeteoActuelle } from '../../lib/api/chantiers';
 
@@ -74,6 +75,7 @@ export default function EnteteGda({
 }) {
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
+  const externe = useEspaceExterne() !== null;
   const [popover, setPopover] = useState(false);
   const [horloge, setHorloge] = useState(new Date());
 
@@ -136,10 +138,15 @@ export default function EnteteGda({
           </button>
         </div>
       </div>
-      <div style={{ width: 12 }} />
-      <Link to="/" className="header-nav-link" title="Revenir à GDA Hub">
-        ← GDA Hub
-      </Link>
+      {/* Un partenaire externe n'a pas de hub où revenir. */}
+      {!externe && (
+        <>
+          <div style={{ width: 12 }} />
+          <Link to="/" className="header-nav-link" title="Revenir à GDA Hub">
+            ← GDA Hub
+          </Link>
+        </>
+      )}
       <div style={{ width: 12 }} />
       <ClocheNotifications />
       <div style={{ width: 12 }} />

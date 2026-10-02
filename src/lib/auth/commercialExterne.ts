@@ -28,3 +28,31 @@ export function useCommercialExterne(): boolean {
   const { habilitations, identite } = useAuth();
   return estCommercialExterne(habilitations, identite?.est_superadmin);
 }
+
+/**
+ * Espace d'un compte externe à GDA, ou `null` pour un collaborateur.
+ *
+ * - commercial Campagnes (BDM, UBA…) → `/campagnes` ;
+ * - partenaire Chantiers (B2Gold…), seule habilitation « daily » en rôle
+ *   partenaire → `/chantiers`, en lecture seule sur ses propres chantiers.
+ *
+ * Ces comptes ne voient ni l'accueil du hub, ni les autres applications.
+ */
+export function espaceExterne(
+  habilitations: Record<string, string[]>,
+  estSuperadmin: boolean | undefined,
+): '/campagnes' | '/chantiers' | null {
+  if (estSuperadmin) return null;
+  if (estCommercialExterne(habilitations, estSuperadmin)) return '/campagnes';
+  const applications = Object.keys(habilitations);
+  const roles = habilitations.daily ?? [];
+  if (applications.length === 1 && applications[0] === 'daily' && roles.length > 0 && roles.every((r) => r === 'partenaire')) {
+    return '/chantiers';
+  }
+  return null;
+}
+
+export function useEspaceExterne() {
+  const { habilitations, identite } = useAuth();
+  return espaceExterne(habilitations, identite?.est_superadmin);
+}

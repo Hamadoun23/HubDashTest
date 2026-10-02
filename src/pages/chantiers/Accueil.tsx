@@ -6,6 +6,7 @@ import { EtatChargement, EtatErreur } from './EtatsGda';
 import EnteteGda, { STYLE_COQUILLE, langueInitiale } from './EnteteGda';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerProjets } from '../../lib/api/chantiers';
+import { useEstPartenaire } from './ChantierLayout';
 
 export const CLE_DERNIER_CHANTIER = 'chantiers_dernier_actif';
 
@@ -19,6 +20,7 @@ export default function AccueilChantiers() {
   const navigate = useNavigate();
   const [langue, setLangue] = useState(langueInitiale);
   const projets = useApi(() => listerProjets(), []);
+  const estPartenaire = useEstPartenaire();
 
   useEffect(() => {
     if (!projets.donnees || projets.donnees.length === 0) return;
@@ -43,10 +45,14 @@ export default function AccueilChantiers() {
           <EtatErreur message={projets.erreur} recharger={projets.recharger} />
         ) : projets.donnees && projets.donnees.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '48px 20px' }}>
-            <p style={{ color: 'var(--blanc-texte)', marginBottom: 14 }}>Aucun chantier pour le moment.</p>
-            <Link to="/chantiers/projets" className="btn btn-primary">
-              Créer le premier chantier →
-            </Link>
+            <p style={{ color: 'var(--blanc-texte)', marginBottom: 14 }}>
+              {estPartenaire ? 'Aucun chantier ne vous est encore ouvert. Contactez GDA.' : 'Aucun chantier pour le moment.'}
+            </p>
+            {!estPartenaire && (
+              <Link to="/chantiers/projets" className="btn btn-primary">
+                Créer le premier chantier →
+              </Link>
+            )}
           </div>
         ) : (
           <EtatChargement texte="Ouverture du dernier chantier actif…" />

@@ -1,12 +1,12 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth/AuthContext';
-import { useCommercialExterne } from '../lib/auth/commercialExterne';
+import { useEspaceExterne } from '../lib/auth/commercialExterne';
 import { NotificationsProvider } from '../lib/notifications/NotificationsContext';
 import ChangementObligatoire, { changementReporte } from '../pages/ChangementObligatoire';
 
 export function RequireAuth() {
   const { identite, chargement } = useAuth();
-  const externe = useCommercialExterne();
+  const espace = useEspaceExterne();
   const { pathname } = useLocation();
 
   if (chargement) {
@@ -21,11 +21,11 @@ export function RequireAuth() {
   // session ; le changement reste possible dans « Mon compte ».
   if (identite.doit_changer_mot_de_passe && !changementReporte()) return <ChangementObligatoire />;
 
-  // Commercial externe (BDM, UBA…) : il ne voit que Campagnes. Toute autre
-  // adresse du hub — l'accueil juste après la connexion compris — le ramène
-  // sur son tableau de bord.
-  if (externe && !(pathname === '/campagnes' || pathname.startsWith('/campagnes/'))) {
-    return <Navigate to="/campagnes" replace />;
+  // Compte externe (commercial BDM/UBA, partenaire de chantier) : il ne voit
+  // que son application. Toute autre adresse du hub — l'accueil juste après
+  // la connexion compris — le ramène dans son espace.
+  if (espace && !(pathname === espace || pathname.startsWith(`${espace}/`))) {
+    return <Navigate to={espace} replace />;
   }
 
   return (
