@@ -136,3 +136,14 @@ h3 {
     padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* Application installée sur iPhone : l'en-tête commence sous l'heure et
+ * l'encoche (zéro sur Android et sur ordinateur, où env() vaut 0). Couvre
+ * aussi les installations faites avec l'ancienne barre d'état translucide. */
+@media (display-mode: standalone) {
+  header:not(.header),
+  .tiroir-mobile-panneau {
+    padding-top: calc(env(safe-area-inset-top) + 0.75rem) !important;
+    height: auto !important;
+  }
+}

@@ -108,6 +108,7 @@ class DemandeAbsenceSerializer(DocumentValidableSerializer):
             "etapes",
             "modifiable",
             "verrou_motif",
+            "en_attente",
             "cree_le",
         ]
         read_only_fields = [

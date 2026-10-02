@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { CircularProgress } from '../../components/ui/CircularProgress';
@@ -112,7 +113,10 @@ export default function Absences() {
           ]}
           colonnesHistorique={['Référence', 'Période', 'Type', 'Statut', '']}
           lignesHistorique={conges.map((d) => [
-            d.numero,
+            <Link to={`/rh/dossiers/absence/${d.id}`} className="font-semibold text-white hover:text-accent2">
+              {d.numero}
+              {d.en_attente && <span className="ml-1.5 text-[11px] font-semibold text-amber-300">· complément demandé</span>}
+            </Link>,
             `${d.date_debut} → ${d.date_fin}`,
             d.type_absence_libelle,
             <Badge tone={TONE[d.statut] ?? 'neutral'}>{d.statut_libelle}</Badge>,

@@ -192,6 +192,51 @@ class EtapeValidation(TimeStampedModel):
         return user.role == self.role_valideur
 
 
+class EvenementDossier(models.Model):
+    """Journal d'un dossier soumis a validation : echanges et faits marquants.
+
+    Un seul fil, dans l'ordre ou les choses se sont passees : les messages
+    entre demandeur et valideurs, la mise en attente (complement demande), la
+    reprise, chaque decision, et chaque version du dossier. Une version porte
+    un instantane des champs, ce qui permet de montrer ce qui a change entre
+    deux soumissions. Rien ne s'y modifie ni ne s'y supprime : c'est une piste
+    d'audit.
+    """
+
+    class Type(models.TextChoices):
+        SOUMISSION = "SOUMISSION", "Soumission"
+        MESSAGE = "MESSAGE", "Message"
+        MISE_EN_ATTENTE = "MISE_EN_ATTENTE", "Mise en attente"
+        REPRISE = "REPRISE", "Reprise"
+        MODIFICATION = "MODIFICATION", "Modification"
+        APPROBATION = "APPROBATION", "Approbation"
+        REJET = "REJET", "Rejet"
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    document = GenericForeignKey("content_type", "object_id")
+
+    type = models.CharField(max_length=16, choices=Type.choices)
+    auteur = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    texte = models.TextField(blank=True)
+    #: Pour une decision, l'etape concernee (« Avis du responsable »...).
+    contexte = models.CharField(max_length=160, blank=True)
+    version = models.PositiveSmallIntegerField(null=True, blank=True)
+    instantane = models.JSONField(null=True, blank=True)
+    cree_le = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["cree_le", "id"]
+        indexes = [models.Index(fields=["content_type", "object_id"])]
+        verbose_name = "Evenement de dossier"
+        verbose_name_plural = "Evenements de dossier"
+
+    def __str__(self):
+        return f"{self.get_type_display()} - {self.cree_le:%d/%m/%Y %H:%M}"
+
+
 class DocumentValidable(TimeStampedModel):
     """Base de tout document soumis a un circuit de validation."""
 
@@ -208,6 +253,7 @@ class DocumentValidable(TimeStampedModel):
     date_soumission = models.DateTimeField(null=True, blank=True)
     motif_rejet = models.TextField(blank=True)
     etapes = GenericRelation(EtapeValidation)
+    evenements = GenericRelation(EvenementDossier)
 
     class Meta:
         abstract = True

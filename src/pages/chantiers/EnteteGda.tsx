@@ -144,7 +144,7 @@ export default function EnteteGda({
           <div style={{ width: 12 }} />
           <Link
             to="/"
-            className="btn btn-primary"
+            className={`btn btn-primary${chantier ? ' lg:!hidden' : ''}`}
             title="Revenir à l'accueil de GDA Hub"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 700, padding: '8px 16px', whiteSpace: 'nowrap' }}
           >

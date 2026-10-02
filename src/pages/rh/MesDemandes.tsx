@@ -110,7 +110,7 @@ export default function MesDemandes() {
         <TableVirtus
           colonnes={['Référence', 'Objet', 'Priorité', 'Montant', 'Étape', 'Statut', '']}
           lignes={liste.map((r) => [
-            <Link to={`/rh/requisitions/${r.id}`} className="font-semibold text-white hover:text-accent2">
+            <Link to={`/rh/dossiers/requisition/${r.id}`} className="font-semibold text-white hover:text-accent2">
               {r.numero}
             </Link>,
             r.objet,

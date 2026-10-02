@@ -185,6 +185,10 @@ def soumettre(document, user):
         StatutDocument.EN_VALIDATION if etapes else StatutDocument.APPROUVE
     )
     document.save(update_fields=["statut", "date_soumission", "motif_rejet", "modifie_le"])
+    # Chaque soumission ouvre une version du dossier (resoumission apres rejet comprise).
+    from core.echanges import Type, consigner
+
+    consigner(document, Type.SOUMISSION, auteur=user, versionner=True)
     if not etapes:
         # Aucun seuil configure pour ce type/montant : approbation directe.
         hook = getattr(document, "apres_approbation", None)
@@ -339,6 +343,15 @@ def decider(document, user, approuve: bool, commentaire: str = ""):
     etape.commentaire = commentaire
     etape.save(
         update_fields=["decision", "decide_par", "date_decision", "commentaire", "modifie_le"]
+    )
+    from core.echanges import Type, consigner
+
+    consigner(
+        document,
+        Type.APPROBATION if approuve else Type.REJET,
+        auteur=user,
+        texte=commentaire,
+        contexte=etape.libelle,
     )
 
     decisive = etape_decisive(document)

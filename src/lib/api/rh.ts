@@ -53,6 +53,7 @@ export type EtapeValidation = {
 };
 
 export type DemandeAbsence = {
+  en_attente?: boolean;
   id: number;
   numero: string;
   demandeur: number;

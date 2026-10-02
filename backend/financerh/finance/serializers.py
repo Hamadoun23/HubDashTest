@@ -33,6 +33,7 @@ CHAMPS_CIRCULATION = [
     "etapes",
     "modifiable",
     "verrou_motif",
+    "en_attente",
     "devise",
     "cree_le",
 ]

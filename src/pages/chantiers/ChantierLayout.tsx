@@ -5,6 +5,8 @@ import '../../styles/gda-daily-theme.css';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { EtatChargement, EtatErreur } from './EtatsGda';
 import { useApi } from '../../lib/hooks/useApi';
+import { BoutonRetourHub, NavigationApps } from '../../components/NavigationApps';
+import { useEspaceExterne } from '../../lib/auth/commercialExterne';
 import { listerProjets, obtenirProjet, obtenirTableauDeBord, type Dashboard, type Projet } from '../../lib/api/chantiers';
 import { CLE_DERNIER_CHANTIER } from './Accueil';
 import EnteteGda, { STYLE_COQUILLE, langueInitiale } from './EnteteGda';
@@ -46,6 +48,7 @@ export default function ChantierLayout() {
   const idValide = id !== undefined && Number.isFinite(chantierId);
 
   const [sidebarOuverte, setSidebarOuverte] = useState(false);
+  const externe = useEspaceExterne() !== null;
   const [langue, setLangue] = useState(langueInitiale);
   const estPartenaire = useEstPartenaire();
 
@@ -94,7 +97,14 @@ export default function ChantierLayout() {
 
       {/* ===== SIDEBAR ===== */}
       <nav className={`sidebar gda-legacy${sidebarOuverte ? ' is-open' : ''}`}>
-        <div className="sidebar-section">Navigation</div>
+        {/* Même entrée que les autres applis : retour au hub bien visible
+            (jamais pour un partenaire externe, qui n'a pas de hub). */}
+        {!externe && (
+          <div style={{ padding: '14px 14px 6px' }}>
+            <BoutonRetourHub />
+          </div>
+        )}
+        <div className="sidebar-section">Chantier</div>
         <NavLink to={base} end className={classeNav}>
           <span className="nav-icon">◈</span> <span>Tableau de bord</span>
         </NavLink>
@@ -139,15 +149,14 @@ export default function ChantierLayout() {
           <span className="nav-icon">⛅</span> <span>Prévisions météo</span>
         </NavLink>
 
-        <Link to={base} className="nav-item nav-item--link">
-          <span className="nav-icon">⌂</span>
-          <span>Chantier</span>
-        </Link>
         {!estPartenaire && (
-          <Link to="/chantiers/projets" className="nav-item nav-item--link">
-            <span className="nav-icon">▣</span>
-            <span>Projets</span>
-          </Link>
+          <>
+            <div className="sidebar-section">Gestion</div>
+            <Link to="/chantiers/projets" className="nav-item nav-item--link">
+              <span className="nav-icon">▣</span>
+              <span>Tous les chantiers</span>
+            </Link>
+          </>
         )}
 
         <div style={{ padding: '16px 16px 0' }}>
@@ -159,6 +168,13 @@ export default function ChantierLayout() {
             </div>
           </div>
         </div>
+
+        {/* Passer directement à une autre appli, comme dans RH, Jus, Planning. */}
+        {!externe && (
+          <div style={{ padding: '18px 10px 4px' }}>
+            <NavigationApps exclure="chantiers" titre="Autres applications" onNaviguer={() => setSidebarOuverte(false)} />
+          </div>
+        )}
 
         <div className="sidebar-footer">
           <div style={{ fontSize: 10, letterSpacing: 1, textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>

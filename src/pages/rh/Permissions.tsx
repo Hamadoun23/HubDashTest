@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { UserRound } from 'lucide-react';
 import { EtatErreur } from '../../components/ui/EtatRequete';
 import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
@@ -100,7 +101,10 @@ export default function Permissions() {
       ]}
       colonnesHistorique={['Référence', 'Date', 'Motif', 'Horaire', 'Statut', '']}
       lignesHistorique={permissions.map((d) => [
-        d.numero,
+        <Link to={`/rh/dossiers/absence/${d.id}`} className="font-semibold text-white hover:text-accent2">
+              {d.numero}
+              {d.en_attente && <span className="ml-1.5 text-[11px] font-semibold text-amber-300">· complément demandé</span>}
+            </Link>,
         d.date_debut,
         d.motif,
         d.heure_debut && d.heure_fin ? `${d.heure_debut} → ${d.heure_fin}` : '—',

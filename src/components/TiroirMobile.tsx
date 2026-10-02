@@ -43,7 +43,7 @@ export function TiroirMobile({ ouvert, onFermer, children }: { ouvert: boolean; 
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        className={`absolute inset-y-0 left-0 flex max-w-[86vw] bg-[#1a130e]/95 shadow-2xl transition-transform duration-200 [&>aside]:!flex [&>aside]:max-w-full ${
+        className={`tiroir-mobile-panneau absolute inset-y-0 left-0 flex max-w-[86vw] bg-[#1a130e]/95 shadow-2xl transition-transform duration-200 [&>aside]:!flex [&>aside]:max-w-full ${
           ouvert ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}

@@ -79,6 +79,7 @@ const Presences = lazy(() => import('./pages/rh/Presences'));
 const Retards = lazy(() => import('./pages/rh/Retards'));
 const TableauDeBordRh = lazy(() => import('./pages/rh/TableauDeBord'));
 const Validations = lazy(() => import('./pages/rh/Validations'));
+const DossierDetail = lazy(() => import('./pages/rh/DossierDetail'));
 const RequisitionDetail = lazy(() => import('./pages/finance/RequisitionDetail'));
 
 
@@ -138,6 +139,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/rh/retards" element={<Retards />} />
               <Route path="/rh/validations" element={<Validations />} />
               <Route path="/rh/requisitions/:id" element={<RequisitionDetail />} />
+              <Route path="/rh/dossiers/:source/:id" element={<DossierDetail />} />
             </Route>
 
             <Route element={<JusLayout />}>

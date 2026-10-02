@@ -29,6 +29,7 @@ export type LigneRequisition = {
 };
 
 export type Requisition = {
+  en_attente?: boolean;
   id: number;
   numero: string;
   demandeur: number;

@@ -1,33 +1,34 @@
-import { useState } from 'react';
-import { ClipboardList } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ChevronRight, ClipboardList } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { EtatChargement, EtatErreur } from '../../components/ui/EtatRequete';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Badge, TableVirtus } from '../../components/ui/Table';
-import { useAction, useApi } from '../../lib/hooks/useApi';
-import { demandesAValider, rejeterDemande, validerDemande } from '../../lib/api/rh';
-import { rejeterRequisition, requisitionsAValider, validerRequisition } from '../../lib/api/finance';
+import { useApi } from '../../lib/hooks/useApi';
+import { demandesAValider } from '../../lib/api/rh';
+import { requisitionsAValider } from '../../lib/api/finance';
+import type { SourceDossier } from '../../lib/api/dossiers';
 
 type DossierUnifie = {
   cle: string;
   id: number;
-  source: 'absence' | 'requisition';
+  source: SourceDossier;
   numero: string;
   demandeur_nom: string;
   type: string;
   etape: string;
   statut_libelle: string;
+  en_attente: boolean;
 };
 
+/**
+ * Dossiers qui attendent une décision. Un clic ouvre le détail
+ * (DossierDetail) : contenu, circuit, échanges, versions — et c'est là que
+ * l'on approuve, met en attente ou refuse, en connaissance de cause.
+ */
 export default function Validations() {
+  const navigate = useNavigate();
   const absences = useApi(demandesAValider, []);
   const requisitions = useApi(requisitionsAValider, []);
-  const validationAbsence = useAction(validerDemande);
-  const rejetAbsence = useAction(rejeterDemande);
-  const validationRequisition = useAction(validerRequisition);
-  const rejetRequisition = useAction(rejeterRequisition);
-  const [dossierEnRejet, setDossierEnRejet] = useState<string | null>(null);
-  const [commentaireRejet, setCommentaireRejet] = useState('');
 
   if (absences.chargement || requisitions.chargement) return <EtatChargement texte="Chargement des dossiers à valider…" />;
   if (absences.erreur) return <EtatErreur message={absences.erreur} recharger={absences.recharger} />;
@@ -43,6 +44,7 @@ export default function Validations() {
       type: d.type_absence_libelle,
       etape: d.etape_courante_libelle,
       statut_libelle: d.statut_libelle,
+      en_attente: Boolean(d.en_attente),
     })),
     ...(requisitions.donnees ?? []).map((r) => ({
       cle: `requisition-${r.id}`,
@@ -53,35 +55,15 @@ export default function Validations() {
       type: `Réquisition — ${r.objet}`,
       etape: r.etape_courante_libelle,
       statut_libelle: r.statut_libelle,
+      en_attente: Boolean(r.en_attente),
     })),
   ];
 
-  function recharger() {
-    absences.recharger();
-    requisitions.recharger();
-  }
-
-  async function approuver(dossier: DossierUnifie) {
-    if (dossier.source === 'absence') await validationAbsence.executer(dossier.id);
-    else await validationRequisition.executer(dossier.id);
-    recharger();
-  }
-
-  async function confirmerRejet(dossier: DossierUnifie) {
-    if (!commentaireRejet.trim()) return;
-    if (dossier.source === 'absence') await rejetAbsence.executer(dossier.id, commentaireRejet);
-    else await rejetRequisition.executer(dossier.id, commentaireRejet);
-    setDossierEnRejet(null);
-    setCommentaireRejet('');
-    recharger();
-  }
-
-  const validation = { enCours: validationAbsence.enCours || validationRequisition.enCours, erreur: validationAbsence.erreur ?? validationRequisition.erreur };
-  const rejet = { enCours: rejetAbsence.enCours || rejetRequisition.enCours, erreur: rejetAbsence.erreur ?? rejetRequisition.erreur };
+  const ouvrir = (dossier: DossierUnifie) => navigate(`/rh/dossiers/${dossier.source}/${dossier.id}`);
 
   return (
     <div>
-      <PageHeader icon={ClipboardList} titre="À valider" sousTitre="Dossiers attendant votre décision" />
+      <PageHeader icon={ClipboardList} titre="À valider" sousTitre="Dossiers attendant votre décision — cliquez pour ouvrir" />
 
       {liste.length === 0 ? (
         <p className="rounded-3xl border border-border bg-surface p-8 text-center text-sm text-muted">
@@ -90,67 +72,20 @@ export default function Validations() {
       ) : (
         <TableVirtus
           colonnes={['Référence', 'Collaborateur', 'Type', 'Étape', 'Statut', '']}
+          onRowClick={(index) => ouvrir(liste[index])}
           lignes={liste.map((dossier) => [
-            dossier.source === 'requisition' ? (
-              <Link to={`/rh/requisitions/${dossier.id}`} className="font-semibold text-white hover:text-accent2">
-                {dossier.numero}
-              </Link>
-            ) : (
-              dossier.numero
-            ),
+            <span className="font-semibold text-white">{dossier.numero}</span>,
             dossier.demandeur_nom,
-            dossier.type,
+            <span className="block max-w-[22rem] truncate" title={dossier.type}>
+              {dossier.type}
+            </span>,
             dossier.etape,
-            <Badge tone="warning">{dossier.statut_libelle}</Badge>,
-            dossierEnRejet === dossier.cle ? (
-              <div className="flex items-center gap-2">
-                <input
-                  autoFocus
-                  value={commentaireRejet}
-                  onChange={(e) => setCommentaireRejet(e.target.value)}
-                  placeholder="Motif du rejet..."
-                  className="rounded-lg border border-border bg-surface2 px-2 py-1 text-xs text-white placeholder:text-muted focus:border-accent focus:outline-none"
-                />
-                <button
-                  onClick={() => confirmerRejet(dossier)}
-                  disabled={rejet.enCours || !commentaireRejet.trim()}
-                  className="rounded-lg bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-400 disabled:opacity-50"
-                >
-                  Confirmer
-                </button>
-                <button
-                  onClick={() => {
-                    setDossierEnRejet(null);
-                    setCommentaireRejet('');
-                  }}
-                  className="text-xs text-muted"
-                >
-                  Annuler
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => approuver(dossier)}
-                  disabled={validation.enCours}
-                  className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-black disabled:opacity-50"
-                >
-                  Approuver
-                </button>
-                <button
-                  onClick={() => setDossierEnRejet(dossier.cle)}
-                  className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white"
-                >
-                  Refuser
-                </button>
-              </div>
-            ),
+            dossier.en_attente ? <Badge tone="warning">En attente de complément</Badge> : <Badge>{dossier.statut_libelle}</Badge>,
+            <span className="inline-flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-black">
+              Ouvrir <ChevronRight size={13} />
+            </span>,
           ])}
         />
-      )}
-
-      {(validation.erreur || rejet.erreur) && (
-        <p className="mt-3 text-xs font-semibold text-red-400">{validation.erreur ?? rejet.erreur}</p>
       )}
     </div>
   );

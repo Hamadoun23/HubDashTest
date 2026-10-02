@@ -94,6 +94,8 @@ class DocumentValidableSerializer(serializers.ModelSerializer):
     # elle ne connait ni les etapes pour information ni les statuts a venir.
     modifiable = serializers.SerializerMethodField()
     verrou_motif = serializers.SerializerMethodField()
+    # Mis en attente par un valideur (complement demande) : visible dans les listes.
+    en_attente = serializers.SerializerMethodField()
 
     def get_etape_courante_libelle(self, obj):
         etape = obj.etape_courante
@@ -101,6 +103,11 @@ class DocumentValidableSerializer(serializers.ModelSerializer):
 
     def get_modifiable(self, obj):
         return raison_verrou(obj) is None
+
+    def get_en_attente(self, obj):
+        from core.echanges import est_en_attente
+
+        return est_en_attente(obj)
 
     def get_verrou_motif(self, obj):
         return raison_verrou(obj) or ""
