@@ -84,6 +84,16 @@ class UtilisateurHub:
         return "partenaire" in self.roles and not (set(self.roles) & self.ROLES_INTERNES)
 
     @property
+    def est_lecture_seule(self) -> bool:
+        """Partenaire, ou « direction » : la direction voit tous les chantiers
+        (c'est un compte interne) mais ne saisit ni ne modifie rien."""
+        if self.est_superadmin:
+            return False
+        if self.est_partenaire:
+            return True
+        return "direction" in self.roles and not (set(self.roles) & self.ROLES_INTERNES)
+
+    @property
     def est_interne(self) -> bool:
         """Le complement exact de `est_partenaire`.
 

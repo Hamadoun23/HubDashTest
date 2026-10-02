@@ -17,12 +17,12 @@ class LectureSeulePourPartenaire(BasePermission):
     `AttributeError` — un 500 la ou un refus propre (401) etait attendu.
     """
 
-    message = "Acces en lecture seule pour un compte partenaire."
+    message = "Acces en lecture seule (partenaire ou direction)."
 
     def has_permission(self, request, view):
         if not request.user or not request.user.is_authenticated:
             return False
-        if request.user.est_partenaire:
+        if request.user.est_lecture_seule:
             return request.method in SAFE_METHODS
         return True
 
@@ -33,4 +33,7 @@ class EstEquipeInterne(BasePermission):
     message = "Reserve a l'equipe interne."
 
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.est_interne)
+        if not (request.user and request.user.is_authenticated and request.user.est_interne):
+            return False
+        # La direction lit tout ce que lit l'equipe, sans jamais ecrire.
+        return request.method in SAFE_METHODS or not request.user.est_lecture_seule

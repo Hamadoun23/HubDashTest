@@ -24,7 +24,13 @@ export type ContexteChantier = {
 export function useEstPartenaire() {
   const { identite, habilitations } = useAuth();
   const roles = habilitations.daily ?? [];
-  return !identite?.est_superadmin && roles.includes('partenaire') && !roles.some((r) => ROLES_INTERNES.includes(r));
+  // « direction » voit tout mais n'écrit pas : même interface sans édition
+  // que le partenaire (le serveur refuse de toute façon ses écritures).
+  return (
+    !identite?.est_superadmin &&
+    (roles.includes('partenaire') || roles.includes('direction')) &&
+    !roles.some((r) => ROLES_INTERNES.includes(r))
+  );
 }
 
 /**
