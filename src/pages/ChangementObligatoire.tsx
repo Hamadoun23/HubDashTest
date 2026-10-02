@@ -8,10 +8,25 @@ import { useAction } from '../lib/hooks/useApi';
 const CHAMP =
   'w-full rounded-xl border border-border bg-surface2 px-3.5 py-3 text-sm text-white placeholder:text-muted/70 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20';
 
+const CLE_REPORT = 'gdahub_mdp_plus_tard';
+// Repli si le stockage du navigateur est indisponible (navigation privée…).
+let reporteEnMemoire = false;
+
+/** « Plus tard » choisi pendant cette session du navigateur. */
+export function changementReporte() {
+  if (reporteEnMemoire) return true;
+  try {
+    return sessionStorage.getItem(CLE_REPORT) === '1';
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Premier passage avec un mot de passe provisoire : la personne en choisit un
- * personnel avant d'accéder au moindre écran. Le serveur ferme alors toutes
- * ses sessions ; on la renvoie se connecter avec le nouveau.
+ * Connexion avec un mot de passe provisoire : on propose d'en choisir un
+ * personnel. La personne peut reporter (« Plus tard ») et le faire ensuite
+ * dans « Mon compte ». Après un changement, le serveur ferme toutes ses
+ * sessions ; on la renvoie se connecter avec le nouveau.
  */
 export default function ChangementObligatoire() {
   const { identite, deconnecter } = useAuth();
@@ -48,7 +63,7 @@ export default function ChangementObligatoire() {
           <h1 className="font-display text-xl font-bold text-white">Choisissez votre mot de passe</h1>
           <p className="mt-1 text-sm text-muted">
             {identite?.nom_complet ? `${identite.nom_complet}, votre` : 'Votre'} mot de passe actuel est provisoire. Choisissez-en un
-            personnel pour continuer (8 caractères au moins, pas uniquement des chiffres).
+            personnel (8 caractères au moins, pas uniquement des chiffres). Vous pouvez aussi le faire plus tard dans « Mon compte ».
           </p>
         </div>
         <input type="password" autoComplete="current-password" required placeholder="Mot de passe actuel (provisoire)" value={ancien} onChange={(e) => setAncien(e.target.value)} className={CHAMP} />
@@ -57,6 +72,21 @@ export default function ChangementObligatoire() {
         {(erreurLocale || changer.erreur) && <p className="text-sm font-semibold text-red-400">{erreurLocale ?? changer.erreur}</p>}
         <button type="submit" disabled={changer.enCours} className="w-full rounded-xl bg-accent py-3 text-sm font-bold text-white disabled:opacity-60">
           {changer.enCours ? 'Enregistrement…' : 'Enregistrer et continuer'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            reporteEnMemoire = true;
+            try {
+              sessionStorage.setItem(CLE_REPORT, '1');
+            } catch {
+              /* stockage indisponible : on laisse passer quand même */
+            }
+            navigate('/', { replace: true });
+          }}
+          className="w-full rounded-xl border border-border bg-surface2 py-3 text-sm font-semibold text-white hover:bg-surface"
+        >
+          Plus tard
         </button>
         <button type="button" onClick={() => { deconnecter(); navigate('/connexion', { replace: true }); }} className="w-full text-xs text-muted hover:text-white">
           Se déconnecter
