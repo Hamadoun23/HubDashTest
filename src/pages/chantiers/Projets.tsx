@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import '../../styles/gda-daily.css';
-import '../../styles/gda-daily-theme.css';
 import { useApi } from '../../lib/hooks/useApi';
 import {
   creerPhase,
@@ -26,7 +24,7 @@ import {
 } from '../../lib/api/chantiers';
 import { CLE_DERNIER_CHANTIER } from './Accueil';
 import { useEstPartenaire } from './ChantierLayout';
-import EnteteGda, { STYLE_COQUILLE, langueInitiale } from './EnteteGda';
+import CoquilleChantiers, { langueInitiale } from '../../layouts/CoquilleChantiers';
 import { useToast } from './toast';
 
 type Entite = 'project' | 'phase' | 'subphase' | 'task';
@@ -303,9 +301,7 @@ export default function Projets() {
   const cleEditeur = editeur ? `${editeur.entite}_${editeur.action}` : '';
 
   return (
-    <div className="gda-daily" style={STYLE_COQUILLE}>
-      <EnteteGda libelle="Gestion des projets" chantier={false} langue={langue} onLangue={setLangue} />
-
+    <CoquilleChantiers langue={langue} onLangue={setLangue}>
       <main className="main main--solo gda-legacy">
         {estPartenaire ? (
           <div className="card" style={{ textAlign: 'center', color: 'var(--muted)' }}>
@@ -752,6 +748,6 @@ export default function Projets() {
         )}
         {toastEl}
       </main>
-    </div>
+    </CoquilleChantiers>
   );
 }

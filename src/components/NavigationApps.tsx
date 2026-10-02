@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, BarChart3, ChevronRight, ClipboardList, HardHat, Home, LayoutDashboard, List, Megaphone, Users } from 'lucide-react';
+import { ArrowLeft, BarChart3, Building2, Camera, ChevronRight, ClipboardList, CloudSun, FileText, HardHat, Home, LayoutDashboard, List, Megaphone, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth/AuthContext';
 import { APPLICATIONS_HUB, NAVIGATION, type AppKey, type NavItem } from '../lib/navigation';
@@ -11,6 +11,17 @@ type SousGroupe = { label?: string; items: NavItem[] };
 function estActif(chemin: string, href: string, racines: string[]) {
   if (racines.includes(href)) return chemin === href;
   return chemin === href || chemin.startsWith(`${href}/`);
+}
+
+/** Chantier ouvert : celui de l'adresse, sinon le dernier consulté. */
+function chantierActif(): string | null {
+  const m = /^#\/chantiers\/(\d+)/.exec(window.location.hash);
+  if (m) return m[1];
+  try {
+    return localStorage.getItem('chantiers_dernier_actif');
+  } catch {
+    return null;
+  }
 }
 
 /** Appli dont relève l'adresse courante (`null` sur les écrans du hub). */
@@ -50,15 +61,24 @@ function sousMenus(app: AppKey, habilitations: Record<string, string[]>, estSupe
   }
   if (app === 'chantiers') {
     const roles = habilitations.daily ?? [];
-    const partenaire = !estSuperadmin && roles.every((r) => r === 'partenaire');
-    return [
-      {
-        items: [
-          { label: 'Suivi de chantier', href: '/chantiers', icon: HardHat },
-          ...(partenaire ? [] : [{ label: 'Liste des chantiers', href: '/chantiers/projets', icon: List }]),
-        ],
-      },
-    ];
+    const internes = ['admin', 'chef_chantier', 'ingenieur', 'controle_qualite'];
+    const partenaire = !estSuperadmin && roles.length > 0 && roles.every((r) => r === 'partenaire');
+    // Partenaire et direction consultent : pas de saisie ni de dépôt de photos.
+    const lectureSeule = !estSuperadmin && !roles.some((r) => internes.includes(r));
+    const projet = chantierActif();
+    const items: NavItem[] = [];
+    if (projet) {
+      const base = `/chantiers/${projet}`;
+      items.push({ label: 'Tableau de bord', href: base, icon: LayoutDashboard });
+      if (!lectureSeule) items.push({ label: 'Saisie du jour', href: `${base}/saisie`, icon: ClipboardList });
+      items.push({ label: 'Toutes les tâches', href: `${base}/taches`, icon: List });
+      if (!lectureSeule) items.push({ label: 'Galerie photos', href: `${base}/photos`, icon: Camera });
+      items.push({ label: 'Rapport PDF', href: `${base}/rapport`, icon: FileText }, { label: 'Prévisions météo', href: `${base}/meteo`, icon: CloudSun });
+    } else {
+      items.push({ label: 'Suivi de chantier', href: '/chantiers', icon: HardHat });
+    }
+    if (!partenaire) items.push({ label: 'Tous les chantiers', href: '/chantiers/projets', icon: Building2 });
+    return [{ items }];
   }
   // Campagnes : écrans BDM selon le rôle (cf. backend campagnes, role_required).
   const roles = habilitations.campagnes ?? [];
@@ -137,7 +157,7 @@ export function NavigationApps({ onNaviguer, exclure, titre = 'Applications' }: 
         const ouverte = ouvertes.has(app.key);
         const active = courante === app.key;
         const groupes = sousMenus(app.key, habilitations, estSuperadmin, valideur);
-        const racines = groupes.flatMap((g) => g.items.map((i) => i.href)).filter((h) => h.split('/').length <= 2 || h === '/campagnes/dashboard');
+        const racines = groupes.flatMap((g) => g.items.map((i) => i.href)).filter((h) => h.split('/').length <= 2 || h === '/campagnes/dashboard' || /^\/chantiers\/\d+$/.test(h));
         return (
           <div key={app.key}>
             <div

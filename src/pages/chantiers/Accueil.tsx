@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../../styles/gda-daily.css';
-import '../../styles/gda-daily-theme.css';
 import { EtatChargement, EtatErreur } from './EtatsGda';
-import EnteteGda, { STYLE_COQUILLE, langueInitiale } from './EnteteGda';
+import CoquilleChantiers, { langueInitiale } from '../../layouts/CoquilleChantiers';
 import { useApi } from '../../lib/hooks/useApi';
 import { listerProjets } from '../../lib/api/chantiers';
 import { useEstPartenaire } from './ChantierLayout';
@@ -38,8 +36,7 @@ export default function AccueilChantiers() {
   }, [projets.donnees, navigate]);
 
   return (
-    <div className="gda-daily" style={STYLE_COQUILLE}>
-      <EnteteGda libelle="Chantier" chantier={false} langue={langue} onLangue={setLangue} />
+    <CoquilleChantiers langue={langue} onLangue={setLangue}>
       <main className="main main--solo gda-legacy">
         {projets.erreur ? (
           <EtatErreur message={projets.erreur} recharger={projets.recharger} />
@@ -58,6 +55,6 @@ export default function AccueilChantiers() {
           <EtatChargement texte="Ouverture du dernier chantier actif…" />
         )}
       </main>
-    </div>
+    </CoquilleChantiers>
   );
 }

@@ -825,3 +825,27 @@
     grid-template-columns: 110px 1fr 48px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Chantiers dans la coquille du hub (layouts/CoquilleChantiers.tsx) : plus
+ * d'en-tête ni de barre latérale « daily ». Les écrans gardent leurs
+ * composants, mais sans les marges réservées à l'ancienne coquille.
+ * ------------------------------------------------------------------------- */
+.gda-daily.gda-dans-hub {
+  background: transparent;
+  min-height: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.gda-daily.gda-dans-hub .main,
+.gda-daily.gda-dans-hub .main--solo {
+  margin: 0;
+  min-height: 0;
+  padding: 20px 16px 28px;
+}
+@media (min-width: 1024px) {
+  .gda-daily.gda-dans-hub .main,
+  .gda-daily.gda-dans-hub .main--solo {
+    padding: 24px 32px 32px;
+  }
+}
