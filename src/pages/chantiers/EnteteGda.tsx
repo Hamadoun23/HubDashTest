@@ -142,8 +142,13 @@ export default function EnteteGda({
       {!externe && (
         <>
           <div style={{ width: 12 }} />
-          <Link to="/" className="header-nav-link" title="Revenir à GDA Hub">
-            ← GDA Hub
+          <Link
+            to="/"
+            className="btn btn-primary"
+            title="Revenir à l'accueil de GDA Hub"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 700, padding: '8px 16px', whiteSpace: 'nowrap' }}
+          >
+            ← Retour au hub
           </Link>
         </>
       )}

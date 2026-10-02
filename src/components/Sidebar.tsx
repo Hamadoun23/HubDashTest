@@ -1,9 +1,9 @@
 import { Bell, Building2, ChevronRight, Home, LogOut, Settings } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { APPLICATIONS_HUB } from '../lib/navigation';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from './ui/Avatar';
 import { BoutonInstaller } from './BoutonInstaller';
+import { NavigationApps } from './NavigationApps';
 import { useNotificationsOptionnelles } from '../lib/notifications/NotificationsContext';
 
 function estActif(chemin: string, href: string) {
@@ -14,17 +14,10 @@ function estActif(chemin: string, href: string) {
 export function Sidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { identite, utilisateur, applications, habilitations, deconnecter } = useAuth();
+  const { identite, utilisateur, habilitations, deconnecter } = useAuth();
   const nonLues = useNotificationsOptionnelles()?.nonLues ?? 0;
   // L'administration du hub n'est proposée qu'à ceux qui peuvent s'en servir.
   const estAdminHub = Boolean(identite?.est_superadmin || habilitations.hub);
-
-  // Chaque utilisateur ne voit que les applications auxquelles il a accès
-  // (`applications`, renvoyées par identity à la connexion) — même filtre que
-  // l'ancien lanceur en tuiles de l'accueil, appliqué ici à la sidebar.
-  const applicationsAccessibles = APPLICATIONS_HUB.filter((app) =>
-    applications.some((a) => a.active && a.chemin.split('/')[1] === app.chemin.split('/')[1]),
-  );
 
   return (
     <aside className="flex h-screen w-72 shrink-0 flex-col overflow-hidden border-r border-border bg-surface backdrop-blur-xl">
@@ -73,30 +66,7 @@ export function Sidebar() {
         </div>
         )}
 
-        <div>
-          <div className="mb-1 flex items-center gap-2 px-3">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent2" />
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted">Applications</p>
-          </div>
-          <div className="space-y-0.5">
-            {/* Simples liens de redirection : une fois entré dans une app
-                métier, c'est son propre habillage qui prend le relais — le
-                hub ne s'y prolonge plus. Voir retrogradeAppmetier.md. */}
-            {applicationsAccessibles.map((app) => {
-              const Icone = app.icon;
-              return (
-                <Link
-                  key={app.key}
-                  to={app.chemin}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-surface2 hover:text-white"
-                >
-                  <Icone size={16} className="shrink-0" />
-                  <span className="truncate">{app.nom}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
+        <NavigationApps />
       </nav>
 
       <div className="flex flex-col gap-1 border-t border-border px-3 py-3">

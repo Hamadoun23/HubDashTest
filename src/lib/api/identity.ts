@@ -65,18 +65,25 @@ export async function connexionIdentity(identifiant: string, mot_de_passe: strin
   return reponse;
 }
 
+/** Profil complet renvoyé par identity (connexion, « moi », photo). */
+export type ProfilHub = {
+  utilisateur: IdentiteUtilisateur;
+  habilitations: Record<string, string[]>;
+  applications: Application[];
+};
+
 export function moi() {
-  return apiFetch<IdentiteUtilisateur>('/identity/auth/moi');
+  return apiFetch<ProfilHub>('/identity/auth/moi');
 }
 
 export function changerPhoto(fichier: File) {
   const corps = new FormData();
   corps.append('photo', fichier);
-  return apiFetch<IdentiteUtilisateur>('/identity/auth/moi/photo', { method: 'POST', corps });
+  return apiFetch<ProfilHub>('/identity/auth/moi/photo', { method: 'POST', corps });
 }
 
 export function supprimerPhoto() {
-  return apiFetch<IdentiteUtilisateur>('/identity/auth/moi/photo', { method: 'DELETE' });
+  return apiFetch<ProfilHub>('/identity/auth/moi/photo', { method: 'DELETE' });
 }
 
 export function changerMotDePasseIdentity(ancien: string, nouveau: string) {

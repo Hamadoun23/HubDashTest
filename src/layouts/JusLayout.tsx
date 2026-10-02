@@ -1,12 +1,10 @@
 import { Citrus, LogOut, Search } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { NAVIGATION } from '../lib/navigation';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { BoutonRetourHub, NavigationApps } from '../components/NavigationApps';
 import { BoutonMenu, TiroirMobile } from '../components/TiroirMobile';
 import { ClocheNotifications } from '../components/notifications/ClocheNotifications';
 import { useAuth } from '../lib/auth/AuthContext';
-import { useApi } from '../lib/hooks/useApi';
-import { monProfilJus } from '../lib/api/jus';
 import { Avatar } from '../components/ui/Avatar';
 
 /**
@@ -15,64 +13,15 @@ import { Avatar } from '../components/ui/Avatar';
  * mêmes surfaces translucides plutôt que l'identité claire propre restaurée
  * précédemment. Chantiers et Planning gardent pour l'instant la leur.
  */
-function estActif(chemin: string, href: string) {
-  if (href === chemin) return true;
-  const segments = href.split('/').filter(Boolean);
-  if (segments.length <= 1) return false;
-  return chemin.startsWith(`${href}/`);
-}
-
-const GROUPES = NAVIGATION.filter((g) => g.app === 'jus');
-
-// Miroir de `api/permissions.py` côté jusorange : qui a le droit d'écrire ou
-// de lire chaque domaine (`rw(read=…, write=…)`). Finance lit Production et
-// Commercial (pas seulement Finance/Reporting) ; Direction lit tout. Sans ce
-// filtre, tout le monde voyait les cinq sections quel que soit son groupe
-// réel — jamais remarqué car on ne testait qu'avec un compte superuser (qui
-// reçoit aussi les quatre rôles, voir `_user_payload`).
-const ROLES_PAR_SECTION: Record<string, string[]> = {
-  'orange-direction': ['Direction', 'Finance'],
-  'orange-production': ['ResProd', 'Finance', 'Direction'],
-  'orange-commercial': ['Commercial', 'Finance', 'Direction'],
-  'orange-finance': ['Finance', 'Direction'],
-  'orange-reporting': ['ResProd', 'Commercial', 'Finance', 'Direction'],
-};
-
-// Exceptions plus étroites que le reste de leur section — miroir exact de
-// `IsDirection` (Utilisateurs) et de `ROLES_RAPPORT` (chaque rapport n'est
-// pas ouvert à tous ceux qui voient l'onglet Reporting : Distribution est
-// fermé à la production, les 5 autres sont fermés au commercial).
-const ROLES_PAR_HREF: Record<string, string[]> = {
-  '/jus/direction/utilisateurs': ['Direction'],
-  '/jus/reporting/recolte': ['ResProd', 'Finance', 'Direction'],
-  '/jus/reporting/appro': ['ResProd', 'Finance', 'Direction'],
-  '/jus/reporting/fabrication': ['ResProd', 'Finance', 'Direction'],
-  '/jus/reporting/emballage': ['ResProd', 'Finance', 'Direction'],
-  '/jus/reporting/entrepot': ['ResProd', 'Finance', 'Direction'],
-  '/jus/reporting/distribution': ['Commercial', 'Finance', 'Direction'],
-};
-
-function itemVisible(sectionKey: string, href: string, roles: string[]) {
-  const requis = ROLES_PAR_HREF[href] ?? ROLES_PAR_SECTION[sectionKey];
-  if (!requis) return true;
-  return requis.some((role) => roles.includes(role));
-}
-
 export default function JusLayout() {
   const [menuMobile, setMenuMobile] = useState(false);
   const fermerMenu = useCallback(() => setMenuMobile(false), []);
-  const { pathname } = useLocation();
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
-  const profil = useApi(monProfilJus, []);
   const [menuOuvert, setMenuOuvert] = useState(false);
 
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
-  const roles = profil.donnees?.roles ?? [];
-  const groupesVisibles = GROUPES.map((groupe) => ({
-    ...groupe,
-    items: groupe.items.filter((item) => itemVisible(groupe.key, item.href, roles)),
-  })).filter((groupe) => groupe.items.length > 0);
+
 
 
   // Même barre latérale sur grand écran et dans le tiroir mobile.
@@ -88,32 +37,11 @@ export default function JusLayout() {
           </div>
         </div>
   
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-          {groupesVisibles.map((groupe) => (
-            <div key={groupe.key}>
-              <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
-                {groupe.label.replace("Jus d'orange — ", '')}
-              </p>
-              <div className="space-y-0.5">
-                {groupe.items.map((item) => {
-                  const Icon = item.icon;
-                  const actif = estActif(pathname, item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                        actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
-                      }`}
-                    >
-                      <Icon size={15} className="shrink-0" />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        <div className="px-3 pb-3 pt-4">
+          <BoutonRetourHub />
+        </div>
+        <nav className="flex-1 overflow-y-auto px-3 pb-4">
+          <NavigationApps onNaviguer={fermerMenu} />
         </nav>
   
         <div className="border-t border-border p-4 text-xs text-muted">JusOrange · Campagne 2026</div>
@@ -133,14 +61,9 @@ export default function JusLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-surface/40 px-4 backdrop-blur-md">
           <BoutonMenu onClick={() => setMenuMobile(true)} className="md:hidden" />
-          <Link
-            to="/"
-            title="Revenir à GDA Hub"
-            className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface2 px-3 py-1.5 text-xs font-semibold text-muted backdrop-blur-sm transition hover:text-white sm:inline-flex"
-          >
-            <span aria-hidden>&larr;</span>
-            GDA Hub
-          </Link>
+          <span className="hidden sm:inline-flex md:hidden">
+            <BoutonRetourHub compact />
+          </span>
 
           <div className="relative ml-auto w-full max-w-xs">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />

@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import * as authApi from '../api/auth';
 import type { Utilisateur } from '../api/auth';
 import * as identityApi from '../api/identity';
-import type { Application, IdentiteUtilisateur } from '../api/identity';
+import type { Application, IdentiteUtilisateur, ProfilHub } from '../api/identity';
 import { lireJetonsStockes } from '../api/client';
 
 const CLE_APPLICATIONS = 'gdahub_applications';
@@ -12,7 +12,16 @@ type ApplicationsStockees = { identite: IdentiteUtilisateur; habilitations: Reco
 function lireApplicationsStockees(): ApplicationsStockees | null {
   try {
     const brut = localStorage.getItem(CLE_APPLICATIONS);
-    return brut ? (JSON.parse(brut) as ApplicationsStockees) : null;
+    if (!brut) return null;
+    const donnees = JSON.parse(brut) as ApplicationsStockees;
+    // Une version précédente enregistrait parfois le profil complet
+    // ({ utilisateur, habilitations, applications }) à la place de l'identité
+    // après un changement de photo : on le répare plutôt que d'afficher un
+    // compte vide (« Non connecté ») ou de faire planter l'écran.
+    const identite = donnees?.identite as unknown as Partial<ProfilHub> & Partial<IdentiteUtilisateur>;
+    if (identite && !identite.identifiant && identite.utilisateur) donnees.identite = identite.utilisateur;
+    if (!donnees?.identite?.identifiant) return null;
+    return donnees;
   } catch {
     return null;
   }
@@ -40,6 +49,8 @@ type EtatAuth = {
   deconnecter: () => void;
   rafraichirProfil: () => Promise<void>;
   definirIdentite: (identite: IdentiteUtilisateur) => void;
+  /** Applique un profil complet du hub (identité, habilitations, applications). */
+  appliquerProfil: (profil: ProfilHub) => void;
 };
 
 const AuthContext = createContext<EtatAuth | null>(null);
@@ -62,12 +73,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setApplications(stocke.applications);
       setHabilitations(stocke.habilitations);
     }
+    // Identité et droits relus à chaque ouverture : une habilitation ajoutée
+    // ou retirée par un administrateur apparaît sans devoir se reconnecter.
+    const identiteFraiche = identityApi
+      .moi()
+      .then((profil) => {
+        if (!profil?.utilisateur?.identifiant) return;
+        setIdentite(profil.utilisateur);
+        setApplications(profil.applications);
+        setHabilitations(profil.habilitations);
+        ecrireApplicationsStockees({ identite: profil.utilisateur, habilitations: profil.habilitations, applications: profil.applications });
+      })
+      .catch(() => undefined);
     // Le profil RH enrichi n'est pas persisté (peut changer côté serveur) : on le recharge à chaque montage.
-    authApi
+    const profilRh = authApi
       .obtenirProfil()
       .then(setUtilisateur)
-      .catch(() => setUtilisateur(null))
-      .finally(() => setChargement(false));
+      .catch(() => setUtilisateur(null));
+    Promise.allSettled([identiteFraiche, profilRh]).finally(() => setChargement(false));
   }, []);
 
   const connecter = useCallback(async (identifiant: string, motDePasse: string) => {
@@ -102,6 +125,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Utilisé après un changement de photo par exemple : met à jour l'état ET le cache local,
   // sans reproduire le mécanisme complet de connexion.
+  const appliquerProfil = useCallback((profil: ProfilHub) => {
+    setIdentite(profil.utilisateur);
+    setApplications(profil.applications);
+    setHabilitations(profil.habilitations);
+    ecrireApplicationsStockees({ identite: profil.utilisateur, habilitations: profil.habilitations, applications: profil.applications });
+  }, []);
+
   const definirIdentite = useCallback((nouvelleIdentite: IdentiteUtilisateur) => {
     setIdentite(nouvelleIdentite);
     const stocke = lireApplicationsStockees();
@@ -110,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ utilisateur, identite, applications, habilitations, chargement, connecter, deconnecter, rafraichirProfil, definirIdentite }}
+      value={{ utilisateur, identite, applications, habilitations, chargement, connecter, deconnecter, rafraichirProfil, definirIdentite, appliquerProfil }}
     >
       {children}
     </AuthContext.Provider>

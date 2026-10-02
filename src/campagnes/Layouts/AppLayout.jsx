@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { ArrowLeft, Menu, MapPin, CheckCircle2, AlertCircle, AlertTriangle, Info } from 'lucide-react';
-import { Link as LienHub } from 'react-router-dom';
 import Sidebar from '@campagnes/Components/Sidebar';
 import { InstallAppButton, InstallAppToast } from '@campagnes/Components/InstallApp';
 import { cn } from '@campagnes/lib/cn';
 import { useCommercialExterne } from '../../lib/auth/commercialExterne';
 import { ClocheNotifications } from '../../components/notifications/ClocheNotifications';
+import { BoutonRetourHub } from '../../components/NavigationApps';
 
 /**
  * Mise en page des écrans de Campagnes dans GDA Hub : motif orange en fond,
@@ -94,14 +94,9 @@ export default function AppLayout({ title, subtitle, actions, children }) {
                         <InstallAppButton />
                         <ClocheNotifications />
                         {!externe && (
-                            <LienHub
-                                to="/"
-                                title="Revenir à GDA Hub"
-                                className="hidden shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface2 px-3 py-1.5 text-xs font-semibold text-muted backdrop-blur-sm transition hover:text-white sm:inline-flex"
-                            >
-                                <span aria-hidden>&larr;</span>
-                                GDA Hub
-                            </LienHub>
+                            <span className="hidden sm:inline-flex lg:hidden">
+                                <BoutonRetourHub compact />
+                            </span>
                         )}
                     </div>
                 </header>

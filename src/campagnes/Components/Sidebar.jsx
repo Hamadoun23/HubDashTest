@@ -8,6 +8,7 @@ import { Link as LienHub, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { Avatar } from '../../components/ui/Avatar';
 import { useCommercialExterne } from '../../lib/auth/commercialExterne';
+import { BoutonRetourHub, NavigationApps } from '../../components/NavigationApps';
 
 /**
  * Barre latérale de Campagnes dans GDA Hub.
@@ -168,10 +169,21 @@ function Contenu({ onNaviguer }) {
 
     return (
         <>
+            {!externe && (
+                <div className="px-3 pb-2">
+                    <BoutonRetourHub />
+                </div>
+            )}
             <nav className="mt-2 flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
                 {items.map((item) => (
                     <Entree key={item.label + item.href} item={item} onClick={onNaviguer} />
                 ))}
+                {/* Passer directement à une autre appli du hub, sans repasser par l'accueil. */}
+                {!externe && (
+                    <div className="mt-5 border-t border-border pt-4">
+                        <NavigationApps onNaviguer={onNaviguer} exclure="campagnes" titre="Autres applications" />
+                    </div>
+                )}
             </nav>
 
             <div className="border-t border-border p-3" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>

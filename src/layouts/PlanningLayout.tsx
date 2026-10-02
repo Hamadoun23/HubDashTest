@@ -1,7 +1,7 @@
 import { Building2, Calendar, Clapperboard, FileText, ListChecks, LogOut } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { NAVIGATION } from '../lib/navigation';
+import { BoutonRetourHub, NavigationApps } from '../components/NavigationApps';
 import { BoutonMenu, TiroirMobile } from '../components/TiroirMobile';
 import { ClocheNotifications } from '../components/notifications/ClocheNotifications';
 import { useAuth } from '../lib/auth/AuthContext';
@@ -17,12 +17,6 @@ import { usePermissionsPlanning } from '../pages/planning/permissions';
  * clair propre restauré précédemment. Chantiers garde pour l'instant le
  * sien.
  */
-function estActif(chemin: string, href: string) {
-  return chemin === href || chemin.startsWith(`${href}/`);
-}
-
-const ONGLETS = NAVIGATION.find((g) => g.app === 'planning')!.items;
-
 export default function PlanningLayout() {
   const [menuMobile, setMenuMobile] = useState(false);
   const fermerMenu = useCallback(() => setMenuMobile(false), []);
@@ -76,6 +70,11 @@ export default function PlanningLayout() {
           </div>
         </div>
   
+        {!estClient && (
+          <div className="px-3 pt-4">
+            <BoutonRetourHub />
+          </div>
+        )}
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
           {estClient
             ? sectionsClient.map((section) => {
@@ -94,22 +93,7 @@ export default function PlanningLayout() {
                   </Link>
                 );
               })
-            : ONGLETS.map((onglet) => {
-                const Icon = onglet.icon;
-                const actif = estActif(pathname, onglet.href);
-                return (
-                  <Link
-                    key={onglet.href}
-                    to={onglet.href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                      actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
-                    }`}
-                  >
-                    <Icon size={15} className="shrink-0" />
-                    {onglet.label}
-                  </Link>
-                );
-              })}
+            : <NavigationApps onNaviguer={fermerMenu} />}
         </nav>
   
         <div className="border-t border-border p-4">
@@ -151,14 +135,11 @@ export default function PlanningLayout() {
             GDA Media Planning
           </Link>
 
-          <Link
-            to="/"
-            title="Revenir à GDA Hub"
-            className="hidden items-center gap-1.5 rounded-full border border-border bg-surface2 px-3 py-1.5 text-xs font-semibold text-muted backdrop-blur-sm transition hover:text-white sm:inline-flex"
-          >
-            <span aria-hidden>&larr;</span>
-            GDA Hub
-          </Link>
+          {!estClient && (
+            <span className="hidden sm:inline-flex md:hidden">
+              <BoutonRetourHub compact />
+            </span>
+          )}
 
           <ClocheNotifications />
 

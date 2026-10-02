@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { LogOut, Settings } from 'lucide-react';
-import { NAVIGATION } from '../lib/navigation';
 import { BoutonMenu, TiroirMobile } from '../components/TiroirMobile';
 import { ClocheNotifications } from '../components/notifications/ClocheNotifications';
 import { useAuth } from '../lib/auth/AuthContext';
 import { Avatar } from '../components/ui/Avatar';
+import { BoutonRetourHub, NavigationApps } from '../components/NavigationApps';
 
 /**
  * RH & Finance reprend maintenant l'habillage sombre "Virtus" du hub —
@@ -14,41 +14,14 @@ import { Avatar } from '../components/ui/Avatar';
  * autres apps métier gardent pour l'instant leur identité propre : cette
  * bascule se fait app par app.
  */
-function estActif(chemin: string, href: string, estRacine: boolean) {
-  // La racine du module (« Tableau de bord ») est un prefixe de toutes les
-  // autres routes RH (/rh/absences, /rh/annuaire…) : sans ce cas particulier,
-  // elle reste allumee sur chaque page au lieu de la page reellement active.
-  if (estRacine) return chemin === href;
-  return chemin === href || chemin.startsWith(`${href}/`);
-}
-
-const GROUPE = NAVIGATION.find((g) => g.app === 'rh')!;
-
-// Seule entrée du menu RH réservée aux validateurs : la page reste
-// accessible en direct (le backend la filtre déjà à ce qui vous concerne),
-// mais l'afficher à un simple salarié qui n'a jamais rien à valider n'est
-// que du bruit — voir l'état vide "Aucun dossier en attente" du tableau
-// de bord. Tout le reste (congés, présences, historique, annuaire...) est
-// déjà scopé par le backend à l'agent (+ son équipe s'il encadre, + tout
-// pour le back-office RH) : pas besoin de le cacher, ça reste pertinent.
-const HREF_VALIDATION = '/rh/validations';
-
-function estVisible(href: string, utilisateur: ReturnType<typeof useAuth>['utilisateur']) {
-  if (href !== HREF_VALIDATION) return true;
-  if (!utilisateur) return false;
-  return utilisateur.est_encadrant || utilisateur.role !== 'SALARIE';
-}
-
 export default function RhLayout() {
   const [menuMobile, setMenuMobile] = useState(false);
   const fermerMenu = useCallback(() => setMenuMobile(false), []);
-  const { pathname } = useLocation();
   const navigate = useNavigate();
   const { utilisateur, deconnecter } = useAuth();
   const [menuOuvert, setMenuOuvert] = useState(false);
 
   const nomAffiche = utilisateur?.nom_complet || utilisateur?.username || '—';
-  const elementsVisibles = GROUPE.items.filter((item) => estVisible(item.href, utilisateur));
 
   // Même barre latérale sur grand écran et dans le tiroir mobile.
   const barreLaterale = (
@@ -65,23 +38,12 @@ export default function RhLayout() {
           </Link>
         </div>
   
-        <nav className="mt-2 flex-1 space-y-0.5 overflow-y-auto px-3 pb-4">
-          {elementsVisibles.map((item) => {
-            const Icon = item.icon;
-            const actif = estActif(pathname, item.href, item.href === GROUPE.items[0].href);
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-                  actif ? 'bg-accent text-black' : 'text-muted hover:bg-surface2 hover:text-white'
-                }`}
-              >
-                <Icon size={16} className="shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
+        <div className="px-3 pb-3">
+          <BoutonRetourHub />
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 pb-4">
+          <NavigationApps onNaviguer={fermerMenu} />
         </nav>
   
         <div className="border-t border-border p-3">
@@ -126,14 +88,9 @@ export default function RhLayout() {
           </Link>
 
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              title="Revenir à GDA Hub"
-              className="hidden items-center gap-1.5 rounded-full border border-border bg-surface2 px-3 py-1.5 text-xs font-semibold text-muted backdrop-blur-sm transition hover:text-white sm:inline-flex"
-            >
-              <span aria-hidden>&larr;</span>
-              GDA Hub
-            </Link>
+            <span className="hidden sm:inline-flex lg:hidden">
+              <BoutonRetourHub compact />
+            </span>
 
             <ClocheNotifications />
 

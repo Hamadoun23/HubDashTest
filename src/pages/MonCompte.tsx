@@ -6,9 +6,11 @@ import { Avatar } from '../components/ui/Avatar';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useAction } from '../lib/hooks/useApi';
 import { changerMotDePasseIdentity, changerPhoto, supprimerPhoto } from '../lib/api/identity';
+import { reduirePhoto } from '../lib/image';
 
 export default function MonCompte() {
-  const { identite, definirIdentite } = useAuth();
+  const { identite, appliquerProfil } = useAuth();
+  const [erreurPhoto, setErreurPhoto] = useState<string | null>(null);
   const inputPhoto = useRef<HTMLInputElement>(null);
 
   const uploadPhoto = useAction(changerPhoto);
@@ -22,15 +24,20 @@ export default function MonCompte() {
 
   async function surChangementPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0];
-    if (!fichier) return;
-    const identiteMaj = await uploadPhoto.executer(fichier);
-    definirIdentite(identiteMaj);
     e.target.value = '';
+    if (!fichier) return;
+    setErreurPhoto(null);
+    try {
+      // Réduite dans le navigateur : n'importe quelle photo de téléphone passe.
+      const profil = await uploadPhoto.executer(await reduirePhoto(fichier));
+      appliquerProfil(profil);
+    } catch (erreur) {
+      if (erreur instanceof Error && !uploadPhoto.erreur) setErreurPhoto(erreur.message);
+    }
   }
 
   async function retirerPhoto() {
-    const identiteMaj = await retraitPhoto.executer();
-    definirIdentite(identiteMaj);
+    appliquerProfil(await retraitPhoto.executer());
   }
 
   async function soumettreMotDePasse(e: React.FormEvent<HTMLFormElement>) {
@@ -48,13 +55,23 @@ export default function MonCompte() {
     <div>
       <PageHeader icon={Settings} titre="Mon compte" sousTitre="Informations personnelles et mot de passe" />
 
-      <div className="grid grid-cols-[auto_1fr] gap-6">
+      <div className="grid gap-6 md:grid-cols-[auto_1fr]">
         <Card className="flex flex-col items-center gap-3">
-          {identite?.photo ? (
-            <img src={identite.photo} alt={identite.nom_complet} className="h-[72px] w-[72px] rounded-full object-cover" />
-          ) : (
-            <Avatar label={identite?.nom_complet ?? '?'} size={72} />
-          )}
+          <button
+            type="button"
+            onClick={() => inputPhoto.current?.click()}
+            title="Changer la photo"
+            className="group relative rounded-full focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            {identite?.photo ? (
+              <img src={identite.photo} alt={identite.nom_complet} className="h-24 w-24 rounded-full object-cover" />
+            ) : (
+              <Avatar label={identite?.nom_complet ?? '?'} size={96} />
+            )}
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/55 text-xs font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
+              {uploadPhoto.enCours ? 'Envoi…' : 'Modifier'}
+            </span>
+          </button>
           <input ref={inputPhoto} type="file" accept="image/*" hidden onChange={surChangementPhoto} />
           <button
             onClick={() => inputPhoto.current?.click()}
@@ -68,9 +85,10 @@ export default function MonCompte() {
               Retirer la photo
             </button>
           ) : null}
-          {(uploadPhoto.erreur || retraitPhoto.erreur) && (
-            <p className="text-center text-xs font-semibold text-red-400">{uploadPhoto.erreur ?? retraitPhoto.erreur}</p>
+          {(erreurPhoto || uploadPhoto.erreur || retraitPhoto.erreur) && (
+            <p className="max-w-[12rem] text-center text-xs font-semibold text-red-400">{erreurPhoto ?? uploadPhoto.erreur ?? retraitPhoto.erreur}</p>
           )}
+          <p className="max-w-[12rem] text-center text-[11px] text-muted">JPEG, PNG ou WEBP — la photo est réduite automatiquement.</p>
         </Card>
 
         <Card className="flex flex-col gap-3">

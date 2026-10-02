@@ -34,20 +34,26 @@ export function useCommercialExterne(): boolean {
  *
  * - commercial Campagnes (BDM, UBA…) → `/campagnes` ;
  * - partenaire Chantiers (B2Gold…), seule habilitation « daily » en rôle
- *   partenaire → `/chantiers`, en lecture seule sur ses propres chantiers.
+ *   partenaire → `/chantiers`, en lecture seule sur ses propres chantiers ;
+ * - client Planning (seule habilitation « planning » en rôle client) →
+ *   `/planning`, son calendrier de publications.
  *
  * Ces comptes ne voient ni l'accueil du hub, ni les autres applications.
  */
 export function espaceExterne(
   habilitations: Record<string, string[]>,
   estSuperadmin: boolean | undefined,
-): '/campagnes' | '/chantiers' | null {
+): '/campagnes' | '/chantiers' | '/planning' | null {
   if (estSuperadmin) return null;
   if (estCommercialExterne(habilitations, estSuperadmin)) return '/campagnes';
   const applications = Object.keys(habilitations);
   const roles = habilitations.daily ?? [];
   if (applications.length === 1 && applications[0] === 'daily' && roles.length > 0 && roles.every((r) => r === 'partenaire')) {
     return '/chantiers';
+  }
+  const rolesPlanning = habilitations.planning ?? [];
+  if (applications.length === 1 && applications[0] === 'planning' && rolesPlanning.length > 0 && rolesPlanning.every((r) => r === 'client')) {
+    return '/planning';
   }
   return null;
 }
