@@ -44,5 +44,6 @@ cat > .env <<EOF
 DJANGO_SECRET_KEY=${CLE}
 POSTGRES_PASSWORD=${MDP}
 GDAHUB_CLE_INTERNE=${CLE_INTERNE}
+GDAHUB_ADMIN_MOT_DE_PASSE=$(aleatoire 24)
 EOF
 echo "Fichier .env écrit. Redéployer : docker compose -f docker-compose.prod.yml up -d --build"

@@ -120,8 +120,9 @@ services:
     environment:
       <<: *env-django
       GDAHUB_APPLICATION: hub
-      GDAHUB_ADMIN_MOT_DE_PASSE: "1234"
-      GDAHUB_MOT_DE_PASSE_INITIAL: "1234"
+      # Sert a la seule creation du compte (base vide) : jamais de valeur
+      # connue par defaut en production.
+      GDAHUB_ADMIN_MOT_DE_PASSE: ${GDAHUB_ADMIN_MOT_DE_PASSE:?Definir GDAHUB_ADMIN_MOT_DE_PASSE dans .env}
       DATABASE_URL: postgres://gdahub:${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD dans .env}@db-identity:5432/identity
       CSRF_TRUSTED_ORIGINS: http://hub.gdamali.net,https://hub.gdamali.net,http://www.hub.gdamali.net,https://www.hub.gdamali.net
       MEDIA_URL: /media/hub/

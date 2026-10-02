@@ -26,8 +26,14 @@ echo "[identity] comptes de l'effectif"
 # L'echec n'arrete pas le demarrage : un fichier d'effectif absent est une
 # gene, pas une panne. Sans ce garde-fou, « set -e » tuait le service et la
 # passerelle repondait 502 sur toute l'origine — pour un annuaire vide.
-python manage.py importer_comptes --mot-de-passe "${GDAHUB_MOT_DE_PASSE_INITIAL:-1234}" \
-  || echo "[identity] effectif non importe, on continue"
+# Jamais en production (DJANGO_DEBUG=False) : il recreerait a chaque
+# demarrage des comptes de demonstration au mot de passe connu.
+if [ "${DJANGO_DEBUG:-True}" = "True" ]; then
+  python manage.py importer_comptes --mot-de-passe "${GDAHUB_MOT_DE_PASSE_INITIAL:-1234}" \
+    || echo "[identity] effectif non importe, on continue"
+else
+  echo "[identity] production : import de l'effectif ignore"
+fi
 
 
 echo "[identity] demarrage"
