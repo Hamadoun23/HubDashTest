@@ -98,7 +98,7 @@ export default function Accueil() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-[1.1fr_1fr] gap-4">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-4">
             {/* --- Colonne gauche : suivi de mes tâches ------------------- */}
             <div>
               <div className="mb-3 flex items-center gap-2">
@@ -110,7 +110,7 @@ export default function Accueil() {
                 <ChevronRight size={14} className="ml-auto text-muted" />
               </div>
 
-              <div className="mb-4 grid grid-cols-2 gap-4">
+              <div className="mb-4 grid gap-4 sm:grid-cols-2">
                 <Card className="flex flex-col gap-3">
                   <div className="flex items-start justify-between">
                     <p className="text-xs text-muted">Mes congés</p>
@@ -163,7 +163,7 @@ export default function Accueil() {
               </div>
 
               {prioritaire ? (
-                <Card className="flex items-center justify-between bg-gradient-to-br from-accent to-accent2">
+                <Card className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-accent to-accent2">
                   <div className="flex items-center gap-3">
                     <Avatar label={prioritaire.demandeur_nom} size={38} />
                     <div>
@@ -189,7 +189,7 @@ export default function Accueil() {
 
             {/* --- Colonne droite : performance --------------------------- */}
             <div>
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h2 className="text-sm font-bold text-white">Ma performance</h2>
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
@@ -203,7 +203,7 @@ export default function Accueil() {
                 </div>
               </div>
 
-              <div className="mb-4 grid grid-cols-3 gap-3">
+              <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
                 <Card className="flex flex-col gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400/20">
                     <CheckCircle2 size={15} className="text-emerald-400" />
@@ -250,12 +250,12 @@ export default function Accueil() {
           </div>
 
           {/* --- Tout sur vous ------------------------------------------- */}
-          <div className="mt-6 mb-3 flex items-center justify-between">
+          <div className="mt-6 mb-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Crown size={16} className="text-accent2" />
               <h2 className="text-sm font-bold text-white">Tout sur vous</h2>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {(
                 [
                   { cle: 'taches', libelle: 'Mes demandes' },
@@ -293,7 +293,7 @@ export default function Accueil() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Card>
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">

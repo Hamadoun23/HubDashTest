@@ -35,3 +35,104 @@ h3 {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* ---------------------------------------------------------------------------
+ * Mobile (PWA) — règles globales, sans toucher au design.
+ * ------------------------------------------------------------------------- */
+
+/* Un élément de grille ne doit jamais élargir la page (texte long, tableau). */
+.grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  /* Sous 16 px, Safari iPhone zoome dès qu'on touche un champ. */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Tableaux : chaque ligne devient une carte compacte sous 768 px.
+ * - 1re cellule = titre de la carte, sur toute la largeur ;
+ * - les autres en 2 colonnes « libellé au-dessus / valeur » (libellés recopiés
+ *   des <th> par LibellesTableaux) ;
+ * - dernière colonne sans titre (actions) en haut à droite ;
+ * - `th.cacher-mobile` masque une colonne secondaire ;
+ * - `.table-large` garde le défilement horizontal (matrices de chiffres) ;
+ * - Chantiers garde ses propres tableaux (habillage d'origine). */
+@media (max-width: 767px) {
+  table:not(.table-large, .hidden, .gda-daily *) {
+    display: block;
+    width: 100%;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) thead {
+    display: none;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 0.9rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 1rem;
+    background: rgb(255 255 255 / 0.04);
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td {
+    display: block;
+    min-width: 0;
+    padding: 0 !important;
+    border: 0 !important;
+    text-align: left !important;
+    overflow-wrap: anywhere;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.1rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td[data-label='']::before {
+    display: none;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td:first-child {
+    grid-column: 1 / -1;
+    padding-right: 3rem !important;
+    font-weight: 600;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td:first-child::before {
+    display: none;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td:last-child[data-label=''] {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) tbody td:only-child {
+    padding-right: 0 !important;
+    text-align: center !important;
+  }
+  table:not(.table-large, .hidden, .gda-daily *) th.cacher-mobile,
+  table:not(.table-large, .hidden, .gda-daily *) td.cacher-mobile {
+    display: none;
+  }
+}
+
+/* Barre d'onglets du bas : le contenu ne doit pas passer dessous. */
+@media (max-width: 1023px) {
+  body.avec-onglets main,
+  body.avec-onglets [data-defilement] {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom)) !important;
+  }
+}

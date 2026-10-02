@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useEspaceExterne } from '../lib/auth/commercialExterne';
 import { NotificationsProvider } from '../lib/notifications/NotificationsContext';
+import { BarreOngletsMobile } from './BarreOngletsMobile';
 import ChangementObligatoire, { changementReporte } from '../pages/ChangementObligatoire';
 
 export function RequireAuth() {
@@ -31,6 +32,8 @@ export function RequireAuth() {
   return (
     <NotificationsProvider>
       <Outlet />
+      {/* Barre d'onglets du bas (téléphone, tablette) : collaborateurs seulement. */}
+      {!espace && <BarreOngletsMobile />}
     </NotificationsProvider>
   );
 }

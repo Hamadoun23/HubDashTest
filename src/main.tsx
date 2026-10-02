@@ -6,6 +6,8 @@ import './index.css';
 import { AuthProvider } from './lib/auth/AuthContext';
 import { RequireAuth } from './components/RequireAuth';
 import { FiletErreur } from './components/FiletErreur';
+import { EtatApplication } from './components/EtatApplication';
+import { LibellesTableaux } from './components/LibellesTableaux';
 import Connexion from './pages/Connexion';
 
 
@@ -203,15 +205,11 @@ createRoot(document.getElementById('root')!).render(
         </Routes>
         </Suspense>
         </FiletErreur>
+        <EtatApplication />
+        <LibellesTableaux />
       </AuthProvider>
     </HashRouter>
   </StrictMode>,
 );
 
-// PWA : service worker (cache de l'interface, page hors ligne, notifications
-// push). Enregistré après le chargement pour ne pas retarder le premier écran.
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => undefined);
-  });
-}
+// Service worker : enregistré par <EtatApplication /> (mises à jour, hors ligne).

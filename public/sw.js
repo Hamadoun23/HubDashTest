@@ -14,12 +14,23 @@
  * donnée périmée, ou le fichier privé d'une personne resté sur un appareil
  * partagé, serait pire qu'une page qui ne charge pas.
  */
-const VERSION = 'gdahub-v1';
+const VERSION = 'gdahub-v2';
+// En développement (localhost), aucun cache : on voit toujours le code du moment.
+const DEVELOPPEMENT = ['localhost', '127.0.0.1'].includes(self.location.hostname);
 const COQUILLE = ['/', '/hors-ligne.html', '/manifest.webmanifest', '/motif-orange.jpg', '/icons/icon-192.png', '/icons/badge-96.png'];
 const JAMAIS_EN_CACHE = ['/api/', '/campagnes/', '/media/', '/.well-known/', '/sante/'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(COQUILLE)).then(() => self.skipWaiting()));
+  // Pas de skipWaiting ici : une nouvelle version attend que la personne
+  // clique « Mettre à jour » (message MISE_A_JOUR), au lieu de remplacer
+  // l'interface en pleine saisie. À la toute première visite, il n'y a pas
+  // d'ancienne version : celle-ci s'active d'elle-même.
+  if (DEVELOPPEMENT) return;
+  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(COQUILLE)));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'MISE_A_JOUR') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -33,7 +44,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const requete = event.request;
-  if (requete.method !== 'GET') return;
+  if (DEVELOPPEMENT || requete.method !== 'GET') return;
   const url = new URL(requete.url);
   if (url.origin !== self.location.origin) {
     // Polices Google : servies depuis le cache une fois téléchargées.

@@ -42,7 +42,7 @@ export function PerformanceSection() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {statTiles.map((tile) => {
           const Icon = TILE_ICONS[tile.id];
           return (
