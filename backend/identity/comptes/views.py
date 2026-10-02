@@ -75,6 +75,7 @@ def _profil(utilisateur: Utilisateur) -> dict:
             "email": utilisateur.email,
             "fonction": utilisateur.fonction,
             "est_superadmin": utilisateur.is_superuser,
+            "doit_changer_mot_de_passe": utilisateur.doit_changer_mot_de_passe,
             "photo": utilisateur.photo.url if utilisateur.photo else None,
         },
         "habilitations": habilitations,
@@ -375,8 +376,20 @@ class ChangerMotDePasse(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if formulaire.validated_data["nouveau"] == formulaire.validated_data["ancien"]:
+            return Response(
+                {
+                    "erreur": {
+                        "code": "validation",
+                        "message": "Le nouveau mot de passe doit differer de l'ancien.",
+                        "details": {"nouveau": ["Identique a l'ancien."]},
+                    }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         utilisateur.set_password(formulaire.validated_data["nouveau"])
-        utilisateur.save(update_fields=["password", "modifie_le"])
+        utilisateur.doit_changer_mot_de_passe = False
+        utilisateur.save(update_fields=["password", "doit_changer_mot_de_passe", "modifie_le"])
         utilisateur.sessions.filter(revoque_le__isnull=True).update(
             revoque_le=timezone.now()
         )

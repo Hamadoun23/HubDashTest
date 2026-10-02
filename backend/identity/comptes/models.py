@@ -78,6 +78,12 @@ class Utilisateur(AbstractBaseUser, PermissionsMixin):
         default=True,
         help_text="Un compte inactif ne peut plus se connecter nulle part.",
     )
+    doit_changer_mot_de_passe = models.BooleanField(
+        "Mot de passe a changer",
+        default=False,
+        help_text="Mot de passe provisoire : l'interface exige d'en choisir un "
+        "nouveau avant tout autre ecran.",
+    )
     is_staff = models.BooleanField("Acces a l'administration Django", default=False)
 
     cree_le = models.DateTimeField("Cree le", auto_now_add=True)

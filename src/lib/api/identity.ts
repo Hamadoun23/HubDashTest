@@ -42,6 +42,8 @@ export type IdentiteUtilisateur = {
   email: string;
   fonction: string;
   est_superadmin: boolean;
+  /** Mot de passe provisoire : rien d'autre ne s'ouvre avant d'en changer. */
+  doit_changer_mot_de_passe?: boolean;
   photo: string | null;
 };
 

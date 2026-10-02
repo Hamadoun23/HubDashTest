@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useCommercialExterne } from '../lib/auth/commercialExterne';
 import { NotificationsProvider } from '../lib/notifications/NotificationsContext';
+import ChangementObligatoire from '../pages/ChangementObligatoire';
 
 export function RequireAuth() {
   const { identite, chargement } = useAuth();
@@ -14,6 +15,10 @@ export function RequireAuth() {
 
   // Une seule connexion pour tout le monde : celle du hub.
   if (!identite) return <Navigate to="/connexion" replace />;
+
+  // Mot de passe provisoire (« 1234 » à la mise en service) : aucun écran,
+  // ni du hub ni des applications, avant d'en avoir choisi un personnel.
+  if (identite.doit_changer_mot_de_passe) return <ChangementObligatoire />;
 
   // Commercial externe (BDM, UBA…) : il ne voit que Campagnes. Toute autre
   // adresse du hub — l'accueil juste après la connexion compris — le ramène

@@ -53,3 +53,39 @@ class ConnexionNomCourtTest(TestCase):
         Utilisateur.objects.create_user(identifiant="1", mot_de_passe="p", nom="A", email="double@gdamali.net")
         Utilisateur.objects.create_user(identifiant="2", mot_de_passe="p", nom="B", email="double@gdamali.net")
         self.assertNotEqual(self.connexion("double", "p").status_code, 200)
+
+
+class MotDePasseProvisoireTest(TestCase):
+    def setUp(self):
+        cache.clear()
+        self.client = APIClient()
+        self.u = Utilisateur.objects.create_user(identifiant="agent@gdamali.net", mot_de_passe="1234", nom="AGENT")
+        self.u.doit_changer_mot_de_passe = True
+        self.u.save()
+
+    def test_flag_dans_le_profil_et_leve_au_changement(self):
+        r = self.client.post(URL, {"identifiant": "agent", "mot_de_passe": "1234"}, format="json")
+        self.assertTrue(r.data["utilisateur"]["doit_changer_mot_de_passe"])
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {r.data['acces']}")
+        r = self.client.post("/api/identity/auth/mot-de-passe", {"ancien": "1234", "nouveau": "Kayes-Bamako-2026"}, format="json")
+        self.assertEqual(r.status_code, 204, getattr(r, "data", None))
+        self.u.refresh_from_db()
+        self.assertFalse(self.u.doit_changer_mot_de_passe)
+
+    def test_nouveau_trop_faible_refuse(self):
+        r = self.client.post(URL, {"identifiant": "agent", "mot_de_passe": "1234"}, format="json")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {r.data['acces']}")
+        for faible in ("1234", "12345678"):
+            r = self.client.post("/api/identity/auth/mot-de-passe", {"ancien": "1234", "nouveau": faible}, format="json")
+            self.assertEqual(r.status_code, 400)
+        self.u.refresh_from_db()
+        self.assertTrue(self.u.doit_changer_mot_de_passe)
+
+    def test_commande_de_reinitialisation(self):
+        from django.core.management import call_command
+        self.u.doit_changer_mot_de_passe = False
+        self.u.save()
+        call_command("reinitialiser_mots_de_passe", "--mot-de-passe", "1234", stdout=open(__import__("os").devnull, "w"))
+        self.u.refresh_from_db()
+        self.assertTrue(self.u.doit_changer_mot_de_passe)
+        self.assertTrue(self.u.check_password("1234"))
