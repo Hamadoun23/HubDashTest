@@ -49,7 +49,7 @@ export default function AppLayout({ title, subtitle, actions, children }) {
 
             <div className="flex flex-1 flex-col overflow-hidden">
                 <header
-                    className="flex items-center gap-3 border-b border-border bg-surface/40 px-4 py-4 backdrop-blur-md sm:px-8"
+                    className="flex flex-wrap items-center gap-3 border-b border-border bg-surface/40 px-4 py-4 backdrop-blur-md sm:flex-nowrap sm:px-8"
                     style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}
                 >
                     <button
@@ -88,8 +88,14 @@ export default function AppLayout({ title, subtitle, actions, children }) {
                         </p>
                     </div>
 
+                    {/* Sur téléphone, les actions de la page passent sous le titre au
+                        lieu de l'écraser. */}
+                    {actions && (
+                        <div className="order-last flex w-full flex-wrap items-center gap-2 sm:order-none sm:w-auto sm:flex-nowrap">
+                            {actions}
+                        </div>
+                    )}
                     <div className="flex items-center gap-2">
-                        {actions}
                         {/* Visible sur mobile aussi : c'est là que l'installation compte le plus. */}
                         <InstallAppButton />
                         <ClocheNotifications />
