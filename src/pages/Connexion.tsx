@@ -137,12 +137,7 @@ export default function Connexion() {
               </div>
             </div>
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs font-semibold text-white/80">Mot de passe</label>
-                <button type="button" className="text-xs font-semibold text-accent2 hover:text-accent">
-                  Mot de passe oublié ?
-                </button>
-              </div>
+              <label className="mb-1.5 block text-xs font-semibold text-white/80">Mot de passe</label>
               <div className="relative">
                 <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
                 <input
@@ -160,6 +155,11 @@ export default function Connexion() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-white"
                 >
                   {motDePasseVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <div className="mt-1.5 flex justify-end">
+                <button type="button" className="text-xs font-semibold text-accent2 hover:text-accent">
+                  Mot de passe oublié ?
                 </button>
               </div>
             </div>
