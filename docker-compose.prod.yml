@@ -231,17 +231,17 @@ services:
 
   # --- L'interface, unique -------------------------------------------------
   frontend:
+    # Interface compilée (vite build) servie par `vite preview`, avec la CSP
+    # de vite.config.ts : aucun serveur de développement en production, et
+    # pas de montage du code, sinon le dossier dist/ de l'image serait masqué.
     build:
       context: .
-      target: developpement
+      target: production
     container_name: gdahub-frontend
     restart: unless-stopped
     environment:
       VITE_API_BASE_URL: /api
       VITE_CAMPAGNES_BASE_URL: /campagnes
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   # --- La passerelle : une seule origine, seule publiee sur l'hote --------
   gateway:

@@ -1,7 +1,5 @@
-# Contexte de build du frontend (docker-compose.yml : frontend, context ".").
-# Sans ce fichier, TOUT le depot part vers le demon Docker a chaque build —
-# les 6 venvs Python de backend/, node_modules, .git — des gigaoctets de
-# fichiers qui n'ont rien a faire dans l'image React/Vite.
+# Contexte de l'image de l'interface (Dockerfile racine) : remplace
+# .dockerignore pour ce seul Dockerfile. Uniquement le frontend.
 
 .git
 node_modules
@@ -30,3 +28,10 @@ Planning-main
 *.xlsx
 .env
 .env.*
+backend
+gateway
+libs
+infra
+scripts
+docs
+cles
