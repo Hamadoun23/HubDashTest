@@ -26,7 +26,9 @@ import { Badge } from '../components/ui/Table';
 import { ResumePlanning } from '../components/ResumePlanning';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useApi } from '../lib/hooks/useApi';
-import { demandesAValider, mesDemandes, monSolde } from '../lib/api/rh';
+import { mesDemandes, monSolde } from '../lib/api/rh';
+import { NOM_APP, useUrgences } from '../lib/urgences';
+import type { AppKey } from '../lib/navigation';
 import { listerClients } from '../lib/api/planning';
 import { usePermissionsPlanning } from './planning/permissions';
 
@@ -49,18 +51,19 @@ export default function Accueil() {
   );
   const nomAffiche = monClientPlanning.donnees?.[0]?.nom_entreprise ?? identite?.nom_complet.split(' ')[0];
   const solde = useApi(() => (accesRh ? monSolde(annee) : Promise.resolve(null)), [accesRh, annee]);
-  const dossiers = useApi(() => (accesRh ? demandesAValider() : Promise.resolve([])), [accesRh]);
   const demandes = useApi(() => (accesRh ? mesDemandes() : Promise.resolve([])), [accesRh]);
-
-  const listeDossiers = dossiers.donnees ?? [];
-  const urgents = listeDossiers.filter((d) => d.categorie === 'RETARD' || d.categorie === 'PERMISSION');
-  const prioritaire = urgents[0] ?? listeDossiers[0];
+  // Urgences de toutes mes applis (RH, Jus, Chantiers, Planning) : elles
+  // alimentent le suivi des tâches, la priorité et « À traiter ».
+  const { urgences, hautes, parApp, projets } = useUrgences();
+  const prioritaire = urgences[0];
+  const avecUrgences = applications.length > 0;
 
   const listeDemandes = demandes.donnees ?? [];
   const enCours = listeDemandes.filter((d) => d.statut === 'EN_VALIDATION' || d.statut === 'BROUILLON');
   const approuvees = listeDemandes.filter((d) => d.statut === 'APPROUVE' || d.statut === 'CLOTURE');
   const tauxApprobation = listeDemandes.length > 0 ? (approuvees.length / listeDemandes.length) * 100 : 0;
-  const pctUrgents = listeDossiers.length > 0 ? (urgents.length / listeDossiers.length) * 100 : 0;
+  const pctUrgents = urgences.length > 0 ? (hautes.length / urgences.length) * 100 : 0;
+  const avancementChantiers = projets.length ? projets.reduce((t, p) => t + (p.overall_progress ?? 0), 0) / projets.length : null;
 
   const ratioConges = solde.donnees
     ? (solde.donnees.jours_restants / (solde.donnees.jours_acquis + solde.donnees.jours_reportes || 1)) * 100
@@ -90,9 +93,9 @@ export default function Accueil() {
         sousTitre="Ce qui vous concerne aujourd'hui"
       />
 
-      {!accesRh && accesPlanning ? (
+      {!accesRh && accesPlanning && estClientPlanning ? (
         <ResumePlanning />
-      ) : !accesRh ? (
+      ) : !avecUrgences ? (
         <Card className="py-10 text-center text-sm text-muted">
           Votre tableau de bord personnel apparaîtra ici une fois rattaché à une application du hub.
         </Card>
@@ -105,12 +108,13 @@ export default function Accueil() {
                 <ListChecks size={16} className="text-accent2" />
                 <h2 className="text-sm font-bold text-white">Suivi de mes tâches</h2>
                 <span className="text-xs font-semibold text-muted">
-                  {enCours.length}/{listeDemandes.length}
+                  {hautes.length}/{urgences.length}
                 </span>
                 <ChevronRight size={14} className="ml-auto text-muted" />
               </div>
 
               <div className="mb-4 grid gap-4 sm:grid-cols-2">
+                {accesRh ? (
                 <Card className="flex flex-col gap-3">
                   <div className="flex items-start justify-between">
                     <p className="text-xs text-muted">Mes congés</p>
@@ -132,32 +136,49 @@ export default function Accueil() {
                     <ArrowUpRight size={13} />
                   </Link>
                 </Card>
+                ) : (
+                <Card className="flex flex-col gap-3">
+                  <div className="flex items-start justify-between">
+                    <p className="text-xs text-muted">Par application</p>
+                    <ArrowUpRight size={14} className="text-muted" />
+                  </div>
+                  {Object.keys(parApp).length === 0 ? (
+                    <p className="py-6 text-center text-xs text-muted">Rien d'urgent dans vos applis.</p>
+                  ) : (
+                    (Object.entries(parApp) as [AppKey, number][]).map(([app, n]) => (
+                      <div key={app} className="flex items-center justify-between text-xs">
+                        <span className="text-white">{NOM_APP[app]}</span>
+                        <span className="font-semibold text-accent2">{n}</span>
+                      </div>
+                    ))
+                  )}
+                </Card>
+                )}
 
                 <Card className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <Zap size={16} className="text-accent2" />
-                    {prioritaire && (urgents.length > 0) && (
+                    {prioritaire && prioritaire.gravite === 'haute' && (
                       <Badge tone="danger">Priorité haute</Badge>
                     )}
                   </div>
                   {prioritaire ? (
                     <>
-                      <p className="text-sm font-bold text-white">{prioritaire.type_absence_libelle}</p>
-                      <p className="text-xs text-muted">
-                        {prioritaire.demandeur_nom} · {prioritaire.numero}
-                      </p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-accent2">{NOM_APP[prioritaire.app]}</p>
+                      <p className="text-sm font-bold text-white">{prioritaire.titre}</p>
+                      <p className="truncate text-xs text-muted">{prioritaire.detail}</p>
                       <div className="mt-1 flex items-center justify-between text-xs">
-                        <span className="text-muted">Dossiers à valider</span>
-                        <span className="font-semibold text-white">{listeDossiers.length}</span>
+                        <span className="text-muted">Éléments à traiter</span>
+                        <span className="font-semibold text-white">{urgences.length}</span>
                       </div>
                       <ProgressBar progress={100 - pctUrgents} />
-                      <Link to="/rh/validations" className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface2 px-4 py-2 text-xs font-bold text-white">
+                      <Link to={prioritaire.lien} className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface2 px-4 py-2 text-xs font-bold text-white">
                         Voir les détails
                         <ArrowUpRight size={13} />
                       </Link>
                     </>
                   ) : (
-                    <p className="py-6 text-center text-xs text-muted">Rien n'attend votre décision.</p>
+                    <p className="py-6 text-center text-xs text-muted">Rien d'urgent dans vos applis.</p>
                   )}
                 </Card>
               </div>
@@ -165,17 +186,17 @@ export default function Accueil() {
               {prioritaire ? (
                 <Card className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-accent to-accent2">
                   <div className="flex items-center gap-3">
-                    <Avatar label={prioritaire.demandeur_nom} size={38} />
+                    <Avatar label={prioritaire.personne} size={38} />
                     <div>
-                      <p className="text-sm font-bold text-black">{prioritaire.demandeur_nom}</p>
+                      <p className="text-sm font-bold text-black">{prioritaire.personne}</p>
                       <p className="text-xs text-black/70">
-                        {listeDossiers.length} dossier{listeDossiers.length > 1 ? 's' : ''} en attente de votre décision !
+                        {urgences.length} élément{urgences.length > 1 ? 's' : ''} à traiter dans vos applis !
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    {listeDossiers.length > 1 && <AvatarStack labels={listeDossiers.slice(1, 4).map((d) => d.demandeur_nom)} size={22} />}
-                    <Link to="/rh/validations" className="flex items-center gap-1 rounded-xl bg-black/15 px-3 py-2 text-xs font-bold text-black">
+                    {urgences.length > 1 && <AvatarStack labels={urgences.slice(1, 4).map((u) => u.personne)} size={22} />}
+                    <Link to={prioritaire.lien} className="flex items-center gap-1 rounded-xl bg-black/15 px-3 py-2 text-xs font-bold text-black">
                       <Calendar size={12} />
                       Traiter
                       <ChevronRight size={13} />
@@ -183,7 +204,7 @@ export default function Accueil() {
                   </div>
                 </Card>
               ) : (
-                <Card className="text-center text-sm text-muted">Aucun dossier en attente pour le moment.</Card>
+                <Card className="text-center text-sm text-muted">Aucun élément urgent pour le moment.</Card>
               )}
             </div>
 
@@ -208,22 +229,26 @@ export default function Accueil() {
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400/20">
                     <CheckCircle2 size={15} className="text-emerald-400" />
                   </span>
-                  <p className="font-display text-xl font-bold text-white">{Math.round(tauxApprobation)}%</p>
-                  <p className="text-xs text-muted">Approuvées</p>
+                  <p className="font-display text-xl font-bold text-white">
+                    {accesRh || avancementChantiers === null ? `${Math.round(tauxApprobation)}%` : `${Math.round(avancementChantiers)}%`}
+                  </p>
+                  <p className="text-xs text-muted">{accesRh || avancementChantiers === null ? 'Approuvées' : 'Avancement chantiers'}</p>
                 </Card>
                 <Card className="flex flex-col gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20">
                     <ArrowUpRight size={15} className="text-accent2" />
                   </span>
-                  <p className="font-display text-xl font-bold text-white">{listeDemandes.length > 0 ? Math.round((enCours.length / listeDemandes.length) * 100) : 0}%</p>
-                  <p className="text-xs text-muted">En cours</p>
+                  <p className="font-display text-xl font-bold text-white">
+                    {accesRh ? `${listeDemandes.length > 0 ? Math.round((enCours.length / listeDemandes.length) * 100) : 0}%` : urgences.length}
+                  </p>
+                  <p className="text-xs text-muted">{accesRh ? 'En cours' : 'À traiter'}</p>
                 </Card>
                 <Card className="flex flex-col gap-2">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-400/20">
                     <Users2 size={15} className="text-violet-400" />
                   </span>
-                  <p className="font-display text-xl font-bold text-white">{Math.round(pctUrgents)}%</p>
-                  <p className="text-xs text-muted">Dossiers urgents</p>
+                  <p className="font-display text-xl font-bold text-white">{hautes.length}</p>
+                  <p className="text-xs text-muted">Urgences</p>
                 </Card>
               </div>
 
@@ -355,35 +380,31 @@ export default function Accueil() {
               <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users2 size={15} className="text-accent2" />
-                  <h3 className="text-sm font-bold text-white">À valider</h3>
+                  <h3 className="text-sm font-bold text-white">À traiter</h3>
                 </div>
-                <Link to="/rh/validations" className="text-muted hover:text-white">
-                  <ArrowUpRight size={14} />
-                </Link>
+                <ArrowUpRight size={14} className="text-muted" />
               </div>
-              <p className="mb-3 text-xs text-muted">Tous les dossiers</p>
-              {listeDossiers.length === 0 ? (
-                <p className="py-4 text-center text-xs text-muted">Aucun dossier en attente.</p>
+              <p className="mb-3 text-xs text-muted">Toutes vos applis</p>
+              {urgences.length === 0 ? (
+                <p className="py-4 text-center text-xs text-muted">Rien d'urgent pour le moment.</p>
               ) : (
                 <div className="space-y-2">
-                  {listeDossiers.slice(0, 2).map((d) => (
-                    <div key={d.id} className="flex items-center justify-between rounded-xl bg-surface2 px-3 py-2">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar label={d.demandeur_nom} size={26} />
-                        <div>
-                          <p className="text-xs font-semibold text-white">
-                            {d.numero} · {d.type_absence_libelle}
-                          </p>
-                          <p className="text-xs text-muted">{d.demandeur_nom}</p>
+                  {urgences.slice(0, 3).map((u) => (
+                    <Link key={u.cle} to={u.lien} className="flex items-center justify-between gap-2 rounded-xl bg-surface2 px-3 py-2 hover:bg-surface2/70">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <Avatar label={u.personne} size={26} />
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-semibold text-white">{u.titre}</p>
+                          <p className="truncate text-xs text-muted">{u.detail}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge tone={d.categorie === 'RETARD' || d.categorie === 'PERMISSION' ? 'warning' : 'neutral'}>{d.statut_libelle}</Badge>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Badge tone={u.gravite === 'haute' ? 'warning' : 'neutral'}>{NOM_APP[u.app]}</Badge>
                         <MoreVertical size={14} className="text-muted" />
                       </div>
-                    </div>
+                    </Link>
                   ))}
-                  <Link to="/rh/validations" className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted hover:text-white">
+                  <Link to={accesRh ? '/rh/validations' : urgences[0].lien} className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted hover:text-white">
                     Tout voir
                   </Link>
                 </div>
