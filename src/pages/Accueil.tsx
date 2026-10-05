@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Crown,
+  LayoutGrid,
   Download,
   ListChecks,
   MoreVertical,
@@ -24,6 +25,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { Badge } from '../components/ui/Table';
 import { ResumePlanning } from '../components/ResumePlanning';
+import { ResumesApplications } from '../components/ResumesApplications';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useApi } from '../lib/hooks/useApi';
 import { demandesAValider, mesDemandes, monSolde } from '../lib/api/rh';
@@ -90,14 +92,24 @@ export default function Accueil() {
         sousTitre="Ce qui vous concerne aujourd'hui"
       />
 
-      {!accesRh && accesPlanning ? (
+      {/* --- Synthèse de toutes mes applications -------------------------- */}
+      <section className="mb-8">
+        <div className="mb-3 flex items-center gap-2">
+          <LayoutGrid size={16} className="text-accent2" />
+          <h2 className="text-sm font-bold text-white">Mes applications</h2>
+          <span className="text-xs text-muted">· l'essentiel de chaque appli</span>
+        </div>
+        <ResumesApplications />
+      </section>
+
+      {!accesRh && accesPlanning && estClientPlanning ? (
         <ResumePlanning />
-      ) : !accesRh ? (
-        <Card className="py-10 text-center text-sm text-muted">
-          Votre tableau de bord personnel apparaîtra ici une fois rattaché à une application du hub.
-        </Card>
-      ) : (
+      ) : !accesRh ? null : (
         <>
+          <div className="mb-3 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-blue-400" />
+            <h2 className="font-display text-base font-bold text-white">RH &amp; Finance — en détail</h2>
+          </div>
           <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-4">
             {/* --- Colonne gauche : suivi de mes tâches ------------------- */}
             <div>
