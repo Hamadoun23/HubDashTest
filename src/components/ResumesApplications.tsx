@@ -13,7 +13,10 @@ import { requeteInertia } from '../campagnes/inertia/noyau';
 import { usePermissionsPlanning } from '../pages/planning/permissions';
 
 const NOMBRE = new Intl.NumberFormat('fr-FR');
-const fcfa = (v: number) => `${NOMBRE.format(Math.round(v))} F`;
+const COURT = new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 });
+/** Montants et volumes en format court dans les cartes (« 3,3 M F ») : le détail est dans l'appli. */
+const court = (v: number) => (Math.abs(v) >= 10000 ? COURT.format(v) : NOMBRE.format(Math.round(v)));
+const fcfa = (v: number) => `${court(v)} F`;
 const MAINTENANT = new Date();
 
 type Chiffre = { valeur: ReactNode; libelle: string };
@@ -133,8 +136,8 @@ function ResumeJus() {
         k
           ? [
               { valeur: fcfa(k.ca_total), libelle: "Chiffre d'affaires" },
-              { valeur: NOMBRE.format(k.jus_stock), libelle: 'Bouteilles de jus en stock' },
-              { valeur: `${NOMBRE.format(k.recolte_total)} kg`, libelle: 'Oranges récoltées' },
+              { valeur: court(k.jus_stock), libelle: 'Bouteilles de jus en stock' },
+              { valeur: `${court(k.recolte_total)} kg`, libelle: 'Oranges récoltées' },
             ]
           : []
       }
@@ -229,7 +232,7 @@ function ResumeCampagnes() {
   else if (page.donnees && page.donnees.component !== 'Dashboard') indisponible = 'Choisissez le client (BDM, UBA…) en ouvrant l’appli.';
   else if (variant === 'admin') {
     chiffres = [
-      { valeur: NOMBRE.format(Number(p.ventesTotal ?? 0)), libelle: 'Ventes (total)' },
+      { valeur: court(Number(p.ventesTotal ?? 0)), libelle: 'Ventes (total)' },
       { valeur: NOMBRE.format(Number(p.ventesMois ?? 0)), libelle: 'Ventes ce mois' },
       { valeur: `${Math.round(Number(p.pctCommerciauxActifs ?? 0))} %`, libelle: 'Commerciaux actifs' },
     ];
