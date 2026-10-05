@@ -137,7 +137,7 @@ function ResumeJus() {
           ? [
               { valeur: fcfa(k.ca_total), libelle: "Chiffre d'affaires" },
               { valeur: court(k.jus_stock), libelle: 'Bouteilles de jus en stock' },
-              { valeur: `${court(k.recolte_total)} kg`, libelle: 'Oranges récoltées' },
+              { valeur: k.recolte_total >= 1000 ? `${NOMBRE.format(Math.round(k.recolte_total / 100) / 10)} t` : `${court(k.recolte_total)} kg`, libelle: 'Oranges récoltées' },
             ]
           : []
       }
