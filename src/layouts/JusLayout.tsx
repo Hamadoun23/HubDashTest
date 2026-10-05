@@ -80,7 +80,7 @@ export default function JusLayout() {
               onClick={() => setMenuOuvert((v) => !v)}
               className="flex items-center gap-2.5 rounded-full border border-border bg-surface2 py-1.5 pl-1.5 pr-3 backdrop-blur-sm transition hover:bg-surface"
             >
-              <Avatar label={nomAffiche} size={28} />
+              <Avatar label={nomAffiche} size={28} moi />
               <span className="hidden text-left leading-tight sm:block">
                 <span className="block text-sm font-medium text-white">{nomAffiche}</span>
               </span>

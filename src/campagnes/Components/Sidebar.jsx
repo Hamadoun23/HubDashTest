@@ -159,7 +159,7 @@ function Contenu({ onNaviguer }) {
     const externe = useCommercialExterne();
     const identite = (
         <>
-            <Avatar label={nom} size={36} />
+            <Avatar label={nom} size={36} moi />
             <div className="flex-1 overflow-hidden text-left">
                 <p className="truncate text-sm font-semibold text-white">{nom}</p>
                 <p className="truncate text-xs capitalize text-muted">{user.role?.replace('_', ' ')}</p>

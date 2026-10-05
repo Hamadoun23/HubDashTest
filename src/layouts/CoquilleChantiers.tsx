@@ -97,7 +97,7 @@ export default function CoquilleChantiers({
       <div className="border-t border-border p-3">
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
           <div className="flex flex-1 items-center gap-3 overflow-hidden">
-            <Avatar label={nomAffiche} size={36} />
+            <Avatar label={nomAffiche} size={36} moi />
             <div className="flex-1 overflow-hidden text-left">
               <p className="truncate text-sm font-semibold text-white">{nomAffiche}</p>
               <p className="truncate text-xs text-muted">{fonction}</p>
@@ -164,7 +164,7 @@ export default function CoquilleChantiers({
                 onClick={() => setMenuOuvert((v) => !v)}
                 className="flex items-center gap-2.5 rounded-full border border-border bg-surface2 py-1.5 pl-1.5 pr-3 backdrop-blur-sm transition hover:bg-surface"
               >
-                <Avatar label={nomAffiche} size={28} />
+                <Avatar label={nomAffiche} size={28} moi />
                 <span className="text-left leading-tight">
                   <span className="block text-sm font-medium text-white">{nomAffiche}</span>
                   <span className="block text-[11px] text-muted">{fonction}</span>

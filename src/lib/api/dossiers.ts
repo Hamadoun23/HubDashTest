@@ -63,6 +63,7 @@ export type EtatDossier = {
     statut_libelle: string;
     demandeur: number;
     demandeur_nom: string;
+    demandeur_email?: string;
     demandeur_departement_nom?: string;
     etape_courante_libelle: string;
     motif_rejet?: string;

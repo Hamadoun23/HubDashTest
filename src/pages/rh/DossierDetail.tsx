@@ -307,7 +307,7 @@ export default function DossierDetail() {
                     const aDroite = etat.est_demandeur ? duDemandeur : !duDemandeur;
                     return (
                       <div key={evt.id} className={`flex items-end gap-2 ${aDroite ? 'flex-row-reverse' : ''}`}>
-                        <Avatar label={evt.auteur || '?'} size={28} />
+                        <Avatar label={evt.auteur || '?'} email={duDemandeur ? doc.demandeur_email : undefined} size={28} />
                         <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${aDroite ? 'rounded-br-md bg-accent text-black' : 'rounded-bl-md bg-surface2 text-white'}`}>
                           <p className={`text-[11px] font-semibold ${aDroite ? 'text-black/60' : 'text-muted'}`}>
                             {evt.auteur} · {dater(evt.date)}

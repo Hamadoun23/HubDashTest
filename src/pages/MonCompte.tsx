@@ -7,6 +7,7 @@ import { useAuth } from '../lib/auth/AuthContext';
 import { useAction } from '../lib/hooks/useApi';
 import { changerMotDePasseIdentity, changerPhoto, supprimerPhoto } from '../lib/api/identity';
 import { reduirePhoto } from '../lib/image';
+import { rafraichirPhotos } from '../lib/photos';
 
 export default function MonCompte() {
   const { identite, appliquerProfil } = useAuth();
@@ -31,6 +32,7 @@ export default function MonCompte() {
       // Réduite dans le navigateur : n'importe quelle photo de téléphone passe.
       const profil = await uploadPhoto.executer(await reduirePhoto(fichier));
       appliquerProfil(profil);
+      rafraichirPhotos();
     } catch (erreur) {
       if (erreur instanceof Error && !uploadPhoto.erreur) setErreurPhoto(erreur.message);
     }
@@ -38,6 +40,7 @@ export default function MonCompte() {
 
   async function retirerPhoto() {
     appliquerProfil(await retraitPhoto.executer());
+    rafraichirPhotos();
   }
 
   async function soumettreMotDePasse(e: React.FormEvent<HTMLFormElement>) {

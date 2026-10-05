@@ -37,7 +37,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
             onClick={() => setOuvert((v) => !v)}
             className="flex items-center gap-2.5 rounded-full border border-border bg-surface2 py-1.5 pl-1.5 pr-1.5 backdrop-blur-sm transition hover:bg-surface sm:pr-3"
           >
-            <Avatar label={nom} size={30} />
+            <Avatar label={nom} size={30} moi />
             <span className="hidden text-left leading-tight sm:block">
               <span className="block max-w-[180px] truncate text-sm font-medium text-white">{nom}</span>
               {sousTitre && <span className="block max-w-[180px] truncate text-[11px] text-muted">{sousTitre}</span>}

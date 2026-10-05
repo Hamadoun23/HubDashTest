@@ -100,7 +100,7 @@ export function Sidebar() {
 
         <div className="flex items-center gap-2 rounded-2xl border border-border bg-surface2 px-3 py-2.5">
           <Link to="/mon-compte" className="flex flex-1 items-center gap-3 overflow-hidden">
-            <Avatar label={identite?.nom_complet ?? '?'} size={36} />
+            <Avatar label={identite?.nom_complet ?? '?'} size={36} moi />
             <div className="flex-1 overflow-hidden text-left">
               <p className="truncate text-sm font-semibold text-white">{identite?.nom_complet ?? 'Non connecté'}</p>
               <p className="truncate text-xs text-muted">{utilisateur?.poste || identite?.fonction || ''}</p>

@@ -79,6 +79,8 @@ class DocumentValidableSerializer(serializers.ModelSerializer):
 
     etapes = EtapeValidationSerializer(many=True, read_only=True)
     demandeur_nom = serializers.CharField(source="demandeur.get_full_name", read_only=True)
+    # Sert a retrouver la photo de profil du demandeur dans le hub.
+    demandeur_email = serializers.CharField(source="demandeur.email", read_only=True, default="")
     # Le departement du demandeur suit le dossier : c'est par lui que les
     # decideurs classent leurs files.
     demandeur_departement = serializers.IntegerField(

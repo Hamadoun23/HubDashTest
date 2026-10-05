@@ -30,6 +30,7 @@ export type LigneRequisition = {
 
 export type Requisition = {
   en_attente?: boolean;
+  demandeur_email?: string;
   id: number;
   numero: string;
   demandeur: number;

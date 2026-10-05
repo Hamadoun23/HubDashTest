@@ -296,6 +296,31 @@ class MonCompte(APIView):
         return Response(_profil(utilisateur))
 
 
+class PhotosDesCollegues(APIView):
+    """Photos de profil des comptes actifs, pour les avatars de l'interface.
+
+    Ouvert a toute personne connectee : les photos sont deja servies a tout
+    compte connecte (/media/hub/, dossier commun). On ne renvoie que ce qui
+    sert a reconnaitre la personne : adresse, identifiant, nom et photo.
+    """
+
+    permission_classes = [EstConnecte]
+
+    def get(self, requete):
+        comptes = Utilisateur.objects.filter(est_actif=True).exclude(photo="").exclude(photo__isnull=True)
+        return Response(
+            [
+                {
+                    "identifiant": u.identifiant,
+                    "email": u.email,
+                    "nom_complet": u.nom_complet,
+                    "photo": u.photo.url,
+                }
+                for u in comptes
+            ]
+        )
+
+
 class PhotoDeProfil(APIView):
     """Depot et retrait de la photo de profil.
 

@@ -31,6 +31,7 @@ urlpatterns = [
     path("auth/deconnexion", views.Deconnexion.as_view(), name="deconnexion"),
     path("auth/moi", views.MonCompte.as_view(), name="moi"),
     path("auth/moi/photo", views.PhotoDeProfil.as_view(), name="moi-photo"),
+    path("auth/photos", views.PhotosDesCollegues.as_view(), name="photos"),
     path(
         "auth/mot-de-passe",
         views.ChangerMotDePasse.as_view(),

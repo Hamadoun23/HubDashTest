@@ -85,6 +85,7 @@ class DemandeAbsenceSerializer(DocumentValidableSerializer):
             "numero",
             "demandeur",
             "demandeur_nom",
+            "demandeur_email",
             "demandeur_departement",
             "demandeur_departement_nom",
             "type_absence",

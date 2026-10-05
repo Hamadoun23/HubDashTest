@@ -186,7 +186,7 @@ export default function Accueil() {
               {prioritaire ? (
                 <Card className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-br from-accent to-accent2">
                   <div className="flex items-center gap-3">
-                    <Avatar label={prioritaire.personne} size={38} />
+                    <Avatar label={prioritaire.personne} email={prioritaire.email} size={38} />
                     <div>
                       <p className="text-sm font-bold text-black">{prioritaire.personne}</p>
                       <p className="text-xs text-black/70">
@@ -392,7 +392,7 @@ export default function Accueil() {
                   {urgences.slice(0, 3).map((u) => (
                     <Link key={u.cle} to={u.lien} className="flex items-center justify-between gap-2 rounded-xl bg-surface2 px-3 py-2 hover:bg-surface2/70">
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <Avatar label={u.personne} size={26} />
+                        <Avatar label={u.personne} email={u.email} size={26} />
                         <div className="min-w-0">
                           <p className="truncate text-xs font-semibold text-white">{u.titre}</p>
                           <p className="truncate text-xs text-muted">{u.detail}</p>

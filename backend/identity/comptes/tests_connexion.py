@@ -100,3 +100,23 @@ class MotDePasseProvisoireTest(TestCase):
         self.u.refresh_from_db()
         self.assertTrue(self.u.doit_changer_mot_de_passe)
         self.assertTrue(self.u.check_password("1234"))
+
+
+class PhotosDesColleguesTest(TestCase):
+    def test_reserve_aux_comptes_connectes(self):
+        self.assertEqual(APIClient().get("/api/identity/auth/photos").status_code, 401)
+
+    def test_liste_les_photos(self):
+        from django.core.files.base import ContentFile
+
+        from comptes import jetons
+
+        u = Utilisateur.objects.create_user(identifiant="a@gdamali.net", mot_de_passe="x", nom="A", email="a@gdamali.net")
+        Utilisateur.objects.create_user(identifiant="b@gdamali.net", mot_de_passe="x", nom="B")
+        u.photo.save("a.jpg", ContentFile(b"x"), save=True)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION=f"Bearer {jetons.emettre_acces(u)}")
+        r = client.get("/api/identity/auth/photos")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual([p["email"] for p in r.data], ["a@gdamali.net"])
+        u.photo.delete(save=False)

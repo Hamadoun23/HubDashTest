@@ -21,6 +21,8 @@ export type Urgence = {
   detail: string;
   /** Personne concernée (demandeur) ou, à défaut, nom de l'appli pour l'avatar. */
   personne: string;
+  /** Pour retrouver la photo de profil de la personne. */
+  email?: string;
   lien: string;
   gravite: 'haute' | 'normale';
 };
@@ -65,6 +67,7 @@ export function useUrgences() {
       titre: d.type_absence_libelle,
       detail: `${d.demandeur_nom} · ${d.numero}`,
       personne: d.demandeur_nom,
+      email: d.demandeur_email,
       lien: `/rh/dossiers/absence/${d.id}`,
       gravite: d.categorie === 'RETARD' || d.categorie === 'PERMISSION' ? 'haute' : 'normale',
     });
@@ -76,6 +79,7 @@ export function useUrgences() {
       titre: `Réquisition — ${r.objet}`,
       detail: `${r.demandeur_nom} · ${r.numero}`,
       personne: r.demandeur_nom,
+      email: r.demandeur_email,
       lien: `/rh/dossiers/requisition/${r.id}`,
       gravite: 'normale',
     });
