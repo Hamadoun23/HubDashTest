@@ -59,8 +59,20 @@ const REPERES: Record<string, { icone: typeof Check; couleur: string; phrase: (e
   REPRISE: { icone: PlayCircle, couleur: 'text-emerald-300', phrase: (e) => `${e.auteur} a repris le dossier` },
   APPROBATION: { icone: CheckCircle2, couleur: 'text-emerald-300', phrase: (e) => `${e.auteur} a approuvé${e.contexte ? ` — ${e.contexte}` : ''}` },
   REJET: { icone: XCircle, couleur: 'text-red-300', phrase: (e) => `${e.auteur} a refusé${e.contexte ? ` — ${e.contexte}` : ''}` },
+  AVIS_FAVORABLE: { icone: CheckCircle2, couleur: 'text-emerald-300', phrase: (e) => `${e.auteur} a donné un avis favorable${e.contexte ? ` — ${e.contexte}` : ''}` },
+  AVIS_DEFAVORABLE: { icone: XCircle, couleur: 'text-red-300', phrase: (e) => `${e.auteur} a donné un avis défavorable${e.contexte ? ` — ${e.contexte}` : ''}` },
   RELANCE: { icone: BellRing, couleur: 'text-accent2', phrase: (e) => `${e.auteur} a relancé les valideurs` },
 };
+
+/** Un avis n'approuve rien : seule la décision de la Direction clôt le dossier. */
+function libelleDecision(nature: string | undefined, decision: string, defaut?: string) {
+  if (nature === 'AVIS') {
+    if (decision === 'APPROUVE') return 'Avis favorable';
+    if (decision === 'REJETE') return 'Avis défavorable';
+  }
+  if (decision === 'REJETE') return 'Refusé';
+  return defaut ?? decision;
+}
 
 export default function DossierDetail() {
   const { source, id } = useParams();
@@ -142,10 +154,11 @@ export default function DossierDetail() {
     }
   }
 
+  const estAvis = etat.mon_etape?.nature === 'AVIS';
   const configAction = {
-    approuver: { titre: 'Approuver', aide: 'Commentaire (facultatif)', obligatoire: false, bouton: 'Confirmer l’approbation', classe: 'bg-emerald-500 text-black' },
+    approuver: { titre: 'Approuver', aide: 'Commentaire (facultatif)', obligatoire: false, bouton: estAvis ? 'Confirmer l’avis favorable' : 'Confirmer l’approbation', classe: 'bg-emerald-500 text-black' },
     attente: { titre: 'Mettre en attente', aide: 'Que manque-t-il ? Votre observation est envoyée au demandeur.', obligatoire: true, bouton: 'Mettre en attente', classe: 'bg-amber-400 text-black' },
-    refuser: { titre: 'Refuser', aide: 'Motif du refus (obligatoire)', obligatoire: true, bouton: 'Confirmer le refus', classe: 'bg-red-500 text-white' },
+    refuser: { titre: 'Refuser', aide: estAvis ? 'Motif de l’avis défavorable (obligatoire)' : 'Motif du refus (obligatoire)', obligatoire: true, bouton: estAvis ? 'Confirmer l’avis défavorable' : 'Confirmer le refus', classe: 'bg-red-500 text-white' },
   } as const;
 
   return (
@@ -262,10 +275,20 @@ export default function DossierDetail() {
       {/* --- Actions du valideur -------------------------------------------- */}
       {etat.peut_decider && (
         <Card className="space-y-3">
-          <p className="text-sm font-semibold text-white">Votre décision</p>
+          <div>
+            <p className="text-sm font-semibold text-white">{estAvis ? 'Votre avis' : 'Votre décision'}</p>
+            {etat.mon_etape && (
+              <p className="text-xs text-muted">
+                {etat.mon_etape.libelle} —{' '}
+                {estAvis
+                  ? 'votre avis est transmis ; la décision finale revient à la Direction.'
+                  : 'votre décision clôt le dossier.'}
+              </p>
+            )}
+          </div>
           <div className="grid gap-2 sm:grid-cols-3">
             <button type="button" onClick={() => setAction('approuver')} className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold ${action === 'approuver' ? 'bg-emerald-500 text-black' : 'border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10'}`}>
-              <Check size={16} /> Approuver
+              <Check size={16} /> {estAvis ? 'Avis favorable' : 'Approuver'}
             </button>
             <button
               type="button"
@@ -277,7 +300,7 @@ export default function DossierDetail() {
               <PauseCircle size={16} /> Mettre en attente
             </button>
             <button type="button" onClick={() => setAction('refuser')} className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold ${action === 'refuser' ? 'bg-red-500 text-white' : 'border border-red-400/40 text-red-300 hover:bg-red-500/10'}`}>
-              <X size={16} /> Refuser
+              <X size={16} /> {estAvis ? 'Avis défavorable' : 'Refuser'}
             </button>
           </div>
           {action && (
@@ -342,7 +365,7 @@ export default function DossierDetail() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-white">{etape.libelle}</p>
                       <p className="text-xs text-muted">
-                        {info ? 'Pour information — transmis' : etape.decision_libelle}
+                        {info ? 'Pour information — transmis' : libelleDecision(etape.nature, etape.decision, etape.decision_libelle)}
                         {etape.decide_par_nom ? ` · ${etape.decide_par_nom}` : ''}
                         {etape.date_decision ? ` · ${dater(etape.date_decision)}` : ''}
                       </p>
@@ -380,7 +403,10 @@ export default function DossierDetail() {
               <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
                 {etat.evenements.length === 0 && <p className="py-10 text-center text-xs text-muted">Aucun échange pour le moment.</p>}
                 {etat.evenements.map((evt) => {
-                  const repere = REPERES[evt.type];
+                  const natureEtape = doc.etapes.find((x) => x.libelle === evt.contexte)?.nature;
+                  const cleRepere =
+                    natureEtape === 'AVIS' && evt.type === 'APPROBATION' ? 'AVIS_FAVORABLE' : natureEtape === 'AVIS' && evt.type === 'REJET' ? 'AVIS_DEFAVORABLE' : evt.type;
+                  const repere = REPERES[cleRepere];
                   if (evt.type === 'MESSAGE') {
                     const duDemandeur = evt.auteur_id === doc.demandeur;
                     const aDroite = etat.est_demandeur ? duDemandeur : !duDemandeur;

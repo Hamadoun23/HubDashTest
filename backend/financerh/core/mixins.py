@@ -204,10 +204,8 @@ class CirculationMixin:
                     }
                 )
                 precedente = evt.instantane
-        decidable = (
-            document.statut == StatutDocument.EN_VALIDATION
-            and etape_decidable_par(document, user) is not None
-        )
+        mon_etape = etape_decidable_par(document, user) if document.statut == StatutDocument.EN_VALIDATION else None
+        decidable = mon_etape is not None
         en_attente = est_en_attente(document)
         est_demandeur = document.demandeur_id == user.id
         suivante = prochaine_relance(document)
@@ -239,6 +237,8 @@ class CirculationMixin:
             "en_attente": en_attente,
             "est_demandeur": document.demandeur_id == user.id,
             "peut_decider": decidable,
+            # Avis (n'engage pas) ou décision (clôt le dossier) : l'écran adapte ses boutons.
+            "mon_etape": {"libelle": mon_etape.libelle, "nature": mon_etape.nature} if mon_etape else None,
             "peut_mettre_en_attente": decidable and not en_attente,
             "peut_reprendre": en_attente and (decidable or document.demandeur_id == user.id),
             "peut_ecrire": document.statut != StatutDocument.ANNULE,

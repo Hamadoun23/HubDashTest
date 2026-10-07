@@ -82,6 +82,8 @@ export type EtatDossier = {
   /** Étapes qui attendent encore une décision, et qui est attendu. */
   attendus: { etape: string; qui: string }[];
   peut_relancer: boolean;
+  /** Étape qui revient à la personne connectée : un avis, ou la décision finale. */
+  mon_etape: { libelle: string; nature: 'DECISION' | 'AVIS' | 'INFORMATION' } | null;
   /** Nouvelle relance possible à partir de cette date (ISO), si une relance récente bloque. */
   prochaine_relance: string | null;
 };
