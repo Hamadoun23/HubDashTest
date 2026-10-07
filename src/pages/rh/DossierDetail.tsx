@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  BellRing,
   Check,
   CheckCircle2,
   Circle,
@@ -29,6 +30,7 @@ import {
   lireDossier,
   mettreEnAttente,
   refuserDossier,
+  relancerDossier,
   reprendreDossier,
   type EtatDossier,
   type EvenementDossier,
@@ -56,6 +58,7 @@ const REPERES: Record<string, { icone: typeof Check; couleur: string; phrase: (e
   REPRISE: { icone: PlayCircle, couleur: 'text-emerald-300', phrase: (e) => `${e.auteur} a repris le dossier` },
   APPROBATION: { icone: CheckCircle2, couleur: 'text-emerald-300', phrase: (e) => `${e.auteur} a approuvé${e.contexte ? ` — ${e.contexte}` : ''}` },
   REJET: { icone: XCircle, couleur: 'text-red-300', phrase: (e) => `${e.auteur} a refusé${e.contexte ? ` — ${e.contexte}` : ''}` },
+  RELANCE: { icone: BellRing, couleur: 'text-accent2', phrase: (e) => `${e.auteur} a relancé les valideurs` },
 };
 
 export default function DossierDetail() {
@@ -82,6 +85,9 @@ export default function DossierDetail() {
   const reprise = useAction(reprendreDossier);
   const approbation = useAction(approuverDossier);
   const refus = useAction(refuserDossier);
+  const relance = useAction(relancerDossier);
+  const [messageRelance, setMessageRelance] = useState('');
+  const [relanceOuverte, setRelanceOuverte] = useState(false);
 
   useEffect(() => {
     finFil.current?.scrollIntoView({ block: 'end' });
@@ -93,8 +99,18 @@ export default function DossierDetail() {
   if (!etat) return null;
 
   const doc = etat.document;
-  const enCours = envoi.enCours || attente.enCours || reprise.enCours || approbation.enCours || refus.enCours;
-  const erreur = envoi.erreur ?? attente.erreur ?? reprise.erreur ?? approbation.erreur ?? refus.erreur;
+  const enCours = envoi.enCours || attente.enCours || reprise.enCours || approbation.enCours || refus.enCours || relance.enCours;
+  const erreur = envoi.erreur ?? attente.erreur ?? reprise.erreur ?? approbation.erreur ?? refus.erreur ?? relance.erreur;
+
+  async function relancer() {
+    try {
+      setEtat(await relance.executer(src, num, messageRelance.trim()));
+      setMessageRelance('');
+      setRelanceOuverte(false);
+    } catch {
+      /* erreur affichée sous les actions */
+    }
+  }
 
   async function confirmerAction() {
     const texte = texteAction.trim();
@@ -181,6 +197,65 @@ export default function DossierDetail() {
             </button>
           )}
         </div>
+      )}
+
+      {/* --- Suivi pour le demandeur : qui doit encore se prononcer ----------- */}
+      {etat.est_demandeur && doc.statut === 'EN_VALIDATION' && !etat.en_attente && (
+        <Card className="space-y-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-white">Où en est votre demande</p>
+              {etat.attendus.length > 0 ? (
+                <ul className="mt-2 space-y-1.5">
+                  {etat.attendus.map((a) => (
+                    <li key={a.etape} className="flex items-center gap-2 text-sm">
+                      <Clock size={14} className="shrink-0 text-accent2" />
+                      <span className="text-white">{a.etape}</span>
+                      <span className="text-muted">— en attente de {a.qui}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-sm text-muted">Plus aucune décision attendue.</p>
+              )}
+            </div>
+            {etat.attendus.length > 0 && (
+              <button
+                type="button"
+                disabled={!etat.peut_relancer || enCours}
+                onClick={() => setRelanceOuverte((v) => !v)}
+                title={etat.peut_relancer ? 'Envoyer un rappel aux valideurs en attente' : ''}
+                className="flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-bold text-black disabled:opacity-40"
+              >
+                <BellRing size={16} /> Relancer
+              </button>
+            )}
+          </div>
+          {!etat.peut_relancer && etat.prochaine_relance && (
+            <p className="text-xs text-muted">Relance envoyée — nouvelle relance possible à partir du {dater(etat.prochaine_relance)}.</p>
+          )}
+          {relanceOuverte && etat.peut_relancer && (
+            <div className="space-y-2 rounded-2xl border border-border bg-surface2 p-3">
+              <label className="block text-xs font-semibold text-muted">Message pour les valideurs (facultatif)</label>
+              <textarea
+                autoFocus
+                rows={2}
+                value={messageRelance}
+                onChange={(e) => setMessageRelance(e.target.value)}
+                placeholder="Ex. : mon absence commence demain."
+                className="w-full resize-y rounded-xl border border-border bg-surface px-3 py-2 text-sm text-white placeholder:text-muted focus:border-accent focus:outline-none"
+              />
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setRelanceOuverte(false)} className="rounded-xl px-3 py-2 text-xs font-semibold text-muted hover:text-white">
+                  Annuler
+                </button>
+                <button type="button" disabled={enCours} onClick={relancer} className="rounded-xl bg-accent px-4 py-2 text-xs font-bold text-black disabled:opacity-50">
+                  Envoyer la relance
+                </button>
+              </div>
+            </div>
+          )}
+        </Card>
       )}
 
       {/* --- Actions du valideur -------------------------------------------- */}

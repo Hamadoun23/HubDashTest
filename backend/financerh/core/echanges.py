@@ -110,6 +110,60 @@ def valideurs_concernes(document):
     return personnes.filter(pk__in=ids) | personnes.filter(role__in=roles)
 
 
+#: Delai minimal entre deux relances d'un meme dossier par son demandeur.
+DELAI_RELANCE_HEURES = 24
+
+
+def etapes_en_attente(document):
+    """Etapes qui attendent encore quelqu'un (les etapes « pour information » n'attendent personne)."""
+    from core.constants import Decision, NatureEtape
+
+    return [
+        e
+        for e in document.etapes.all()
+        if e.decision == Decision.EN_ATTENTE and e.nature != NatureEtape.INFORMATION
+    ]
+
+
+def attendus(document):
+    """Qui doit encore se prononcer, pour l'affichage : [{etape, qui}]."""
+    lignes = []
+    for e in etapes_en_attente(document):
+        if e.valideur_attendu_id:
+            qui = e.valideur_attendu.get_full_name()
+        else:
+            qui = e.get_role_valideur_display()
+        lignes.append({"etape": e.libelle, "qui": qui})
+    return lignes
+
+
+def valideurs_en_attente(document):
+    """Personnes a prevenir lors d'une relance : celles des etapes encore ouvertes."""
+    from accounts.models import Utilisateur
+
+    ids, roles = set(), set()
+    for e in etapes_en_attente(document):
+        if e.valideur_attendu_id:
+            ids.add(e.valideur_attendu_id)
+        elif e.role_valideur:
+            roles.add(e.role_valideur)
+    personnes = Utilisateur.objects.filter(is_active=True).exclude(pk=document.demandeur_id)
+    return personnes.filter(pk__in=ids) | personnes.filter(role__in=roles)
+
+
+def prochaine_relance(document):
+    """Date a partir de laquelle une nouvelle relance est possible (None : tout de suite)."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    derniere = evenements(document).filter(type=Type.RELANCE).order_by("-cree_le").first()
+    if derniere is None:
+        return None
+    suivante = derniere.cree_le + timedelta(hours=DELAI_RELANCE_HEURES)
+    return suivante if suivante > timezone.now() else None
+
+
 def peut_consulter(document, user):
     """Demandeur, valideurs du circuit, Direction : ceux qui suivent ce dossier."""
     if document.demandeur_id == user.id or user.role == Role.DIRECTION:

@@ -211,6 +211,7 @@ class EvenementDossier(models.Model):
         MODIFICATION = "MODIFICATION", "Modification"
         APPROBATION = "APPROBATION", "Approbation"
         REJET = "REJET", "Rejet"
+        RELANCE = "RELANCE", "Relance"
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()

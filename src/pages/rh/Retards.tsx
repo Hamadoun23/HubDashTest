@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HardHat } from 'lucide-react';
 import { EtatErreur } from '../../components/ui/EtatRequete';
 import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
@@ -15,6 +16,7 @@ const TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
 };
 
 export default function Retards() {
+  const navigate = useNavigate();
   const demandes = useApi(mesDemandes, []);
   const creation = useAction(creerDemandeAbsence);
   const modification = useAction(modifierDemandeAbsence);
@@ -84,14 +86,19 @@ export default function Retards() {
         { label: 'Motif', type: 'textarea', placeholder: 'Embouteillage, transport en commun...', valeur: motif, onChange: setMotif, requis: true },
       ]}
       colonnesHistorique={['Référence', 'Date', 'Heure', 'Motif', 'Statut', '']}
+      onRowClick={(i) => navigate(`/rh/dossiers/absence/${retards[i].id}`)}
       lignesHistorique={retards.map((r) => [
-        r.numero,
+        <span className="font-semibold text-white">
+          {r.numero}
+              <span className="ml-1 text-accent2" aria-hidden>›</span>
+          {r.en_attente && <span className="ml-1.5 text-[11px] font-semibold text-amber-300">· complément demandé</span>}
+        </span>,
         r.date_debut,
         r.heure_fin ?? '—',
         r.motif,
         <Badge tone={TONE[r.statut] ?? 'neutral'}>{r.statut_libelle}</Badge>,
         r.modifiable ? (
-          <div className="flex gap-2">
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => modifier(r)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white">
               Modifier
             </button>

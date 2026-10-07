@@ -23,7 +23,7 @@ export function estSourceDossier(valeur: string | undefined): valeur is SourceDo
 
 export type EvenementDossier = {
   id: number;
-  type: 'SOUMISSION' | 'MESSAGE' | 'MISE_EN_ATTENTE' | 'REPRISE' | 'MODIFICATION' | 'APPROBATION' | 'REJET';
+  type: 'SOUMISSION' | 'MESSAGE' | 'MISE_EN_ATTENTE' | 'REPRISE' | 'MODIFICATION' | 'APPROBATION' | 'REJET' | 'RELANCE';
   type_libelle: string;
   auteur: string;
   auteur_id: number | null;
@@ -79,6 +79,11 @@ export type EtatDossier = {
   peut_mettre_en_attente: boolean;
   peut_reprendre: boolean;
   peut_ecrire: boolean;
+  /** Étapes qui attendent encore une décision, et qui est attendu. */
+  attendus: { etape: string; qui: string }[];
+  peut_relancer: boolean;
+  /** Nouvelle relance possible à partir de cette date (ISO), si une relance récente bloque. */
+  prochaine_relance: string | null;
 };
 
 const base = (source: SourceDossier, id: number) => `${SOURCES_DOSSIER[source]}/${id}`;
@@ -99,3 +104,6 @@ export const approuverDossier = (source: SourceDossier, id: number, commentaire 
 
 export const refuserDossier = (source: SourceDossier, id: number, commentaire: string) =>
   apiFetch<unknown>(`${base(source, id)}/rejeter/`, { method: 'POST', corps: { commentaire } });
+
+export const relancerDossier = (source: SourceDossier, id: number, texte = '') =>
+  apiFetch<EtatDossier>(`${base(source, id)}/relancer/`, { method: 'POST', corps: { texte } });

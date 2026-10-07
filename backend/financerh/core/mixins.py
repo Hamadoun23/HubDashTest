@@ -4,8 +4,14 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from rest_framework.response import Response
 
 from core.constants import Role, StatutDocument
+from django.utils import timezone
+
 from core.echanges import (
     Type,
+    attendus,
+    etapes_en_attente,
+    prochaine_relance,
+    valideurs_en_attente,
     comparer,
     consigner,
     est_en_attente,
@@ -81,7 +87,7 @@ class CirculationMixin:
     #: Detail et echanges : ouverts au demandeur et aux valideurs du circuit,
     #: controles par `_dossier_accessible` plutot que par le perimetre (un
     #: valideur n'est ni le demandeur ni forcement son manager).
-    ACTIONS_DOSSIER = ("dossier", "echanger", "mettre_en_attente", "reprendre")
+    ACTIONS_DOSSIER = ("dossier", "echanger", "mettre_en_attente", "reprendre", "relancer")
 
     def perform_create(self, serializer):
         serializer.save(demandeur=self.request.user)
@@ -203,6 +209,14 @@ class CirculationMixin:
             and etape_decidable_par(document, user) is not None
         )
         en_attente = est_en_attente(document)
+        est_demandeur = document.demandeur_id == user.id
+        suivante = prochaine_relance(document)
+        relancable = (
+            est_demandeur
+            and document.statut == StatutDocument.EN_VALIDATION
+            and not en_attente
+            and bool(etapes_en_attente(document))
+        )
         return {
             "type_libelle": str(type(document)._meta.verbose_name).capitalize(),
             "document": self.get_serializer(document).data,
@@ -228,6 +242,10 @@ class CirculationMixin:
             "peut_mettre_en_attente": decidable and not en_attente,
             "peut_reprendre": en_attente and (decidable or document.demandeur_id == user.id),
             "peut_ecrire": document.statut != StatutDocument.ANNULE,
+            # Qui doit encore se prononcer, et la relance par le demandeur.
+            "attendus": attendus(document) if document.statut == StatutDocument.EN_VALIDATION else [],
+            "peut_relancer": relancable and suivante is None,
+            "prochaine_relance": suivante if relancable else None,
         }
 
     def _texte(self, request, champ="texte", obligatoire=True, message="Ecrivez un message."):
@@ -286,6 +304,36 @@ class CirculationMixin:
         consigner(document, Type.REPRISE, auteur=user, texte=texte)
         cibles = list(valideurs_concernes(document)) if document.demandeur_id == user.id else [document.demandeur]
         prevenir(document, user, "Dossier repris", texte or "Le dossier reprend son circuit de validation.", cibles)
+        return Response(self._etat_dossier(document))
+
+    @action(detail=True, methods=["post"])
+    def relancer(self, request, pk=None):
+        """Le demandeur relance les valideurs qui ne se sont pas encore prononces."""
+        document = self._dossier_accessible()
+        user = request.user
+        if document.demandeur_id != user.id:
+            raise PermissionDenied("Seul le demandeur peut relancer son dossier.")
+        if document.statut != StatutDocument.EN_VALIDATION:
+            raise ValidationError({"statut": "Ce dossier n'est plus en cours de validation."})
+        if est_en_attente(document):
+            raise ValidationError({"statut": "Un valideur attend votre complement : repondez dans le fil."})
+        suivante = prochaine_relance(document)
+        if suivante is not None:
+            raise ValidationError(
+                {"statut": f"Relance deja envoyee : nouvelle relance possible apres le {timezone.localtime(suivante):%d/%m a %H:%M}."}
+            )
+        cibles = list(valideurs_en_attente(document))
+        if not cibles:
+            raise ValidationError({"statut": "Personne n'est attendu sur ce dossier."})
+        texte = self._texte(request, obligatoire=False)
+        consigner(document, Type.RELANCE, auteur=user, texte=texte)
+        prevenir(
+            document,
+            user,
+            f"Relance de {user.get_full_name()}",
+            texte or "Ce dossier attend toujours votre decision.",
+            cibles,
+        )
         return Response(self._etat_dossier(document))
 
     @action(detail=False, methods=["get"], url_path="a-valider")

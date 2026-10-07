@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { CircularProgress } from '../../components/ui/CircularProgress';
@@ -18,6 +18,7 @@ const TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
 };
 
 export default function Absences() {
+  const navigate = useNavigate();
   const annee = new Date().getFullYear();
   const demandes = useApi(mesDemandes, []);
   const solde = useApi(() => monSolde(annee), [annee]);
@@ -112,16 +113,18 @@ export default function Absences() {
             { label: 'Motif (optionnel)', type: 'textarea', placeholder: 'Précisez si besoin...', valeur: motif, onChange: setMotif },
           ]}
           colonnesHistorique={['Référence', 'Période', 'Type', 'Statut', '']}
-          lignesHistorique={conges.map((d) => [
+          onRowClick={(i) => navigate(`/rh/dossiers/absence/${conges[i].id}`)}
+      lignesHistorique={conges.map((d) => [
             <Link to={`/rh/dossiers/absence/${d.id}`} className="font-semibold text-white hover:text-accent2">
               {d.numero}
+              <span className="ml-1 text-accent2" aria-hidden>›</span>
               {d.en_attente && <span className="ml-1.5 text-[11px] font-semibold text-amber-300">· complément demandé</span>}
             </Link>,
             `${d.date_debut} → ${d.date_fin}`,
             d.type_absence_libelle,
             <Badge tone={TONE[d.statut] ?? 'neutral'}>{d.statut_libelle}</Badge>,
             d.modifiable ? (
-              <div className="flex gap-2">
+              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                 <button onClick={() => modifier(d)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white">
                   Modifier
                 </button>

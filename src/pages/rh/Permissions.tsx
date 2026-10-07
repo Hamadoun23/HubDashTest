@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { UserRound } from 'lucide-react';
 import { EtatErreur } from '../../components/ui/EtatRequete';
 import { FormulaireEtHistorique } from '../../components/ui/FormulaireEtHistorique';
@@ -16,6 +16,7 @@ const TONE: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
 };
 
 export default function Permissions() {
+  const navigate = useNavigate();
   const demandes = useApi(mesDemandes, []);
   const creation = useAction(creerDemandeAbsence);
   const modification = useAction(modifierDemandeAbsence);
@@ -100,9 +101,11 @@ export default function Permissions() {
         },
       ]}
       colonnesHistorique={['Référence', 'Date', 'Motif', 'Horaire', 'Statut', '']}
+      onRowClick={(i) => navigate(`/rh/dossiers/absence/${permissions[i].id}`)}
       lignesHistorique={permissions.map((d) => [
         <Link to={`/rh/dossiers/absence/${d.id}`} className="font-semibold text-white hover:text-accent2">
               {d.numero}
+              <span className="ml-1 text-accent2" aria-hidden>›</span>
               {d.en_attente && <span className="ml-1.5 text-[11px] font-semibold text-amber-300">· complément demandé</span>}
             </Link>,
         d.date_debut,
@@ -110,7 +113,7 @@ export default function Permissions() {
         d.heure_debut && d.heure_fin ? `${d.heure_debut} → ${d.heure_fin}` : '—',
         <Badge tone={TONE[d.statut] ?? 'neutral'}>{d.statut_libelle}</Badge>,
         d.modifiable ? (
-          <div className="flex gap-2">
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             <button onClick={() => modifier(d)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-muted hover:text-white">
               Modifier
             </button>

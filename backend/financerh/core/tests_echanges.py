@@ -97,3 +97,28 @@ class DossierEchangesTest(BaseAPITestCase):
         self.assertEqual(evenements[-1]["type"], T.APPROBATION)
         self.assertEqual(evenements[-1]["texte"], "OK pour moi")
         self.assertEqual(evenements[-1]["contexte"], "Avis du responsable")
+
+
+class RelanceTest(DossierEchangesTest):
+    """Le demandeur relance les valideurs en attente, une fois par 24 h."""
+
+    def test_detail_indique_qui_est_attendu(self):
+        donnees = self._dossier(self.salarie).data
+        self.assertTrue(donnees["peut_relancer"])
+        self.assertEqual([a["etape"] for a in donnees["attendus"]], ["Avis du responsable", "Controle RH"])
+
+    def test_relance_consignee_puis_bloquee_24h(self):
+        r = self.client_de(self.salarie).post(f"{self.url}/relancer/", {"texte": "Mon congé approche."}, format="json")
+        self.assertEqual(r.status_code, 200, r.data)
+        self.assertEqual(r.data["evenements"][-1]["type"], T.RELANCE)
+        self.assertFalse(r.data["peut_relancer"])
+        self.assertIsNotNone(r.data["prochaine_relance"])
+        self.assertEqual(self.client_de(self.salarie).post(f"{self.url}/relancer/").status_code, 400)
+
+    def test_reservee_au_demandeur(self):
+        self.assertEqual(self.client_de(self.chef).post(f"{self.url}/relancer/").status_code, 403)
+
+    def test_impossible_pendant_une_mise_en_attente(self):
+        self.client_de(self.chef).post(f"{self.url}/mettre-en-attente/", {"motif": "Pièce manquante"}, format="json")
+        self.assertFalse(self._dossier(self.salarie).data["peut_relancer"])
+        self.assertEqual(self.client_de(self.salarie).post(f"{self.url}/relancer/").status_code, 400)
