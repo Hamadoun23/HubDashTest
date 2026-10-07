@@ -217,7 +217,7 @@ export default function RequisitionDetail() {
                   <div className="flex-1 pt-[-2px]">
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-semibold text-white">{etape.libelle}</p>
-                      <Badge tone={TONE_DECISION[etape.decision] ?? 'neutral'}>{etape.decision_libelle}</Badge>
+                      <Badge tone={etape.nature === 'INFORMATION' && etape.decision !== 'EN_ATTENTE' ? 'neutral' : TONE_DECISION[etape.decision] ?? 'neutral'}>{etape.nature === 'INFORMATION' && etape.decision !== 'EN_ATTENTE' ? 'Pour information' : etape.decision_libelle}</Badge>
                     </div>
                     <p className="text-xs text-muted">
                       {etape.valideur_attendu_nom || etape.role_valideur_libelle}

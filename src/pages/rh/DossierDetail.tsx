@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  Info,
   BellRing,
   Check,
   CheckCircle2,
@@ -330,15 +331,18 @@ export default function DossierDetail() {
             <p className="mb-3 text-sm font-semibold text-white">Circuit de validation</p>
             <ol className="space-y-3">
               {doc.etapes.map((etape) => {
-                const Icone = etape.decision === 'APPROUVE' ? CheckCircle2 : etape.decision === 'REJETE' ? XCircle : etape.decision === 'EN_ATTENTE' ? CircleDot : Circle;
-                const couleur = etape.decision === 'APPROUVE' ? 'text-emerald-300' : etape.decision === 'REJETE' ? 'text-red-300' : etape.decision === 'EN_ATTENTE' ? 'text-accent2' : 'text-muted';
+                // Étape « pour information » : franchie sans qu'un valideur agisse.
+                // L'afficher « Approuvé » laisserait croire que quelqu'un a validé.
+                const info = etape.nature === 'INFORMATION' && etape.decision !== 'EN_ATTENTE';
+                const Icone = info ? Info : etape.decision === 'APPROUVE' ? CheckCircle2 : etape.decision === 'REJETE' ? XCircle : etape.decision === 'EN_ATTENTE' ? CircleDot : Circle;
+                const couleur = info ? 'text-sky-300' : etape.decision === 'APPROUVE' ? 'text-emerald-300' : etape.decision === 'REJETE' ? 'text-red-300' : etape.decision === 'EN_ATTENTE' ? 'text-accent2' : 'text-muted';
                 return (
                   <li key={etape.id} className="flex gap-3">
                     <Icone size={18} className={`mt-0.5 shrink-0 ${couleur}`} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-white">{etape.libelle}</p>
                       <p className="text-xs text-muted">
-                        {etape.decision_libelle}
+                        {info ? 'Pour information — transmis' : etape.decision_libelle}
                         {etape.decide_par_nom ? ` · ${etape.decide_par_nom}` : ''}
                         {etape.date_decision ? ` · ${dater(etape.date_decision)}` : ''}
                       </p>
