@@ -109,3 +109,101 @@ export const refuserDossier = (source: SourceDossier, id: number, commentaire: s
 
 export const relancerDossier = (source: SourceDossier, id: number, texte = '') =>
   apiFetch<EtatDossier>(`${base(source, id)}/relancer/`, { method: 'POST', corps: { texte } });
+
+// --- Historique : toutes les demandes, tous types confondus -----------------
+
+export type CategorieHistorique = 'CONGE' | 'PERMISSION' | 'RETARD' | 'FINANCE';
+
+export type LigneHistorique = {
+  cle: string;
+  source: SourceDossier;
+  id: number;
+  numero: string;
+  categorie: CategorieHistorique;
+  type: string;
+  demandeur_nom: string;
+  demandeur_email?: string;
+  detail: string;
+  statut: string;
+  statut_libelle: string;
+  cree_le: string;
+};
+
+type Page<T> = { results: T[]; next: string | null } | T[];
+
+/** Toutes les pages d'une liste DRF (le service pagine par 25). */
+async function toutesLesPages<T>(chemin: string): Promise<T[]> {
+  const resultat: T[] = [];
+  for (let page = 1; page <= 40; page++) {
+    const donnees = await apiFetch<Page<T>>(`${chemin}?page=${page}`);
+    if (Array.isArray(donnees)) return donnees;
+    resultat.push(...donnees.results);
+    if (!donnees.next) break;
+  }
+  return resultat;
+}
+
+type Brut = Record<string, unknown> & { id: number; numero: string; statut: string; statut_libelle: string; cree_le: string; demandeur_nom: string; demandeur_email?: string };
+
+const FINANCES: { source: SourceDossier; type: string }[] = [
+  { source: 'requisition', type: 'Réquisition' },
+  { source: 'depense', type: 'Dépense' },
+  { source: 'mission', type: 'Mission' },
+  { source: 'sortie-caisse', type: 'Sortie de caisse' },
+  { source: 'prestation', type: 'Prestation' },
+  { source: 'bon-commande', type: 'Bon de commande' },
+];
+
+const fcfa = (v: unknown) => (v === null || v === undefined || v === '' ? '' : `${Number(v).toLocaleString('fr-FR')} F`);
+
+/**
+ * Congés, permissions, retards et demandes financières visibles par la
+ * personne (les siennes, celles de son équipe, tout pour le back-office),
+ * brouillons exclus. Un type indisponible n'empêche pas les autres.
+ */
+export async function chargerHistorique(): Promise<LigneHistorique[]> {
+  const absences = toutesLesPages<Brut & { type_absence_libelle: string; categorie: string; date_debut: string; date_fin: string }>('/rh/demandes-absence/')
+    .then((liste) =>
+      liste.map<LigneHistorique>((d) => ({
+        cle: `absence-${d.id}`,
+        source: 'absence',
+        id: d.id,
+        numero: d.numero,
+        categorie: (['CONGE', 'PERMISSION', 'RETARD'].includes(d.categorie) ? d.categorie : 'CONGE') as CategorieHistorique,
+        type: d.type_absence_libelle,
+        demandeur_nom: d.demandeur_nom,
+        demandeur_email: d.demandeur_email,
+        detail: d.date_debut === d.date_fin ? d.date_debut : `${d.date_debut} → ${d.date_fin}`,
+        statut: d.statut,
+        statut_libelle: d.statut_libelle,
+        cree_le: d.cree_le,
+      })),
+    )
+    .catch(() => [] as LigneHistorique[]);
+  const finances = FINANCES.map(({ source, type }) =>
+    toutesLesPages<Brut>(`${SOURCES_DOSSIER[source]}/`)
+      .then((liste) =>
+        liste.map<LigneHistorique>((d) => {
+          const objet = String(d.objet ?? d.libelle ?? d.motif ?? '');
+          const montant = fcfa(d.montant);
+          return {
+            cle: `${source}-${d.id}`,
+            source,
+            id: d.id,
+            numero: d.numero,
+            categorie: 'FINANCE',
+            type: objet ? `${type} — ${objet}` : type,
+            demandeur_nom: d.demandeur_nom,
+            demandeur_email: d.demandeur_email,
+            detail: montant,
+            statut: d.statut,
+            statut_libelle: d.statut_libelle,
+            cree_le: d.cree_le,
+          };
+        }),
+      )
+      .catch(() => [] as LigneHistorique[]),
+  );
+  const toutes = (await Promise.all([absences, ...finances])).flat();
+  return toutes.filter((l) => l.statut !== 'BROUILLON').sort((a, b) => (a.cree_le < b.cree_le ? 1 : -1));
+}
