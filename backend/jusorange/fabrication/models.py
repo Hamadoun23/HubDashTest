@@ -33,6 +33,10 @@ class Production(models.Model):
     volume_final_l = models.FloatField(default=0)
     statut_production = models.CharField(max_length=20, choices=STATUT_CHOICES, default='EN_COURS')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='productions')
+    # Annulation d'un ordre de fabrication : toujours justifiée, et tracée.
+    motif_annulation = models.TextField(blank=True, default='')
+    annulee_le = models.DateTimeField(null=True, blank=True)
+    annulee_par = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
 
     def save(self, *args, **kwargs):
         # Générer numero_of : OF00112022026, OF002... par date (reset à OF001 quand date change)

@@ -215,6 +215,11 @@ class ProductionSerializer(serializers.ModelSerializer):
     numero_of = serializers.CharField(read_only=True)
     recette_display = serializers.CharField(source='get_recette_display', read_only=True)
     statut_display = serializers.CharField(source='get_statut_production_display', read_only=True)
+    # Nom attendu par l'interface du hub (src/lib/api/jus.ts).
+    statut = serializers.CharField(source='statut_production', read_only=True)
+    test_qualite_display = serializers.CharField(source='get_test_qualite_display', read_only=True, default='')
+    cree_par_nom = serializers.SerializerMethodField()
+    annulee_par_nom = serializers.SerializerMethodField()
     est_conditionnee = serializers.SerializerMethodField()
     ph = _champ_mesure()
     refractometre = _champ_mesure()
@@ -222,6 +227,12 @@ class ProductionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Production
         fields = '__all__'
+
+    def get_cree_par_nom(self, obj):
+        return (obj.user.get_full_name() or obj.user.username) if obj.user_id else ''
+
+    def get_annulee_par_nom(self, obj):
+        return (obj.annulee_par.get_full_name() or obj.annulee_par.username) if obj.annulee_par_id else ''
 
     def get_est_conditionnee(self, obj):
         return hasattr(obj, 'conditionnement') and obj.conditionnement is not None
@@ -252,7 +263,8 @@ class ProductionCompleteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Production
-        exclude = ['date_of', 'recette', 'numero_of', 'statut_production', 'user']
+        exclude = ['date_of', 'recette', 'numero_of', 'statut_production', 'user',
+                   'motif_annulation', 'annulee_le', 'annulee_par']
 
     def validate(self, attrs):
         return _valider_mesures_production(attrs)

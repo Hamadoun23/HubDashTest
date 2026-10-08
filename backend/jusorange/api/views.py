@@ -12,6 +12,7 @@ from rest_framework.decorators import (
     action, api_view, permission_classes as perm_decorator,
 )
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -147,13 +148,45 @@ class ReceptionViewSet(viewsets.ModelViewSet):
     permission_classes = [CanProduction]
 
 
+def _nom(user):
+    return (user.get_full_name() or user.username) if user else ''
+
+
+def _prevenir_direction(auteur, titre, message):
+    """Notification GDA Hub à la Direction et aux administrateurs de Jus.
+
+    Les destinataires sont les comptes Jus du groupe Direction et les
+    super-utilisateurs ; le hub les retrouve par l'identifiant local de leur
+    habilitation « orange ». L'auteur n'est pas prévenu de sa propre action.
+    """
+    from django.contrib.auth import get_user_model
+    from django.db.models import Q
+
+    from accounts.notifications_hub import notifier
+
+    comptes = get_user_model().objects.filter(is_active=True).filter(
+        Q(groups__name='Direction') | Q(is_superuser=True)
+    ).distinct()
+    if auteur is not None:
+        comptes = comptes.exclude(pk=auteur.pk)
+    notifier(
+        [u.username for u in comptes],
+        titre=titre,
+        message=message,
+        lien='/jus/production/productions',
+        application='orange',
+    )
+
+
 class ProductionViewSet(viewsets.ModelViewSet):
     """Ordres de fabrication, en deux étapes comme en Django.
 
     Création = programmer (date + recette) → EN_COURS.
     Action « completer » = saisie des mesures → TERMINEE.
+    Action « annuler » = motif obligatoire → ANNULLEE.
+    La Direction est prévenue à chaque étape.
     """
-    queryset = Production.objects.all()
+    queryset = Production.objects.select_related('user', 'annulee_par').all()
     serializer_class = s.ProductionSerializer
     permission_classes = [CanProduction]
 
@@ -162,15 +195,75 @@ class ProductionViewSet(viewsets.ModelViewSet):
             return s.ProductionCreateSerializer
         return s.ProductionSerializer
 
+    def _exiger_en_cours(self, production, verbe):
+        if production.statut_production != 'EN_COURS':
+            raise ValidationError(
+                {'statut_production': f'Seule une production en cours peut être {verbe}.'})
+
+    def perform_create(self, serializer):
+        production = serializer.save(user=self.request.user)
+        _prevenir_direction(
+            self.request.user,
+            f'Production programmée — {production.numero_of}',
+            f'Recette {production.get_recette_display()} le {production.date_of:%d/%m/%Y}'
+            f' par {_nom(self.request.user)}.',
+        )
+
+    def perform_update(self, serializer):
+        self._exiger_en_cours(serializer.instance, 'modifiée')
+        serializer.save()
+
     @action(detail=True, methods=['post', 'patch'])
     def completer(self, request, pk=None):
         """Complète une production programmée (completer_production)."""
         production = self.get_object()
+        self._exiger_en_cours(production, 'complétée')
         payload = s.ProductionCompleteSerializer(
             production, data=request.data, partial=True)
         payload.is_valid(raise_exception=True)
         payload.save()
+        production.refresh_from_db()
+        qualite = production.get_test_qualite_display() or 'non renseigné'
+        _prevenir_direction(
+            request.user,
+            f'Production terminée — {production.numero_of}',
+            f'{production.volume_final_l:g} L, test qualité : {qualite}, par {_nom(request.user)}.',
+        )
         return Response(s.ProductionSerializer(production).data)
+
+    @action(detail=True, methods=['post'])
+    def annuler(self, request, pk=None):
+        """Annule une production en cours : justification obligatoire, Direction prévenue."""
+        production = self.get_object()
+        self._exiger_en_cours(production, 'annulée')
+        motif = str(request.data.get('motif', '') or '').strip()
+        if not motif:
+            raise ValidationError({'motif': "Expliquez pourquoi la production est annulée."})
+        production.statut_production = 'ANNULLEE'
+        production.motif_annulation = motif[:2000]
+        production.annulee_le = timezone.now()
+        production.annulee_par = request.user
+        production.save(update_fields=['statut_production', 'motif_annulation', 'annulee_le', 'annulee_par'])
+        _prevenir_direction(
+            request.user,
+            f'Production annulée — {production.numero_of}',
+            f'Par {_nom(request.user)}. Motif : {motif}',
+        )
+        return Response(s.ProductionSerializer(production).data)
+
+    @action(detail=False, methods=['get'])
+    def formule(self, request):
+        """Formule de base d'une recette : les valeurs de sa dernière production terminée."""
+        recette = request.query_params.get('recette', 'R80_20')
+        derniere = (Production.objects.filter(recette=recette, statut_production='TERMINEE')
+                    .order_by('-date_of', '-id').first())
+        if derniere is None:
+            return Response({'recette': recette, 'reference': None})
+        champs = ['eau_ajoutee_l', 'sucre_ajoute_kg', 'sorbate_ajoute_g', 'ph', 'refractometre',
+                  'volume_final_l', 'lavage_effectue', 'filtration_effectuee', 'pasteurisation_80c',
+                  'test_qualite']
+        return Response({'recette': recette, 'reference': derniere.numero_of,
+                         **{c: getattr(derniere, c) for c in champs}})
 
 
 class ConditionnementViewSet(viewsets.ModelViewSet):

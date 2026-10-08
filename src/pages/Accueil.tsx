@@ -27,7 +27,8 @@ import { ResumePlanning } from '../components/ResumePlanning';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useApi } from '../lib/hooks/useApi';
 import { mesDemandes, monSolde } from '../lib/api/rh';
-import { NOM_APP, useUrgences } from '../lib/urgences';
+import { NOM_APP, useUrgences, type Urgence } from '../lib/urgences';
+import { DetailUrgence } from '../components/DetailUrgence';
 import type { AppKey } from '../lib/navigation';
 import { listerClients } from '../lib/api/planning';
 import { usePermissionsPlanning } from './planning/permissions';
@@ -56,6 +57,7 @@ export default function Accueil() {
   // alimentent le suivi des tâches, la priorité et « À traiter ».
   const { urgences, hautes, parApp, projets } = useUrgences();
   const prioritaire = urgences[0];
+  const [urgenceOuverte, setUrgenceOuverte] = useState<Urgence | null>(null);
   const avecUrgences = applications.length > 0;
 
   const listeDemandes = demandes.donnees ?? [];
@@ -172,10 +174,10 @@ export default function Accueil() {
                         <span className="font-semibold text-white">{urgences.length}</span>
                       </div>
                       <ProgressBar progress={100 - pctUrgents} />
-                      <Link to={prioritaire.lien} className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface2 px-4 py-2 text-xs font-bold text-white">
+                      <button type="button" onClick={() => setUrgenceOuverte(prioritaire)} className="mt-1 flex items-center justify-center gap-1.5 rounded-xl border border-border bg-surface2 px-4 py-2 text-xs font-bold text-white">
                         Voir les détails
                         <ArrowUpRight size={13} />
-                      </Link>
+                      </button>
                     </>
                   ) : (
                     <p className="py-6 text-center text-xs text-muted">Rien d'urgent dans vos applis.</p>
@@ -390,7 +392,7 @@ export default function Accueil() {
               ) : (
                 <div className="space-y-2">
                   {urgences.slice(0, 3).map((u) => (
-                    <Link key={u.cle} to={u.lien} className="flex items-center justify-between gap-2 rounded-xl bg-surface2 px-3 py-2 hover:bg-surface2/70">
+                    <button type="button" key={u.cle} onClick={() => setUrgenceOuverte(u)} className="flex w-full items-center justify-between gap-2 rounded-xl bg-surface2 px-3 py-2 text-left hover:bg-surface2/70">
                       <div className="flex min-w-0 items-center gap-2.5">
                         <Avatar label={u.personne} email={u.email} size={26} />
                         <div className="min-w-0">
@@ -402,7 +404,7 @@ export default function Accueil() {
                         <Badge tone={u.gravite === 'haute' ? 'warning' : 'neutral'}>{NOM_APP[u.app]}</Badge>
                         <MoreVertical size={14} className="text-muted" />
                       </div>
-                    </Link>
+                    </button>
                   ))}
                   <Link to={accesRh ? '/rh/validations' : urgences[0].lien} className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted hover:text-white">
                     Tout voir
@@ -436,6 +438,7 @@ export default function Accueil() {
           </div>
         </>
       )}
+      <DetailUrgence urgence={urgenceOuverte} onFermer={() => setUrgenceOuverte(null)} />
     </div>
   );
 }

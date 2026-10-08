@@ -219,11 +219,16 @@ export type Production = {
   sucre_ajoute_kg: number | null;
   sorbate_ajoute_g: number | null;
   pasteurisation_80c: boolean | null;
-  test_qualite: boolean | null;
+  test_qualite: 'CONFORME' | 'NON_CONFORME' | null;
   ph: number | null;
   refractometre: number | null;
   volume_final_l: number | null;
   observation: string;
+  test_qualite_display?: string;
+  cree_par_nom?: string;
+  motif_annulation?: string;
+  annulee_le?: string | null;
+  annulee_par_nom?: string;
 };
 
 export type NouvelleProduction = { date_of: string; recette: Recette };
@@ -242,7 +247,7 @@ export type CompleterProductionPayload = {
   sucre_ajoute_kg: number;
   sorbate_ajoute_g: number;
   pasteurisation_80c: boolean;
-  test_qualite: boolean;
+  test_qualite: 'CONFORME' | 'NON_CONFORME';
   ph: number;
   refractometre: number;
   volume_final_l: number;
@@ -251,6 +256,31 @@ export type CompleterProductionPayload = {
 
 export function completerProduction(id: number, payload: CompleterProductionPayload) {
   return apiFetch<Production>(`/jus/productions/${id}/completer/`, { method: 'PATCH', corps: payload });
+}
+
+/** Annule une production en cours : justification obligatoire, la Direction est prévenue. */
+export function annulerProduction(id: number, motif: string) {
+  return apiFetch<Production>(`/jus/productions/${id}/annuler/`, { method: 'POST', corps: { motif } });
+}
+
+export type FormuleProduction = {
+  recette: Recette;
+  reference: string | null;
+  eau_ajoutee_l?: number;
+  sucre_ajoute_kg?: number;
+  sorbate_ajoute_g?: number;
+  ph?: number | null;
+  refractometre?: number | null;
+  volume_final_l?: number;
+  lavage_effectue?: boolean;
+  filtration_effectuee?: boolean;
+  pasteurisation_80c?: boolean;
+  test_qualite?: 'CONFORME' | 'NON_CONFORME' | null;
+};
+
+/** Formule de base d'une recette : valeurs de sa dernière production terminée. */
+export function formuleProduction(recette: Recette) {
+  return apiFetch<FormuleProduction>(`/jus/productions/formule/?recette=${recette}`);
 }
 
 // === Production : Conditionnements ============================================

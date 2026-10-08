@@ -24,7 +24,13 @@ export type Urgence = {
   /** Pour retrouver la photo de profil de la personne. */
   email?: string;
   lien: string;
+  /** Libellé du bouton qui mène au traitement. */
+  action: string;
   gravite: 'haute' | 'normale';
+  /** De quoi il s'agit et quoi faire, en clair (fenêtre « Voir les détails »). */
+  explication: string;
+  /** Éléments concernés, ligne par ligne. */
+  elements?: { libelle: string; valeur: string }[];
 };
 
 export const NOM_APP: Record<AppKey, string> = {
@@ -69,7 +75,14 @@ export function useUrgences() {
       personne: d.demandeur_nom,
       email: d.demandeur_email,
       lien: `/rh/dossiers/absence/${d.id}`,
+      action: 'Ouvrir le dossier',
       gravite: d.categorie === 'RETARD' || d.categorie === 'PERMISSION' ? 'haute' : 'normale',
+      explication: `${d.demandeur_nom} a fait une demande (${d.type_absence_libelle}) qui attend votre avis ou votre décision.`,
+      elements: [
+        { libelle: 'Référence', valeur: d.numero },
+        { libelle: 'Période', valeur: d.date_debut === d.date_fin ? d.date_debut : `${d.date_debut} → ${d.date_fin}` },
+        { libelle: 'Étape', valeur: d.etape_courante_libelle || '—' },
+      ],
     });
   }
   for (const r of requisitions.donnees ?? []) {
@@ -81,7 +94,10 @@ export function useUrgences() {
       personne: r.demandeur_nom,
       email: r.demandeur_email,
       lien: `/rh/dossiers/requisition/${r.id}`,
+      action: 'Ouvrir le dossier',
       gravite: 'normale',
+      explication: `${r.demandeur_nom} a fait une réquisition qui attend votre avis ou votre décision.`,
+      elements: [{ libelle: 'Référence', valeur: r.numero }, { libelle: 'Objet', valeur: r.objet }],
     });
   }
   // Mes demandes mises en attente : un valideur attend ma réponse.
@@ -93,7 +109,10 @@ export function useUrgences() {
       detail: `${d.type_absence_libelle} · ${d.numero}`,
       personne: NOM_APP.rh,
       lien: `/rh/dossiers/absence/${d.id}`,
+      action: 'Répondre au valideur',
       gravite: 'haute',
+      explication: 'Un valideur a mis votre demande en attente : il vous demande un complément. Répondez-lui dans le fil du dossier ou corrigez votre demande.',
+      elements: [{ libelle: 'Demande', valeur: `${d.type_absence_libelle} · ${d.numero}` }],
     });
   }
 
@@ -110,7 +129,11 @@ export function useUrgences() {
         .join(', '),
       personne: NOM_APP.jus,
       lien: '/jus/production/articles',
+      action: 'Voir le stock',
       gravite: 'haute',
+      explication:
+        "Le stock de ces articles est descendu sous leur seuil d'alerte. Il faut les réapprovisionner (Réceptions), ou ajuster le seuil s'il n'est plus adapté (Articles / Stock).",
+      elements: sousSeuil.map((x) => ({ libelle: x.article, valeur: `stock ${x.stock} — seuil ${x.seuil}` })),
     });
   }
 
@@ -125,7 +148,14 @@ export function useUrgences() {
         detail: `${p.name} · ${Math.round(p.overall_progress ?? 0)} %`,
         personne: NOM_APP.chantiers,
         lien: `/chantiers/${p.id}`,
+        action: 'Ouvrir le chantier',
         gravite: 'haute',
+        explication: "La date de fin prévue de ce chantier est dépassée alors qu'il n'est pas terminé. Mettez à jour l'avancement ou la date de fin.",
+        elements: [
+          { libelle: 'Chantier', valeur: p.name },
+          { libelle: 'Fin prévue', valeur: p.end_date ?? '—' },
+          { libelle: 'Avancement', valeur: `${Math.round(p.overall_progress ?? 0)} %` },
+        ],
       });
     }
   }
@@ -140,7 +170,10 @@ export function useUrgences() {
       detail: a.publications_en_retard[0]?.client_nom ? `Dont ${a.publications_en_retard[0].client_nom}` : 'Statut à mettre à jour',
       personne: NOM_APP.planning,
       lien: '/planning/publications',
+      action: 'Voir les publications',
       gravite: 'normale',
+      explication: "Ces publications sont passées sans être marquées comme faites. Mettez à jour leur statut (publiée, reprogrammée ou annulée).",
+      elements: a.publications_en_retard.slice(0, 6).map((x) => ({ libelle: x.client_nom, valeur: new Date(x.date).toLocaleDateString('fr-FR') })),
     });
   }
   if (a && a.tournages_en_retard.length > 0) {
@@ -151,7 +184,10 @@ export function useUrgences() {
       detail: a.tournages_en_retard[0]?.client_nom ? `Dont ${a.tournages_en_retard[0].client_nom}` : 'Statut à mettre à jour',
       personne: NOM_APP.planning,
       lien: '/planning/tournages',
+      action: 'Voir les tournages',
       gravite: 'normale',
+      explication: "Ces tournages sont passés sans être marqués comme faits. Mettez à jour leur statut (réalisé, reprogrammé ou annulé).",
+      elements: a.tournages_en_retard.slice(0, 6).map((x) => ({ libelle: x.client_nom, valeur: new Date(x.date).toLocaleDateString('fr-FR') })),
     });
   }
 
