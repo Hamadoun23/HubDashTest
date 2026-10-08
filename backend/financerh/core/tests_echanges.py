@@ -122,3 +122,49 @@ class RelanceTest(DossierEchangesTest):
         self.client_de(self.chef).post(f"{self.url}/mettre-en-attente/", {"motif": "Pièce manquante"}, format="json")
         self.assertFalse(self._dossier(self.salarie).data["peut_relancer"])
         self.assertEqual(self.client_de(self.salarie).post(f"{self.url}/relancer/").status_code, 400)
+
+
+class DureeAbsenceTest(BaseAPITestCase):
+    """Permissions horaires et retards : la durée réelle, plus la demi-journée forcée."""
+
+    def _absence(self, categorie, **champs):
+        from datetime import date
+
+        from rh.models import DemandeAbsence
+
+        type_absence, _ = TypeAbsence.objects.get_or_create(
+            code=categorie, defaults={"libelle": categorie.capitalize(), "categorie": categorie, "decompte_solde": False}
+        )
+        jour = date(2026, 10, 7)
+        d = DemandeAbsence(demandeur=self.salarie, type_absence=type_absence, date_debut=jour, date_fin=jour, motif="x", **champs)
+        d.save()
+        return d
+
+    def test_permission_d_une_heure(self):
+        from datetime import time
+
+        from core.echanges import instantane
+
+        d = self._absence(CategorieAbsence.PERMISSION, heure_debut=time(9, 0), heure_fin=time(10, 0))
+        self.assertEqual(str(d.nb_jours), "0.1")
+        etat = instantane(d)
+        self.assertEqual(etat["duree"]["valeur"], "1 h")
+        self.assertEqual(etat["heure_debut"]["valeur"], "09:00")
+        self.assertNotIn("demi_journee", etat)
+        self.assertNotIn("nb_jours", etat)
+
+    def test_ancienne_demi_journee_forcee_ignoree(self):
+        from datetime import time
+
+        d = self._absence(CategorieAbsence.PERMISSION, demi_journee=True, heure_debut=time(9, 0), heure_fin=time(10, 30))
+        self.assertEqual(str(d.nb_jours), "0.2")
+
+    def test_retard_ne_compte_pas_de_jour(self):
+        from datetime import time
+
+        d = self._absence(CategorieAbsence.RETARD, heure_fin=time(8, 45))
+        self.assertEqual(str(d.nb_jours), "0.0")
+
+    def test_vraie_demi_journee(self):
+        d = self._absence(CategorieAbsence.CONGE, demi_journee=True)
+        self.assertEqual(str(d.nb_jours), "0.5")

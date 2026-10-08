@@ -54,7 +54,6 @@ export default function Retards() {
         type_absence: 'Retard',
         date_debut: date,
         date_fin: date,
-        demi_journee: true,
         heure_fin: heureArrivee,
         motif,
       });

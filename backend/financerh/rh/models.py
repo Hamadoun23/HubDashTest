@@ -98,11 +98,51 @@ class DemandeAbsence(DocumentValidable):
         verbose_name = "Demande d'absence"
         verbose_name_plural = "Demandes d'absence"
 
+    #: Duree d'une journee de travail, pour convertir une absence horaire en jours.
+    HEURES_PAR_JOUR = Decimal("8")
+
+    def duree_heures(self):
+        """Duree d'une absence horaire sur une seule journee, en heures (None sinon)."""
+        if not (self.heure_debut and self.heure_fin) or self.date_debut != self.date_fin:
+            return None
+        debut = self.heure_debut.hour * 60 + self.heure_debut.minute
+        fin = self.heure_fin.hour * 60 + self.heure_fin.minute
+        return Decimal(max(fin - debut, 0)) / Decimal(60)
+
     def calculer_nb_jours(self):
+        """Jours d'absence : retard 0, horaire au prorata de 8 h, demi-journee 0,5.
+
+        Les formulaires « permission » et « retard » posaient autrefois
+        `demi_journee` pour toute demande : une permission d'une heure comptait
+        alors une demi-journee. La duree reelle prime desormais.
+        """
+        if self.type_absence_id and self.type_absence.categorie == CategorieAbsence.RETARD:
+            return Decimal("0.0")
+        heures = self.duree_heures()
+        if heures is not None:
+            return (heures / self.HEURES_PAR_JOUR).quantize(Decimal("0.1"))
         if self.demi_journee:
             return Decimal("0.5")
         jours = (self.date_fin - self.date_debut).days + 1
         return Decimal(max(jours, 0))
+
+    def ajuster_resume(self, etat):
+        """Page de detail : une absence horaire se lit en heures, pas en jours."""
+        heures = self.duree_heures()
+        if self.type_absence_id and self.type_absence.categorie == CategorieAbsence.RETARD:
+            etat.pop("nb_jours", None)
+            etat.pop("demi_journee", None)
+            etat.pop("heure_debut", None)
+            if "heure_fin" in etat:
+                etat["heure_fin"]["libelle"] = "Heure d'arrivée prévue"
+        elif heures is not None:
+            etat.pop("nb_jours", None)
+            etat.pop("demi_journee", None)
+            h, m = divmod(int(heures * 60), 60)
+            etat["duree"] = {"libelle": "Durée", "valeur": f"{h} h {m:02d}" if m else f"{h} h"}
+        elif not self.demi_journee:
+            etat.pop("demi_journee", None)
+        return etat
 
     def save(self, *args, **kwargs):
         self.nb_jours = self.calculer_nb_jours()

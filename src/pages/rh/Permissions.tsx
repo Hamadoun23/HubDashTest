@@ -59,7 +59,6 @@ export default function Permissions() {
         type_absence: 'Permission',
         date_debut: date,
         date_fin: date,
-        demi_journee: true,
         heure_debut: heureDebut,
         heure_fin: heureFin,
         motif,

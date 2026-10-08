@@ -36,6 +36,8 @@ def _valeur_affichable(document, champ):
         return ""
     if champ.is_relation:
         return str(valeur)
+    if hasattr(valeur, "isoformat") and not hasattr(valeur, "year"):  # heure seule
+        return valeur.strftime("%H:%M")
     if hasattr(valeur, "isoformat"):
         return valeur.strftime("%d/%m/%Y %H:%M") if hasattr(valeur, "hour") else valeur.strftime("%d/%m/%Y")
     if isinstance(valeur, bool):
@@ -47,6 +49,25 @@ def _valeur_affichable(document, champ):
     return str(valeur)
 
 
+#: Libelles lisibles des champs courants (les noms de modele n'ont pas d'accents).
+LIBELLES = {
+    "type_absence": "Type d'absence",
+    "date_debut": "Date de début",
+    "date_fin": "Date de fin",
+    "demi_journee": "Demi-journée",
+    "heure_debut": "Heure de début",
+    "heure_fin": "Heure de fin",
+    "nb_jours": "Nombre de jours",
+    "remplacant": "Remplaçant",
+    "date_depense": "Date de la dépense",
+    "date_depart": "Date de départ",
+    "date_retour": "Date de retour",
+    "categorie": "Catégorie",
+    "priorite": "Priorité",
+    "beneficiaire": "Bénéficiaire",
+}
+
+
 def instantane(document):
     """Etat lisible du dossier : {champ: {libelle, valeur}}, dans l'ordre du modele."""
     etat = {}
@@ -54,9 +75,12 @@ def instantane(document):
         if champ.name in CHAMPS_IGNORES or champ.name.endswith("_ptr"):
             continue
         etat[champ.name] = {
-            "libelle": str(champ.verbose_name).capitalize(),
+            "libelle": LIBELLES.get(champ.name, str(champ.verbose_name).capitalize()),
             "valeur": _valeur_affichable(document, champ),
         }
+    ajuster = getattr(document, "ajuster_resume", None)
+    if callable(ajuster):
+        etat = ajuster(etat)
     return etat
 
 
