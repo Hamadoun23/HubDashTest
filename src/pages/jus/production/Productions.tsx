@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Ban, CalendarDays, CheckCircle2, ChevronDown, ChevronUp, FlaskConical, Pencil, Plus, X } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { EtatChargement, EtatErreur } from '../../../components/ui/EtatRequete';
@@ -379,6 +380,10 @@ export default function Productions() {
             </span>
           ) : p.est_conditionnee ? (
             'Conditionnée'
+          ) : p.statut === 'TERMINEE' ? (
+            <Link to="/jus/production/conditionnements" className="text-xs font-semibold text-accent2 hover:text-white">
+              À conditionner →
+            </Link>
           ) : (
             '—'
           ),
