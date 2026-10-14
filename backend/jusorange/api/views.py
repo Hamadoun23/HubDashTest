@@ -529,7 +529,7 @@ class FactureViewSet(viewsets.ModelViewSet):
 
 
 class PaiementViewSet(viewsets.ModelViewSet):
-    queryset = Paiement.objects.select_related('facture').all()
+    queryset = Paiement.objects.select_related('facture__vente__client').all()
     serializer_class = s.PaiementSerializer
     permission_classes = [CanCommercial]
 

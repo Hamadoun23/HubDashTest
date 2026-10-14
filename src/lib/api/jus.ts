@@ -518,6 +518,7 @@ export type Paiement = {
   id: number;
   facture: number;
   num_fact: string;
+  client_nom: string;
   date_paie: string;
   montant: number;
   mode_paie: ModePaie;

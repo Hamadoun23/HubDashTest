@@ -666,6 +666,7 @@ class PaiementFactureSerializer(serializers.ModelSerializer):
 class PaiementSerializer(serializers.ModelSerializer):
     num_fact = serializers.CharField(source='facture.num_fact', read_only=True)
     mode_display = serializers.CharField(source='get_mode_paie_display', read_only=True)
+    client_nom = serializers.CharField(source='facture.vente.client.nom_complet', read_only=True)
 
     class Meta:
         model = Paiement

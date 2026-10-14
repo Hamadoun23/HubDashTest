@@ -197,7 +197,7 @@ function ChoixClient({ clients, valeur, onChange, onCree }: { clients: Client[];
 }
 
 /** Mode de règlement au moment de livrer et facturer. */
-function Reglement({ montant, statut, setStatut, acompte, setAcompte }: { montant: number; statut: StatutPaiement; setStatut: (s: StatutPaiement) => void; acompte: string; setAcompte: (v: string) => void }) {
+export function Reglement({ montant, statut, setStatut, acompte, setAcompte }: { montant: number; statut: StatutPaiement; setStatut: (s: StatutPaiement) => void; acompte: string; setAcompte: (v: string) => void }) {
   return (
     <div className="space-y-2">
       <div className="grid gap-2 sm:grid-cols-3">
@@ -223,7 +223,7 @@ function Reglement({ montant, statut, setStatut, acompte, setAcompte }: { montan
   );
 }
 
-function CarteCommande({ c, onChange }: { c: Commande; onChange: () => void }) {
+export function CarteCommande({ c, onChange }: { c: Commande; onChange: () => void }) {
   const [ouverte, setOuverte] = useState(false);
   const [statut, setStatut] = useState<StatutPaiement>('ACHAT_VENTE');
   const [acompte, setAcompte] = useState('');
@@ -302,7 +302,7 @@ function CarteCommande({ c, onChange }: { c: Commande; onChange: () => void }) {
   );
 }
 
-function CarteFacture({ f, onChange }: { f: Facture; onChange: () => void }) {
+export function CarteFacture({ f, onChange }: { f: Facture; onChange: () => void }) {
   const [ouverte, setOuverte] = useState(false);
   const [montant, setMontant] = useState(String(Math.round(f.reste_a_payer)));
   const [mode, setMode] = useState<ModePaie>('ESPECE');
