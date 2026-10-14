@@ -824,3 +824,54 @@ export async function exporterRapport(
   lien.remove();
   URL.revokeObjectURL(url);
 }
+
+// === Commercial : analyse des clients (BI) ======================================
+
+export type LigneAnalyseClient = {
+  id: number;
+  nom: string;
+  telephone: string;
+  adresse: string;
+  facture: number;
+  paye: number;
+  reste: number;
+  echu: number;
+  retard_max: number;
+  nb_factures: number;
+  nb_impayees: number;
+  taux_recouvrement: number | null;
+  dernier_achat: string | null;
+  bouteilles_33cl: number;
+  bouteilles_1l: number;
+  commandes_en_attente: number;
+  actif: boolean;
+};
+
+export type AnalyseClients = {
+  indicateurs: {
+    chiffre_affaires: number;
+    encaisse: number;
+    reste: number;
+    echu: number;
+    taux_recouvrement: number | null;
+    clients: number;
+    clients_acheteurs: number;
+    clients_actifs: number;
+    clients_en_retard: number;
+    panier_moyen: number;
+  };
+  mensuel: { mois: string; facture: number; encaisse: number }[];
+  balance_agee: { cle: string; libelle: string; montant: number }[];
+  modes_paiement: { mode: string; montant: number }[];
+  clients: LigneAnalyseClient[];
+};
+
+export type FicheClient = {
+  client: { id: number; nom: string; telephone: string; email: string; adresse: string };
+  factures: { id: number; numero: string; date: string; echeance: string; montant: number; paye: number; reste: number; retard: number; statut: string }[];
+  paiements: { date: string; montant: number; mode: string; reference: string; facture: string }[];
+  commandes: { date: string; qte_33cl: number; qte_1l: number; total: number; livree: boolean }[];
+};
+
+export const analyserClients = () => apiFetch<AnalyseClients>('/jus/clients/analyse/');
+export const ficheClient = (id: number) => apiFetch<FicheClient>(`/jus/clients/${id}/fiche/`);

@@ -337,6 +337,20 @@ class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = s.ClientSerializer
     permission_classes = [CanCommercial]
 
+    @action(detail=False, methods=['get'])
+    def analyse(self, request):
+        """Analyse commerciale : chiffres clés, mensuel, balance âgée, classement des clients."""
+        from distribution.analyse import synthese_clients
+
+        return Response(synthese_clients())
+
+    @action(detail=True, methods=['get'])
+    def fiche(self, request, pk=None):
+        """Historique d'un client : factures, paiements, commandes."""
+        from distribution.analyse import fiche_client
+
+        return Response(fiche_client(self.get_object()))
+
 
 class VenteViewSet(viewsets.ModelViewSet):
     queryset = Vente.objects.select_related('client').prefetch_related(

@@ -215,3 +215,30 @@ class ReceptionPaiementModelTest(TestCase):
         )
         self.assertEqual(rec.ecart, -2500)
         self.assertEqual(rec.statut_reception, 'ECART_NEGATIF')
+
+
+class AnalyseClientsTest(TestCase):
+    """Facturé, payé, reste, échu et balance âgée par client."""
+
+    def test_synthese_et_fiche(self):
+        from datetime import date, timedelta
+
+        from distribution.analyse import fiche_client, synthese_clients
+        from distribution.models import Client, Facture, Paiement, Vente
+
+        c = Client.objects.create(nom_complet='Boutique A', tel_client='70000000')
+        v = Vente.objects.create(client=c, date_vente=date.today(), montant_total=10000)
+        f = Facture.objects.create(vente=v, date_fact=date.today() - timedelta(days=60), montant=10000,
+                                   date_echeance=date.today() - timedelta(days=45))
+        Paiement.objects.create(facture=f, date_paie=date.today(), montant=4000, mode_paie='ESPECE')
+        Client.objects.create(nom_complet='Sans achat')
+
+        r = synthese_clients()
+        a = next(x for x in r['clients'] if x['nom'] == 'Boutique A')
+        self.assertEqual((a['facture'], a['paye'], a['reste'], a['echu']), (10000, 4000, 6000, 6000))
+        self.assertEqual(a['retard_max'], 45)
+        self.assertEqual(a['taux_recouvrement'], 40)
+        self.assertEqual(r['indicateurs']['clients_en_retard'], 1)
+        self.assertEqual(next(t for t in r['balance_agee'] if t['cle'] == 'j31_60')['montant'], 6000)
+        self.assertEqual(len(r['mensuel']), 12)
+        self.assertEqual(fiche_client(c)['factures'][0]['reste'], 6000)
