@@ -66,6 +66,7 @@ export default function Articles() {
   ) : (
     <div>
       <FormulaireEtHistorique
+        texteAction="Nouvel article"
         icon={Boxes}
         titre="Articles / Stock"
         sousTitre="Actualiser le stock d'un article"

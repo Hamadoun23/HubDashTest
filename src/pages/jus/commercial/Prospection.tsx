@@ -218,6 +218,7 @@ export default function Prospection() {
         </div>
       )}
       <FormulaireEtHistorique
+        texteAction="Nouveau point de vente"
         icon={Map}
         titre="Prospection"
         sousTitre="Nouveaux points de vente à prospecter"

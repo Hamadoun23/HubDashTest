@@ -57,6 +57,7 @@ export default function Producteurs() {
         </div>
       )}
       <FormulaireEtHistorique
+        texteAction="Nouveau producteur"
         icon={UserRound}
         titre="Producteurs"
         sousTitre="Coopératives et producteurs partenaires"

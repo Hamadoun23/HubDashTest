@@ -57,6 +57,7 @@ export default function ClientsCommercial() {
         </div>
       )}
       <FormulaireEtHistorique
+        texteAction="Nouveau client"
         icon={UserRound}
         titre="Clients"
         sousTitre="Comptes commerciaux actifs"

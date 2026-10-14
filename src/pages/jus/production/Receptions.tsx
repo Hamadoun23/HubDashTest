@@ -49,6 +49,7 @@ export default function Receptions() {
   ) : (
     <div>
       <FormulaireEtHistorique
+        texteAction="Nouvelle réception"
         icon={PackageOpen}
         titre="Réceptions"
         sousTitre="Contrôle qualité à l'arrivée"

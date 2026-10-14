@@ -20,6 +20,7 @@ import {
   ReceiptText,
   Settings,
   ShoppingCart,
+  Store,
   Sprout,
   UserCog,
   UserRound,
@@ -129,6 +130,7 @@ export const NAVIGATION: NavGroup[] = [
     color: 'bg-blue-400',
     app: 'jus',
     items: [
+      { label: 'Espace commercial', href: '/jus/commercial', icon: Store },
       { label: 'Prospection', href: '/jus/commercial/prospection', icon: Map },
       { label: 'Clients', href: '/jus/commercial/clients', icon: UserRound },
       { label: 'Ventes', href: '/jus/commercial/ventes', icon: Citrus },

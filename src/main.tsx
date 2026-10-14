@@ -37,6 +37,7 @@ const Photos = lazy(() => import('./pages/chantiers/Photos'));
 const Rapport = lazy(() => import('./pages/chantiers/Rapport'));
 const SaisieDuJour = lazy(() => import('./pages/chantiers/SaisieDuJour'));
 const Taches = lazy(() => import('./pages/chantiers/Taches'));
+const EspaceCommercial = lazy(() => import('./pages/jus/commercial/EspaceCommercial'));
 const TableauDeBordJus = lazy(() => import('./pages/jus/TableauDeBord'));
 const Reporting = lazy(() => import('./pages/jus/Reporting'));
 const Tresorerie = lazy(() => import('./pages/jus/Tresorerie'));
@@ -148,7 +149,7 @@ createRoot(document.getElementById('root')!).render(
                   tableau de bord unique, pas quatre écrans par domaine. */}
               <Route path="/jus/direction" element={<TableauDeBordJus />} />
               <Route path="/jus/production" element={<TableauDeBordJus />} />
-              <Route path="/jus/commercial" element={<TableauDeBordJus />} />
+              <Route path="/jus/commercial" element={<EspaceCommercial />} />
               <Route path="/jus/finance" element={<TableauDeBordJus />} />
 
               <Route path="/jus/commercial/prospection" element={<Prospection />} />

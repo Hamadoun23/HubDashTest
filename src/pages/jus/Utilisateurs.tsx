@@ -66,6 +66,7 @@ export default function Utilisateurs() {
         </div>
       )}
       <FormulaireEtHistorique
+        texteAction="Nouvel utilisateur"
         icon={Users}
         titre="Utilisateurs"
         sousTitre="Accès à l'application Jus d'orange"

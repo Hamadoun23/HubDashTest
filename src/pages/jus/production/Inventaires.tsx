@@ -52,6 +52,7 @@ export default function Inventaires() {
   ) : (
     <div>
       <FormulaireEtHistorique
+        texteAction="Nouvel inventaire"
         icon={ClipboardList}
         titre="Inventaires"
         sousTitre="Comptages physiques"

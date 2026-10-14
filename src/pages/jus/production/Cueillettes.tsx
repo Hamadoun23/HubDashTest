@@ -65,6 +65,7 @@ export default function Cueillettes() {
         </div>
       )}
       <FormulaireEtHistorique
+        texteAction="Nouvelle cueillette"
         icon={Sprout}
         titre="Cueillettes"
         sousTitre="Enregistrer une cueillette"

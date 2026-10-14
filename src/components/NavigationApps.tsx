@@ -157,7 +157,7 @@ export function NavigationApps({ onNaviguer, exclure, titre = 'Applications' }: 
         const ouverte = ouvertes.has(app.key);
         const active = courante === app.key;
         const groupes = sousMenus(app.key, habilitations, estSuperadmin, valideur);
-        const racines = groupes.flatMap((g) => g.items.map((i) => i.href)).filter((h) => h.split('/').length <= 2 || h === '/campagnes/dashboard' || /^\/chantiers\/\d+$/.test(h));
+        const racines = groupes.flatMap((g) => g.items.map((i) => i.href)).filter((h) => h.split('/').length <= 2 || h === '/campagnes/dashboard' || /^\/chantiers\/\d+$/.test(h) || h === '/jus/commercial');
         return (
           <div key={app.key}>
             <div
